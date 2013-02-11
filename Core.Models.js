@@ -104,7 +104,7 @@ Dynamo.ReadOnlyModel = Dynamo.Model.extend({
 
 
 
-Dynamo.User = Dynamo.Model.extend({
+User = Dynamo.User = Dynamo.Model.extend({
 
   codeName: 'user',
   prettyName: 'User',
@@ -136,7 +136,7 @@ Dynamo.User = Dynamo.Model.extend({
 
 });
 
-Dynamo.Group = Dynamo.Model.extend({
+Group = Dynamo.Group = Dynamo.Model.extend({
 
   codeName: 'group',
   prettyName: 'Group',
