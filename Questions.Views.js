@@ -655,11 +655,12 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
     //you can pass in a data object,
     if (this.options.userResponseData) {
       this.userResponseData = this.options.userResponseData;
-
-      this.questionResponses = new DataCollection();
-      this.questionResponses.server_url = this.userResponseData.get('server_url');
-      this.questionResponses.user_id    = this.responder.id;
-      this.questionResponses.group_id   = this.userResponseData.get('group_id');
+      
+      this.questionResponses = new DataCollection(null, {
+        server_url: this.userResponseData.get('server_url'),
+        user_id: this.userResponseData.get('user_id'),
+        group_id: this.userResponseData.get('group_id')
+      });
 
       return;
 
@@ -703,7 +704,9 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
       this.unpresentedQuestions.remove(q);
       this.presentedQuestions.add(q);
       this.questionResponses.add({
-        xelement_id: q.id
+        xelement_id: q.id,
+        user_id: this.questionResponses.user_id(),
+        group_id: this.questionResponses.group_id()
       });
     };
   },
@@ -718,11 +721,9 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
 
   finishAssessment: function() {
     var self = this;
-    this.saveSaveableModel(function() {
-      self.$el.empty();
-      self.trigger('finished');
-      self = null; // avoid Mem leak?
-    });
+    self.$el.empty();
+    this.saveSaveableModel();
+    self.trigger('finished');
   },
 
   remove: function() {
@@ -759,12 +760,13 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
     //Once the first response in a set is saved,
     //must complete saving all responses w/in 10 seconds.
     var nullifyNumResponsesSaved;
+    var self = this;
     if (this.numResponsesSaved === 0) {
       console.log("AssesmentSaveCycle - onResponseSaved: this.numResponsesSaved === 0 ");
       nullifyNumResponsesSaved = setTimeout(function(backbone_view) {
         backbone_view.numResponsesSaved = null;
         console.log("AssesmentSaveCycle - END onResponseSaved CYCLE - nullifyNumResponsesSaved called ", backbone_view);
-      }, 10*1000, this);
+      }, 10*1000, self);
     };
     if ( typeof(this.numResponsesSaved) == "number") {
       console.log("AssesmentSaveCycle - onResponseSaved: numResponsesSaved++ ");
@@ -838,7 +840,8 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
     } else {
       this.current_index = this.maximumNumberOfQuestions
       if ( this.userResponseData.hasUnsavedChanges() ) { this.saveSaveableModel(); };
-      return this.showFinishDialog();
+      // return this.showFinishDialog();
+      return this.finishAssessment();
     };
   },
 
@@ -1038,7 +1041,11 @@ showQuestionView = protoQuestionView.extend({
     var self, view_class, view;
 
     self = this;
-    self.$el.html( self._template({ position: this.position }) );
+    self.$el.html( self._template({ 
+      position: self.position,
+      content: self.model.getContent()
+    }) );
+    debugger;
 
     //Add response views as sub views of this one.
     this.removeSubViews(); //BSTS: Avoid memory leak (i think) -gs;

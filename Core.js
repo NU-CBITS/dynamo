@@ -101,8 +101,13 @@ Dynamo.isMantleStable = function()  {
 //  A placeholder function.
 //  Must be overridden by the application
 //  in order to return the current user object
-Dynamo.CurrentUser = function() { return null }
+Dynamo.CurrentUser = function() { return null };
 
+// Authenticating User
+// In most circumstances, the Authenticating User will be the current user,
+// but in circumstances where we would simply like to authenticate as the Application,
+// we can override the Authenticating User and leave the CurrentUser as is.
+Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
 // ************************************************
 //
@@ -247,7 +252,7 @@ addQueryVarToUrl = function(name, value, url) {
 //copied out of Backhand.js
 addSessionVarsToUrl = function(url) {
   var new_url;
-  new_url = addQueryVarToUrl("user_id", Dynamo.CURRENT_USER_ID, url);
+  new_url = addQueryVarToUrl("user_id", Dynamo.AUTHENTICATING_USER_ID(), url);
   new_url = addQueryVarToUrl("session_id", "YO-IMA-SESSION-ID", new_url);
   return new_url;
 };

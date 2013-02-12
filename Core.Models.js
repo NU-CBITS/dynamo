@@ -17,7 +17,7 @@ Dynamo.Model = Backbone.Model.extend({
 
 // Dynamo.SaveableModel
 // Adds a Bevy of Methods and Functionality related to Saving.
-Dynamo.SaveableModel = Dynamo.Model.extend({
+SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   // Attributes
   saveStates: ['new', 'unsaved_changes', 'current'],
   codeName: 'saveable',
@@ -94,7 +94,7 @@ Dynamo.SaveableModel = Dynamo.Model.extend({
 
 });
 
-Dynamo.ReadOnlyModel = Dynamo.Model.extend({
+ReadOnlyModel = Dynamo.ReadOnlyModel = Dynamo.Model.extend({
   codeName: 'read_only',
   prettyName: 'Read-Only Model',
 
@@ -196,11 +196,11 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
 //This is not directly a model, but is instead a base object to mix into each
 //Xelement Class that might exist.
-Dynamo.XelementRoot = {
+XelementRoot = Dynamo.XelementRoot = {
 
-  codeName : "xelement",
-  prettyName : "Xelement",
-  idAttribute : "guid",
+  codeName: 'xelement',
+  prettyName: 'Xelement',
+  idAttribute: 'guid',
 
 
   defaultsFor: function(xelement_type) {
@@ -243,7 +243,7 @@ Dynamo.XelementRoot = {
 };
 
 
-Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend({}, Dynamo.XelementRoot, {
+UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend({}, Dynamo.XelementRoot, {
 
   codeName: 'unitary_xelement',
   prettyName: 'Xelement',
@@ -320,7 +320,7 @@ Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend({}, Dynamo.Xeleme
 // From the perspective of a Unitary Xelement, 
 // a ClientSide Xelement's attributes are those that 
 // comprise the xel_data_values key in a UnitaryXelement
-Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.extend({}, Dynamo.XelementRoot, {
+ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.extend({}, Dynamo.XelementRoot, {
 
   codeName: 'values_only_xelement',
   prettyName: 'Xelement',
@@ -491,13 +491,13 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
     
     _.bindAll(this);
 
-    if (this.collection) {
-      var c = this.collection;
-      if ( !this.get('server_url')    ) { this.set('server_url',    c.server_url()  )  };
-      if ( !this.get('xelement_id')   ) { this.set('xelement_id',   c.xelement_id() )  };
-      if ( !this.get('user_id')       ) { this.set('user_id',       c.user_id()     )  };
-      if ( !this.get('group_id')      ) { this.set('group_id',      c.group_id()    )  }; 
-    };
+    // if (this.collection) {
+    //   var c = this.collection;
+    //   if ( !this.get('server_url')    ) { this.set('server_url',    c.server_url()  )  };
+    //   if ( !this.get('xelement_id')   ) { this.set('xelement_id',   c.xelement_id() )  };
+    //   if ( !this.get('user_id')       ) { this.set('user_id',       c.user_id()     )  };
+    //   if ( !this.get('group_id')      ) { this.set('group_id',      c.group_id()    )  }; 
+    // };
 
     this.initializeAsSaveable();
 
@@ -663,7 +663,7 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   server_url: function() {
     if (this.get("server_url")) { return this.get("server_url") }
-    if (this.collection && this.collection.server_url() ) { return this.collection.server_url() }
+    if (this.collection && _.result(this.collection, 'server_url') ) { return _.result(this.collection, 'server_url'); }
     if (Dynamo.TriremeURL) { return Dynamo.TriremeURL }
     throw new Error("No URL available for UserData; cid:"+this.cid)
   },
