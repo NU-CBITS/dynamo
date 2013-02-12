@@ -101,7 +101,38 @@ Dynamo.isMantleStable = function()  {
 //  A placeholder function.
 //  Must be overridden by the application
 //  in order to return the current user object
-Dynamo.CurrentUser = function() { return null };
+Dynamo.CurrentUser = function() {
+  
+  if (Dynamo._CurrentUser) {
+    return Dynamo._CurrentUser;
+  }
+
+  if ( localStorage.getItem("CurrentUser") ) {
+    var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
+    Dynamo._CurrentUser = new User(user_atts);
+  }
+  else {
+    Dynamo._CurrentUser = new Dynamo.User({
+      phone_guid: "DEFAULT-DYNAMO-USER_"+deviceID(),
+      username: "DEFAULT-DYNAMO-USER_"+deviceID(),
+      group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
+    });
+    Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
+    localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
+    localStorage.setItem("CurrentUserSaved", "false");
+    Dynamo._CurrentUser.save({
+      success: function() {
+        console.log("SUCCESS CB of Dynamo._CurrentUser.save!")
+        localStorage.setItem("CurrentUserSaved", "true");
+        localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
+      }
+    });
+    
+  }
+  
+  return Dynamo._CurrentUser;
+
+};
 
 // Authenticating User
 // In most circumstances, the Authenticating User will be the current user,
