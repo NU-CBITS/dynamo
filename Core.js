@@ -76,13 +76,13 @@ _.bindAll(Dynamo);
 //
 
 
-//Returns true if the core is stable, false otherwise.
+// Returns true if the core is stable, false otherwise.
 Dynamo.isCoreStable = function() {
   if ( typeof(this.XelementClass) == "undefined" ) { return false };
   return true;
 }
 
-//Returns true if the mantle is stable, false otherwise.
+// Returns true if the mantle is stable, false otherwise.
 Dynamo.isMantleStable = function()  {
 
   if ( _.isUndefined( this.neededDefinitions ) ) { return false };
@@ -94,6 +94,18 @@ Dynamo.isMantleStable = function()  {
   });
 
   return true;
+
+};
+
+// for interaction with phonegap; will return the phone's ID if it has one.
+Dynamo.deviceID = function() {
+
+  if ( (typeof(device) != "undefined") && _.isObject(device) && device.uuid) { 
+    return device.uuid;
+  }
+  else {
+    return "NO-DEVICE-ID";
+  };
 
 };
 
@@ -113,8 +125,8 @@ Dynamo.CurrentUser = function() {
   }
   else {
     Dynamo._CurrentUser = new Dynamo.User({
-      phone_guid: "DEFAULT-DYNAMO-USER_"+deviceID(),
-      username: "DEFAULT-DYNAMO-USER_"+deviceID(),
+      phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
+      username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
       group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
     });
     Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
