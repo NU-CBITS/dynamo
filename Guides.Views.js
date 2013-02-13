@@ -44,10 +44,10 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     return {
-      'keyup input#guide_title': "updateTitle",
+      'keyup input#guide_title'       : "updateTitle",
       'click button.load-guided-page' : "loadGuidedPage",
-      'click button.import' : "importFromGDoc",
-      'click button.save': "saveSaveableModel"
+      'click button.import'           : "importFromGDoc",
+      'click button.save'             : "saveSaveableModel"
     };
   },
 
@@ -70,6 +70,37 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
         if (this.id || this.className ) {
           self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
         };
+      });
+      self.usableElements.sort(function(a,b) {
+        //put all elements w/ id's first
+        if (a.idName && !b.idName) { return -1 }
+        if (!a.idName && b.idName) { return 1  }
+
+        //if they both have id's, sort by tag first
+        if ( a.tagName < b.tagName ) {
+          return -1
+        }
+        if ( a.tagName > b.tagName ) {
+          return 1
+        } 
+
+        // Then by ID name
+        if ( a.idName < b.idName ) {
+          return -1
+        }
+        if ( a.idName > b.idName ) {
+          return 1
+        }
+
+        //If we've gotten here, both id's were ""
+        if ( a.className < b.className ) {
+          return -1
+        }
+        if ( a.className > b.className ) {
+          return 1
+        }
+
+        return 0;
       });
       console.log("Available Elements in Guided Page", self.usableElements);
       alert("iframe loaded!");
@@ -293,9 +324,11 @@ editActionView = Backbone.View.extend({
       duration: this.$el.find("input[name='duration']:first").val(),
       actionOptionsValues: {}
     };
+
     this.$el.find("input[name='action_attribute']").each(function(index, value) {
       new_values.actionOptionsValues( $(this).data('attribute-name') ) = $(this).val();
     });
+
     this.model.set(new_values);
   },
 
@@ -381,7 +414,8 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       enableAddExisting: false,
       editViewOpts: { 
         template: self.options.actionTemplate, 
-        actionTargets: self.options.actionTargets },
+        actionTargets: self.options.actionTargets 
+      },
       editViewClass: editActionView
     });
 

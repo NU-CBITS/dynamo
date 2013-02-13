@@ -209,10 +209,12 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.saveGuide = this.save;
     
     this.save = function() {
-      this.saveSlides();
       if (this.slides.length == 0) {
         this.updateSelfAndSave();
-      };
+      }
+      else {
+        this.saveSlides();
+      }
     };
 
 
@@ -322,7 +324,8 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     // this.updateMetadata();
     this.updateSlides();
     this.saveGuide();
-  }, 500),
+    debugger;
+  }, 1000),
 
   urlRoot: function() { return Dynamo.TriremeURL+'/xelements' },
 
@@ -338,6 +341,7 @@ SlideModel = Dynamo.SlideModel = Dynamo.XelementClass.extend({
   prettyName: "Slide",
   //functions:
   initialize: function () {
+
     _.bindAll(this);
     this.initAsXelement();
     this.set_field_value('xelement_type', 'static_html');
