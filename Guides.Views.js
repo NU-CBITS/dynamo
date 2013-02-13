@@ -373,6 +373,12 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
   },
 
+  updateContent: function(newContent) {
+    this.model.set_field_value('content', newContent );
+    debugger;
+    return this;
+  },
+
   events: function() {
     return {
       'keydown input#slide-title': "updateTitle",
@@ -405,6 +411,10 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
       stylesheets: ["css/reset.css", "css/editor.css"],
       parserRules:  wysihtml5ParserRules // defined in parser rules set 
+    });
+
+    self.editor.on("change", function() {
+      self.updateContent( self.$el.find('textarea.slide-content:first').val() )
     });
 
     self.actionsView = new Dynamo.ManageCollectionView({
