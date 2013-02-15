@@ -385,11 +385,81 @@ SlideModel = Dynamo.SlideModel = Dynamo.XelementClass.extend({
 });
 
 ActionDictionary = {
+  "blind" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "bounce" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "clip" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "drop" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "explode" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "fade" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "fold" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
   "highlight" : {
     attributes: [],
     datatypes: [],
     units: []
-  }
+  },
+  "puff" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "pulsate" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "scale" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "shake" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "size" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "slide" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  },
+  "transfer" : {
+    attributes: [],
+    datatypes: [],
+    units: []
+  }  
 };
 
 SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
