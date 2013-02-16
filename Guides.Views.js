@@ -51,6 +51,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       alert("There was an error importing the Google Doc, you can check the console for more information.");
     });
 
+    this._initializedIframeLoadFn = false;
+
   },
 
   attributes: function() {
@@ -60,32 +62,96 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     }
   },
 
-  updateTitle: function(clickEvent) {
-    var self = this;
-    var val = $(clickEvent.currentTarget).val();
-    self.model.set({ 'title' : val });
-    self.model.set_field_value('title', val );
-  },
-
   events: function() {
     return {
-      'keyup input#guide_title'       : "updateTitle",
-      'click button.load-guided-page' : "loadGuidedPage",
-      'click button.import'           : "updateDocURLAndImport",
-      'click button.save'             : "saveSaveableModel"
+      'keyup input#guide_title'         : "updateTitle",
+      'click button.load-guided-page'   : "loadAndRender",
+      'click button.clear-guided-page'  : "clearGuidedPage",
+      'click button.import'             : "updateDocURLAndImport",
+      'click button.clear-import'       : "clearImport",      
+      'click button.save'               : "saveSaveableModel"
     };
   },
 
-  updateDocURLAndImport: function() {
-    this.current_gdoc = null;
-    var gdoc_url = $('input#private_gdoc_url').val();
-    this.model.set_field_value("private_gdoc_url", gdoc_url);
-    this.importFromGDoc()
+  clearGuidedPage: function() {
+    this.model.set({ guided_page_url: "" });
+    this.slideEditing.stop();
+    this.gDocSM.clear();
+    this.guidedPageSM.clear();
+    this.render();
   },
+
+  clearImport: function() {
+    this.model.set({ private_gdoc_url: "" });
+    this.slideEditing.stop();
+    this.gDocSM.clear();
+    this.render();
+  },  
 
   importFromGDoc: function() {
     this.model.importFromGDoc();
     this.gDocSM.load();
+  },
+
+  loadAndRender: function() {
+    this.loadGuidedPage();
+    this.guidedPageSM.load();
+    this.render();
+  },
+
+  initializeOnIframeLoadFn: function() {
+    var self = this;
+    if (!this._initializedIframeLoadFn) {
+      $(this.options.iframe_selector).load(function() {
+        // once the iframe is loaded...
+        
+        $(self.options.iframe_selector).contents().find("div,span,p,a,button").each(function() { 
+          if (this.id || this.className ) {
+            self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
+          };
+        });
+
+        self.usableElements.sort(function(a,b) {
+          //put all elements w/ id's first
+          if (a.idName && !b.idName) { return -1 }
+          if (!a.idName && b.idName) { return 1  }
+
+          //if they both have id's, sort by tag first
+          if ( a.tagName < b.tagName ) {
+            return -1
+          }
+          if ( a.tagName > b.tagName ) {
+            return 1
+          } 
+
+          // Then by ID name
+          if ( a.idName < b.idName ) {
+            return -1
+          }
+          if ( a.idName > b.idName ) {
+            return 1
+          }
+
+          //If we've gotten here, both id's were ""
+          if ( a.className < b.className ) {
+            return -1
+          }
+          if ( a.className > b.className ) {
+            return 1
+          }
+
+          return 0;
+        }); //sort
+
+        console.log("Available Elements in Guided Page", self.usableElements);
+        $("#iframe-container").show();  
+        self.trigger("guided_page:loaded");        
+        alert("Loading page...");        
+
+      }); //load
+
+    }; // if
+    this._initializedIframeLoadFn = true;
   },
 
   loadGuidedPage: function() {
@@ -94,49 +160,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     self.model.set_field_value("guided_page_url", src);
     self.usableElements = [];
     $(self.options.iframe_selector).prop("src", src);
-    $(self.options.iframe_selector).load(function() {
-      // once the iframe is loaded...
-      $(self.options.iframe_selector).contents().find("div,span,p,a,button").each(function() { 
-        if (this.id || this.className ) {
-          self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
-        };
-      });
-      self.usableElements.sort(function(a,b) {
-        //put all elements w/ id's first
-        if (a.idName && !b.idName) { return -1 }
-        if (!a.idName && b.idName) { return 1  }
-
-        //if they both have id's, sort by tag first
-        if ( a.tagName < b.tagName ) {
-          return -1
-        }
-        if ( a.tagName > b.tagName ) {
-          return 1
-        } 
-
-        // Then by ID name
-        if ( a.idName < b.idName ) {
-          return -1
-        }
-        if ( a.idName > b.idName ) {
-          return 1
-        }
-
-        //If we've gotten here, both id's were ""
-        if ( a.className < b.className ) {
-          return -1
-        }
-        if ( a.className > b.className ) {
-          return 1
-        }
-
-        return 0;
-      });
-      console.log("Available Elements in Guided Page", self.usableElements);
-      alert("iframe loaded!");
-      $("#iframe-container").show();  
-      self.trigger("guided_page:loaded");
-    });
+    this.initializeOnIframeLoadFn();
   },
 
   _template: function(data, settings) {
@@ -150,10 +174,25 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     return this.compiled_template(data, settings);
   },
 
+  updateDocURLAndImport: function() {
+    var gdoc_url = $('input#private_gdoc_url').val();
+    this.model.set_field_value("private_gdoc_url", gdoc_url);
+    this.importFromGDoc();
+    this.render();
+  },
+
+
+  updateTitle: function(clickEvent) {
+    var self = this;
+    var val = $(clickEvent.currentTarget).val();
+    self.model.set({ 'title' : val });
+    self.model.set_field_value('title', val );
+  },
+
   initialRender: function (argument) {
     //more of a 'state-based' render when it comes to guides...
-
-    if (this.slideEditing.is("allowed")) {
+    
+    if (!this.guidedPageSM.is('blank') && !this.gDocSM.is('blank') && this.slideEditing.is("allowed")) {
       var self = this;
 
       //refresh direct attributes (i.e., non-slides) with model values:
@@ -183,7 +222,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       this.guidedPageSM.load();
     };
 
-    if ( this.model.get_field_value("private_gdoc_url")) {
+    if ( !this.guidedPageSM.is('blank') && this.model.get_field_value("private_gdoc_url")) {
       this.gDocSM.load();
     };
 
@@ -194,7 +233,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     };
     this.$el.html( this._template(atts) );
     
-    this.renderSlides(); 
+    if (!this.guidedPageSM.is('blank') && !this.gDocSM.is('blank')) {
+      this.renderSlides();
+    }
 
   },
 
@@ -229,7 +270,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     });
 
     this.$el.find('div#slides').append(this.slidesView.render().$el);
-    debugger;
     this.slideEditing.allow();
   },
 
@@ -430,7 +470,6 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   updateContent: function(newContent) {
     this.model.set_field_value('content', newContent );
-    debugger;
     return this;
   },
 

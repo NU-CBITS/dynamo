@@ -220,8 +220,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
 
     this.slides.on('sync', this.updateSelfAndSave);
 
-    this.set_field_value("private_gdoc_url", "https://docs.google.com/document/d/1tPohGdGHQUejTfiuALqZtZclSF6BaH653uGmOfCiyds/edit");
-    this.set_field_value("guided_page_url", "http://mohrlab.northwestern.edu/widgettester/activity_calendar/index11.html");
     // // If we add actions as metadata to the guide, 
     // // then we'll prolly need this:
     // this.metadata = new Backbone.Model(this.getMetadata());
@@ -324,7 +322,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     // this.updateMetadata();
     this.updateSlides();
     this.saveGuide();
-    debugger;
   }, 1000),
 
   urlRoot: function() { return Dynamo.TriremeURL+'/xelements' },

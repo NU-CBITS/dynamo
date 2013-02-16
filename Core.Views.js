@@ -608,8 +608,8 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     "click span.choose_element" : "chooseXelement"
   },
   createNewXelement: function(clickEvent) {
-    var mantleClass = Dynamo.typeToModelClass(clickEvent.currentTarget.dataset.xelement_type);
-    this.chosen_element = new mantleClass();
+    var klass = Dynamo.typeToModelClass(clickEvent.currentTarget.dataset.xelement_type);
+    this.chosen_element = new klass();
     this.trigger("element:chosen");
   },
   chooseXelement: function(clickEvent) {

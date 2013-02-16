@@ -1045,7 +1045,6 @@ showQuestionView = protoQuestionView.extend({
       position: self.position,
       content: self.model.getContent()
     }) );
-    debugger;
 
     //Add response views as sub views of this one.
     this.removeSubViews(); //BSTS: Avoid memory leak (i think) -gs;
