@@ -460,16 +460,45 @@ ActionDictionary = {
 };
 
 SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
+  
   defaults: {
-    name: "highlight",
+    label: "Test",
+    effect: "pulsate",
     target: "", //a css-style/jquery selector
     duration: 400,
     actionOptions: [],
     actionOptionValues: {}
   },
+
   effectOptions: function() {
     return {}
+  },
+
+  execute: function(iframeSelector) {
+    var self = this, 
+        duration;
+
+    try { 
+      duration = parseInt(this.get("duration")) 
+    } 
+    catch (e) { 
+      console.warn("Duration is not parse-able as a number!", this.get("duration"), "; instead, setting to 400ms");
+      this.set({"duration": 400});
+      duration = 400;
+    }; 
+
+    if (iframeSelector) {
+      $(iframeSelector).contents().find(this.get("target")).each(function() {
+        $(this).effect(self.get("effect"), self.effectOptions(), duration);
+      });
+    } else {
+      $(this.get("target")).each(function() {
+        $(this).effect(self.get("effect"), self.effectOptions(), duration);
+      });
+    };
+    
   }
+
 });
 
 SlideActionCollection = Dynamo.SlideActionCollection = Backbone.Collection.extend({

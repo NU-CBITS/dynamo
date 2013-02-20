@@ -1,5 +1,23 @@
 // Guides.Views.js
 
+// PlayGuideView = Dynamo.PlayGuideView = Dynamo.BaseUnitaryXelementView.extend({
+
+//   events: function() {
+//     return {
+//       'click button.next-slide'         : "nextAndRender",
+//       'click button.previous-slide'     : "previousAndRender",
+//       'click button.jump-to-slide'      : "jumpAndRender",
+//     };
+//   },
+
+//   render: function (argument) {
+
+//     this.renderTemplate();
+//     this.renderCurrentSlide();
+
+//     return this;
+//   }
+// });
 
 // Depends on https://github.com/jakesgordon/javascript-state-machine
 EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
@@ -284,105 +302,105 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
 });
 
-ShowSlideEditActionsView = Dynamo.ShowSlideEditActionsView = Dynamo.BaseUnitaryXelementView.extend({
-  initialize: function (options) {
+// ShowSlideEditActionsView = Dynamo.ShowSlideEditActionsView = Dynamo.BaseUnitaryXelementView.extend({
+//   initialize: function (options) {
 
-    _.bindAll(this);
-    this.initializeAsUnitaryXelement();
-    this.model.on('change', this.render);
-    this.model.on('sync', this.completeRender);
-    this.initializeAsSaveable(this.model);
+//     _.bindAll(this);
+//     this.initializeAsUnitaryXelement();
+//     this.model.on('change', this.render);
+//     this.model.on('sync', this.completeRender);
+//     this.initializeAsSaveable(this.model);
 
-  },
+//   },
 
-  attributes: function() {
-    return {
-      id: "slide-"+this.model.cid,
-      class: "slide"
-    }
-  },
+//   attributes: function() {
+//     return {
+//       id: "slide-"+this.model.cid,
+//       class: "slide"
+//     }
+//   },
 
-  events: function() {
-    return {
-      'click button.save': "saveSaveableModel"
-    };
-  },
+//   events: function() {
+//     return {
+//       'click button.save': "saveSaveableModel"
+//     };
+//   },
 
-  _template: function(data, settings) {
-    if (!this.compiled_template) {
-      if (!this.template) {
-        this.template = templates.show_slide_edit_actions;
-      };
-      this.compiled_template = _.template(this.template)
-    };
+//   _template: function(data, settings) {
+//     if (!this.compiled_template) {
+//       if (!this.template) {
+//         this.template = templates.show_slide_edit_actions;
+//       };
+//       this.compiled_template = _.template(this.template)
+//     };
 
-    return this.compiled_template(data, settings);
-  },
+//     return this.compiled_template(data, settings);
+//   },
 
-  initialRender: function (argument) {
-    var atts;
+//   initialRender: function (argument) {
+//     var atts;
     
-    atts = { 
-      slide: this.model.get_fields_as_object() 
-    };
+//     atts = { 
+//       slide: this.model.get_fields_as_object() 
+//     };
 
-    self.$el.html( self._template( atts ) );
+//     self.$el.html( self._template( atts ) );
 
-    // actionsView = new Dynamo.ChooseOneXelementFromCollectionView({
-    //   collection: self.model.slides,
-    //   xelement_type: 'slide',
-    //   canCreateNew: true
-    // });
+//     // actionsView = new Dynamo.ChooseOneXelementFromCollectionView({
+//     //   collection: self.model.slides,
+//     //   xelement_type: 'slide',
+//     //   canCreateNew: true
+//     // });
 
-    // actionsView.on("element:chosen", function() {
+//     // actionsView.on("element:chosen", function() {
       
-    //   //Update Current Slide
-    //   self.current_slide = actionsView.chosen_element;
+//     //   //Update Current Slide
+//     //   self.current_slide = actionsView.chosen_element;
 
-    //   //Add to collection once saved;
-    //   if (  self.current_slide.isNew() && 
-    //         !_.contains(self.model.slides, self.current_slide) ) {
+//     //   //Add to collection once saved;
+//     //   if (  self.current_slide.isNew() && 
+//     //         !_.contains(self.model.slides, self.current_slide) ) {
         
-    //     self.current_slide.once("sync", function() {
-    //       self.model.slides.add(self.current_slide);
-    //     });
+//     //     self.current_slide.once("sync", function() {
+//     //       self.model.slides.add(self.current_slide);
+//     //     });
         
-    //   };
+//     //   };
 
-    //   // Trigger Current Slide Change
-    //   self.trigger("action:chosen");
+//     //   // Trigger Current Slide Change
+//     //   self.trigger("action:chosen");
 
-    // });
+//     // });
 
-    // this.$el.find('div#slides').append(actionsView.$el);
-    // actionsView.render();
+//     // this.$el.find('div#slides').append(actionsView.$el);
+//     // actionsView.render();
 
-  },
+//   },
 
-  render: function (argument) {
-    this.renderSaveStatus();
-    if (!this.initiallyRendered()) {
+//   render: function (argument) {
+//     this.renderSaveStatus();
+//     if (!this.initiallyRendered()) {
       
-      console.log('INITIAL SLIDE RENDER');
-      this.initialRender();
-      this.setInitialRender();
+//       console.log('INITIAL SLIDE RENDER');
+//       this.initialRender();
+//       this.setInitialRender();
 
-    } else {
+//     } else {
       
-      var self = this;
+//       var self = this;
 
-      console.log('SLIDE RE-RENDER');
-      _.each({ 
-        title: 'input#slide-title'
-      }, function(value, key) {
-        self.$el.children('div#slide-attributes').find(value).val( self.model.get_field_value(key) );  
-      });
+//       console.log('SLIDE RE-RENDER');
+//       _.each({ 
+//         title: 'input#slide-title'
+//       }, function(value, key) {
+//         self.$el.children('div#slide-attributes').find(value).val( self.model.get_field_value(key) );  
+//       });
 
-    };
-    return this;
-  }
+//     };
+//     return this;
+//   }
 
-});
+// });
 
 editActionView = Backbone.View.extend({
   initialize: function() {
@@ -391,9 +409,11 @@ editActionView = Backbone.View.extend({
   },
 
   events: {
-    "change select[name='name']": "changeAction",
+    "keyup input[name='label']" : "updateLabel",
+    "change select[name='effect']": "updateAction",
     "change select[name='target']" : "updateAttributes",
     "keydown input[name='action_attribute']" : "updateAttributes",
+    "click button.test-action": "testAction"
   },
 
   _template: function(data, settings) {
@@ -407,14 +427,15 @@ editActionView = Backbone.View.extend({
     return this.compiled_template(data, settings);
   },
 
-  changeAction: function(changeEvent) {
-    this.model.set({ name: $(changeEvent.currentTarget).val()})
-    console.log("Action changed to: ", this.model.get('name'));
+  updateAction: function(changeEvent) {
+    this.model.set({ effect: $(changeEvent.currentTarget).val() });
+    console.log("Action changed to: ", this.model.get('effect'));
   },
 
   updateAttributes: function(clickEvent) {
     var new_values = {
-      name: this.$el.find("input[name='name']:first").val(),
+      label: this.$el.find("input[name='label']:first").val(), 
+      effect: this.$el.find("select[name='effect']:first").val(),
       target: this.$el.find("select[name='target']:first").val(),
       duration: this.$el.find("input[name='duration']:first").val(),
       actionOptionsValues: {}
@@ -427,11 +448,22 @@ editActionView = Backbone.View.extend({
     this.model.set(new_values);
   },
 
+  updateLabel: function(changeEvent) {
+    this.model.set({ label: $(changeEvent.currentTarget).val()})
+    this.$el.find("button.test-action").text(this.model.get("label"));
+    debugger;
+  },
+
+  testAction: function() {
+    this.model.execute(this.options.guidedPageSelector);
+  },
+
   render: function() {
     var viewAtts = {};
     viewAtts.actionsAvailable = this.allActions;
     viewAtts.actionTargets = this.options.actionTargets;
     viewAtts.action = this.model.toJSON();
+    debugger;
     this.$el.html(this._template(viewAtts));
   }
 
@@ -475,8 +507,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     return {
-      'keydown input#slide-title': "updateTitle",
-      'click button.test-actions': "testActions"
+      'keydown input#slide-title': "updateTitle"
     };
   },
 
@@ -518,36 +549,13 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       enableAddExisting: false,
       editViewOpts: { 
         template: self.options.actionTemplate, 
-        actionTargets: self.options.actionTargets 
+        actionTargets: self.options.actionTargets,
+        guidedPageSelector: self.options.guidedPageSelector,        
       },
       editViewClass: editActionView
     });
 
     this.$el.find('.slide-actions:first').append(self.actionsView.render().$el);
-
-  },
-
-  testActions: function() {
-    var self = this;
-
-    self.model.actions.each(function(action) {
-      
-      var duration;
-
-      try { 
-        duration = parseInt(action.get("duration")) 
-      } 
-      catch (e) { 
-        console.warn("Duration is not a parse-able number!", action.get("duration"), "; instead, setting to 400ms");
-        action.set({"duration": 400});
-        duration = 400;
-      }; 
-
-      $(self.options.guidedPageSelector).contents().find(action.get("target")).each(function() {
-        $(this).effect(action.get("name"), action.effectOptions(), duration);
-      });
-
-    });
 
   },
 

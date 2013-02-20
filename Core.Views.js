@@ -121,6 +121,20 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 //    a setter method - called whenever there is a 'new value' event generated from the view.
 //    updateOn - if set to 'keyup', it will call the setter method after each character typed.
 //               By default, the setter method is only the text-field's 'change' event
+
+// var someExternalModel = new Backbone.Model({});
+// //stuff...
+// var attrView = Dynamo.TextInputView({
+//   responseType: "textarea",
+//   getValue: function() {
+//     return someExternalModel.get("someAttributeOfTheModel")
+//   },
+//   setValue: function(new_val) {
+//     return someExternalModel.set({  someAttributeOfTheModel: new_val});
+//   }
+// });
+// attrView.render();
+
 Dynamo.TextInputView = Backbone.View.extend(
   //
   //instance properties
