@@ -1067,7 +1067,9 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
         view_options = self.options.viewOpts || {};
         view_options = _.extend(view_options, {
           model: model,
-          position: (index+1)
+          position: (index+1),
+          user_id: (Dynamo.CurrentUser().id || "GUEST-USER-GUID"),
+          group_id:  (Dynamo.CurrentUser().get("group_id") || "GUEST-GROUP-GUID"),
         });
         view = new view_class(view_options);
         view.setElement( root_element.find("div.show_container:first") );
