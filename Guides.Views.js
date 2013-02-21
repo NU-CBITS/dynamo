@@ -31,14 +31,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       ]
     });
 
-    this.gDocSM = StateMachine.create({
-      initial: 'blank',
-      events: [
-        { name: 'load', from: ['blank', 'loaded'], to: 'loaded' },
-        { name: 'clear', from: ['blank', 'loaded'], to: 'blank' }
-      ]
-    });
-
     this.slideEditing = StateMachine.create({
       initial: 'forbidden',
       events: [
@@ -61,7 +53,10 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     // change event on the questionGroup even though
     // no data at the question-group level.
     // Perhaps something to optimize later.
-    this.model.slides.on('change', this.setUnsavedChanges);
+    this.model.slides.on('change', this.model.setUnsavedChanges);
+    this.model.on('sync', this.model.clearUnsavedChanges)
+
+    this.model.on('save_status_change', this.renderSaveStatus)
 
     this.model.on("import:success", this.completeRender); //  completeRender = inherited method
 
@@ -70,6 +65,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     });
 
     this._initializedIframeLoadFn = false;
+    this._additionalRender = false;
 
   },
 
@@ -84,31 +80,26 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     return {
       'keyup input#guide_title'         : "updateTitle",
       'click button.load-guided-page'   : "loadAndRender",
-      'click button.clear-guided-page'  : "clearGuidedPage",
-      'click button.import'             : "updateDocURLAndImport",
-      'click button.clear-import'       : "clearImport",      
-      'click button.save'               : "saveSaveableModel"
+      'click button.clear-guided-page'  : "clearGuidedPage",  
+      'click button.save'               : "saveSaveableModel",
+      'click button.delete'             : "destroyGuide"
     };
+  },
+
+  destroyGuide: function() {
+    alert("currently disabled-see Gabe");
+    return
+    // var self = this;
+    // this.model.destroy(function() {
+    //   self.$el.empty();
+    // });
   },
 
   clearGuidedPage: function() {
     this.model.set({ guided_page_url: "" });
     this.slideEditing.stop();
-    this.gDocSM.clear();
     this.guidedPageSM.clear();
     this.render();
-  },
-
-  clearImport: function() {
-    this.model.set({ private_gdoc_url: "" });
-    this.slideEditing.stop();
-    this.gDocSM.clear();
-    this.render();
-  },  
-
-  importFromGDoc: function() {
-    this.model.importFromGDoc();
-    this.gDocSM.load();
   },
 
   loadAndRender: function() {
@@ -192,14 +183,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     return this.compiled_template(data, settings);
   },
 
-  updateDocURLAndImport: function() {
-    var gdoc_url = $('input#private_gdoc_url').val();
-    this.model.set_field_value("private_gdoc_url", gdoc_url);
-    this.importFromGDoc();
-    this.render();
-  },
-
-
   updateTitle: function(clickEvent) {
     var self = this;
     var val = $(clickEvent.currentTarget).val();
@@ -209,57 +192,21 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   initialRender: function (argument) {
     //more of a 'state-based' render when it comes to guides...
-    
-    if (!this.guidedPageSM.is('blank') && !this.gDocSM.is('blank') && this.slideEditing.is("allowed")) {
-      var self = this;
-
-      //refresh direct attributes (i.e., non-slides) with model values:
-      _.each({ 
-        title: 'input#guide_title',
-        guided_page_url: "input#guided_page_url",
-        private_gdoc_url: "input#private_gdoc_url"
-      }, function(value, key) {
-        self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
-      });  
-      
-      return;
-    };
 
     var atts;
 
     atts = { 
       guide: this.model.get_fields_as_object(),
-      guidedPageState: this.guidedPageSM.current,
-      gDocState: this.gDocSM.current
+      guidedPageState: this.guidedPageSM.current
     };
 
     this.$el.html( this._template(atts) );
-
-    if (this.guidedPageSM.is('blank') && this.model.get_field_value("guided_page_url")) {
-      this.loadGuidedPage();
-      this.guidedPageSM.load();
-    };
-
-    if ( !this.guidedPageSM.is('blank') && this.model.get_field_value("private_gdoc_url")) {
-      this.gDocSM.load();
-    };
-
-    atts = { 
-      guide: this.model.get_fields_as_object(),
-      guidedPageState: this.guidedPageSM.current,
-      gDocState: this.gDocSM.current
-    };
-    this.$el.html( this._template(atts) );
-    
-    if (!this.guidedPageSM.is('blank') && !this.gDocSM.is('blank')) {
-      this.renderSlides();
-    }
 
   },
 
   renderSlides: function() {
-    var self = this;
-
+    var self = this,
+        $slides_container = this.$el.find('div#slides');
     
     this.slidesView = new Dynamo.ChooseOneXelementFromCollectionView({
       collection: self.model.slides,
@@ -270,32 +217,66 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.slidesView.on("element:chosen", function() {
       
       //Update Current Slide
+      self.current_slide = null;
       self.current_slide = self.slidesView.chosen_element;
 
       //Add to collection once saved;
       if (  self.current_slide.isNew() && 
             !_.contains(self.model.slides, self.current_slide) ) {
         
-        self.current_slide.once("sync", function() {
-          self.model.slides.add(self.current_slide);
-        });
+        self.model.slides.add(self.current_slide);
+        self.slidesView.render();
+
+        // self.current_slide.once("sync", function() {
+        //  self.model.slides.add(self.current_slide);    
+        // });
         
       };
+
+      self.current_slide.on('change:title', self.slidesView.render);
 
       // Trigger Current Slide Change
       self.trigger("slide:chosen");
 
     });
 
-    this.$el.find('div#slides').append(this.slidesView.render().$el);
+    $slides_container.empty();
+    $slides_container.append(this.slidesView.render().$el);
     this.slideEditing.allow();
+
   },
 
   render: function (argument) {
 
-    this.initialRender();
 
-    // this.renderSaveStatus();
+    if (!this.initiallyRendered()) { 
+
+      this.initialRender(); 
+      this.setInitialRender(); 
+    };
+
+    if ( this.guidedPageSM.is('blank') && this.model.get_field_value("guided_page_url") ) {
+      this.loadGuidedPage();
+      this.guidedPageSM.load();
+    };
+
+
+    if (!this.guidedPageSM.is('blank') && this.slideEditing.is("allowed")) {
+      var self = this;
+
+      //refresh direct attributes (i.e., non-slides) with model values:
+      _.each({ 
+        title: 'input#guide_title',
+        guided_page_url: "input#guided_page_url",
+        private_gdoc_url: "input#private_gdoc_url"
+      }, function(value, key) {
+        self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
+      });  
+    };
+
+
+    this.renderSlides();
+    this.renderSaveStatus();
 
     return this;
   }
@@ -496,19 +477,13 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     }
   },
 
-  updateTitle: function(clickEvent) {
-    this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
-  },
-
-  updateContent: function(newContent) {
-    this.model.set_field_value('content', newContent );
-    return this;
-  },
-
   events: function() {
-    return {
-      'keydown input#slide-title': "updateTitle"
-    };
+    var e = {};
+    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
+    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
+    e[change_title_key] = "updateTitle";
+    e[change_content_key] = "updateContent";
+    return e;
   },
 
   _template: function(data, settings) {
@@ -520,6 +495,16 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     };
 
     return this.compiled_template(data, settings);
+  },
+
+  updateTitle: function(clickEvent) {
+    this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
+    this.model.trigger('change:title');
+  },
+
+  updateContent: function(newContent) {
+    this.model.set_field_value('content', newContent );
+    this.model.trigger('change:content');
   },
 
   initialRender: function (argument) {
@@ -567,18 +552,19 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       this.initialRender();
       this.setInitialRender();
 
-    } else {
+    } 
+    // else {
       
-      var self = this;
+    //   var self = this;
 
-      console.log('SLIDE RE-RENDER');
-      _.each({ 
-        title: 'input#slide_title'
-      }, function(value, key) {
-        self.$el.children('div#slide_attributes').find(value).val( self.model.get_field_value(key) );  
-      });
+    //   console.log('SLIDE RE-RENDER');
+    //   _.each({ 
+    //     title: 'input#slide_title'
+    //   }, function(value, key) {
+    //     self.$el.children('div#slide_attributes').find(value).val( self.model.get_field_value(key) );  
+    //   });
 
-    };
+    // };
     return this;
   }
 
