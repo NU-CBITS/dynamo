@@ -227,10 +227,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
         
         self.model.slides.add(self.current_slide);
         self.slidesView.render();
-
-        // self.current_slide.once("sync", function() {
-        //  self.model.slides.add(self.current_slide);    
-        // });
         
       };
 
