@@ -105,6 +105,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   loadAndRender: function() {
     this.loadGuidedPage();
     this.guidedPageSM.load();
+    this.initialRender(); 
     this.render();
   },
 
