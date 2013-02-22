@@ -24,6 +24,10 @@ SlideCollection= Dynamo.SlideCollection = Dynamo.Collection.extend({
   codeCollectionName: "slides",
   prettyCollectionName: "Slides",
 
+  comparator: function(slide) {
+    return slide.get_field_value("position");
+  },
+
   url: function() { return Dynamo.TriremeURL+'/xelements?filter={"latest.xelement_type":"static_html"}' }
 
 });

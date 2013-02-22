@@ -34,7 +34,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.slideEditing = StateMachine.create({
       initial: 'forbidden',
       events: [
-        { name: 'allow', from: 'forbidden', to: 'allowed' },
+        { name: 'allow', from: ['forbidden', 'allowed'], to: 'allowed' },
         { name: 'stop', from: ['forbidden', 'allowed'], to: 'forbidden' }
       ]
     });
@@ -53,16 +53,10 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     // change event on the questionGroup even though
     // no data at the question-group level.
     // Perhaps something to optimize later.
-    this.model.slides.on('change', this.model.setUnsavedChanges);
-    this.model.on('sync', this.model.clearUnsavedChanges)
-
-    this.model.on('save_status_change', this.renderSaveStatus)
-
-    this.model.on("import:success", this.completeRender); //  completeRender = inherited method
-
-    this.model.on("import:error", function() {
-      alert("There was an error importing the Google Doc, you can check the console for more information.");
-    });
+    var self = this;
+    this.model.slides.each(function(slide) { slide.on('change', self.model.setUnsavedChanges) });
+    this.model.on('sync', this.model.clearUnsavedChanges);
+    this.model.on('save_status_change', this.renderSaveStatus);
 
     this._initializedIframeLoadFn = false;
     this._additionalRender = false;
@@ -81,18 +75,18 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       'keyup input#guide_title'         : "updateTitle",
       'click button.load-guided-page'   : "loadAndRender",
       'click button.clear-guided-page'  : "clearGuidedPage",  
-      'click button.save'               : "saveSaveableModel",
+      'click button.save'               : "saveGuide",
       'click button.delete'             : "destroyGuide"
     };
   },
 
   destroyGuide: function() {
-    alert("currently disabled-see Gabe");
-    return
-    // var self = this;
-    // this.model.destroy(function() {
-    //   self.$el.empty();
-    // });
+    // alert("currently disabled-see Gabe");
+    // return
+    var self = this;
+    this.model.destroy(function() {
+      self.$el.empty();
+    });
   },
 
   clearGuidedPage: function() {
@@ -167,10 +161,26 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   loadGuidedPage: function() {
     var self = this,
         src = $('input#guided_page_url').val();
-    self.model.set_field_value("guided_page_url", src);
+    self.model.guided_page_url = src;
     self.usableElements = [];
     $(self.options.iframe_selector).prop("src", src);
     this.initializeOnIframeLoadFn();
+  },
+
+  saveGuide: function() {
+    var self = this;
+    this.model.save({
+      success: function(model, response, options) {
+        self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toString()) );
+        console.log("Guide Saved:", model, response, options);
+        guides_list.collection.add(CurrentGuide);
+        guides_list.render();
+      },
+      error: function(model, xhr, options) {
+        self.$el.find("div#last-save").html("<p style='color:red;'>Last Save FAILED at: "+(new Date().toString())+"</p><p>Please check the log.</p>" );
+        console.warn("could not save model:", model, xhr, options);
+      }
+    });
   },
 
   _template: function(data, settings) {
@@ -200,6 +210,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       guide: this.model.get_fields_as_object(),
       guidedPageState: this.guidedPageSM.current
     };
+    atts.guide.guided_page_url = this.model.guided_page_url;
 
     this.$el.html( this._template(atts) );
 
@@ -231,7 +242,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       };
 
       self.current_slide.on('change:title', self.slidesView.render);
-
+      self.current_slide.on('change', self.model.setUnsavedChanges);
       // Trigger Current Slide Change
       self.trigger("slide:chosen");
 
@@ -252,7 +263,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       this.setInitialRender(); 
     };
 
-    if ( this.guidedPageSM.is('blank') && this.model.get_field_value("guided_page_url") ) {
+    if ( this.guidedPageSM.is('blank') && this.model.guided_page_url ) {
       this.loadGuidedPage();
       this.guidedPageSM.load();
     };
@@ -264,13 +275,11 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       //refresh direct attributes (i.e., non-slides) with model values:
       _.each({ 
         title: 'input#guide_title',
-        guided_page_url: "input#guided_page_url",
-        private_gdoc_url: "input#private_gdoc_url"
+        guided_page_url: "input#guided_page_url"
       }, function(value, key) {
         self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
       });  
     };
-
 
     this.renderSlides();
     this.renderSaveStatus();
@@ -280,105 +289,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
 });
 
-// ShowSlideEditActionsView = Dynamo.ShowSlideEditActionsView = Dynamo.BaseUnitaryXelementView.extend({
-//   initialize: function (options) {
-
-//     _.bindAll(this);
-//     this.initializeAsUnitaryXelement();
-//     this.model.on('change', this.render);
-//     this.model.on('sync', this.completeRender);
-//     this.initializeAsSaveable(this.model);
-
-//   },
-
-//   attributes: function() {
-//     return {
-//       id: "slide-"+this.model.cid,
-//       class: "slide"
-//     }
-//   },
-
-//   events: function() {
-//     return {
-//       'click button.save': "saveSaveableModel"
-//     };
-//   },
-
-//   _template: function(data, settings) {
-//     if (!this.compiled_template) {
-//       if (!this.template) {
-//         this.template = templates.show_slide_edit_actions;
-//       };
-//       this.compiled_template = _.template(this.template)
-//     };
-
-//     return this.compiled_template(data, settings);
-//   },
-
-//   initialRender: function (argument) {
-//     var atts;
-    
-//     atts = { 
-//       slide: this.model.get_fields_as_object() 
-//     };
-
-//     self.$el.html( self._template( atts ) );
-
-//     // actionsView = new Dynamo.ChooseOneXelementFromCollectionView({
-//     //   collection: self.model.slides,
-//     //   xelement_type: 'slide',
-//     //   canCreateNew: true
-//     // });
-
-//     // actionsView.on("element:chosen", function() {
-      
-//     //   //Update Current Slide
-//     //   self.current_slide = actionsView.chosen_element;
-
-//     //   //Add to collection once saved;
-//     //   if (  self.current_slide.isNew() && 
-//     //         !_.contains(self.model.slides, self.current_slide) ) {
-        
-//     //     self.current_slide.once("sync", function() {
-//     //       self.model.slides.add(self.current_slide);
-//     //     });
-        
-//     //   };
-
-//     //   // Trigger Current Slide Change
-//     //   self.trigger("action:chosen");
-
-//     // });
-
-//     // this.$el.find('div#slides').append(actionsView.$el);
-//     // actionsView.render();
-
-//   },
-
-//   render: function (argument) {
-//     this.renderSaveStatus();
-//     if (!this.initiallyRendered()) {
-      
-//       console.log('INITIAL SLIDE RENDER');
-//       this.initialRender();
-//       this.setInitialRender();
-
-//     } else {
-      
-//       var self = this;
-
-//       console.log('SLIDE RE-RENDER');
-//       _.each({ 
-//         title: 'input#slide-title'
-//       }, function(value, key) {
-//         self.$el.children('div#slide-attributes').find(value).val( self.model.get_field_value(key) );  
-//       });
-
-//     };
-//     return this;
-//   }
-
-// });
 
 editActionView = Backbone.View.extend({
   initialize: function() {
@@ -447,7 +357,7 @@ editActionView = Backbone.View.extend({
 
 });
 
-EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function (options) {
 
     _.bindAll(this);

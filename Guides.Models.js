@@ -182,6 +182,9 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.initAsXelement();
     this.set_field_value('xelement_type', 'guide');
 
+    //
+    this.guided_page_url = this.getPageURL();
+
     // Create a collection of slides based on the array of guids a guide has in
     // 'required_xelement_ids.
     try {
@@ -261,41 +264,15 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     return this.defaultsFor('guide');
   },
 
-  importFromGDoc: function() {
-    var self = this;
-    self.gDocModel = null;
-    self.gDocModel = new GoogleDocXel({});
-    
-    self.gDocModel.updatePrivateURL(this.get_field_value("private_gdoc_url"));
-
-    self.gDocModel.on("fetch:success", function() {
-      self.lastGDocFetched = self.gDocModel.docObject();
-      self.set({ "title" : self.lastGDocFetched.title });
-      self.slides.reset( 
-        _.map(self.lastGDocFetched.pages(), function(page) {
-          var s = new SlideModel();
-          s.set_field_values({
-            title : page.title,
-            content : page.content
-          });
-          return s;
-        })
-      );
-      self.trigger("import:success");
-    });
-
-    self.gDocModel.on("fetch:error", function() {
-      self.lastGDocFetched = self.gDocModel.docObject();
-      if (self.lastGDocFetched) {
-        console.warn("There were errors: ", self.lastGDocFetched.recommend() );  
-      }
-      self.trigger("import:error");
-    });
-
-    self.trigger("import:start");
-    self.gDocModel.fetchDocument();
+  getPageURL: function () {
+    return this.metacontent().guided_page_url;
   },
-
+  
+  updatePageURL: function () {
+    var mc = this.metacontent();
+    mc.guided_page_url = this.guided_page_url;
+    return this.set_field_value('metacontent_external', mc);
+  },
 
   // Should not have to call directly; 
   // called when overridden save function is called.
@@ -319,7 +296,8 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   // Shouldn't have to call this method directly, 
   // Instead, called when the slides collection syncs.
   updateSelfAndSave: _.debounce(function() {
-    // this.updateMetadata();
+    this.updatePageURL();
+    debugger;
     this.updateSlides();
     this.saveGuide();
   }, 1000),
