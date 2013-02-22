@@ -297,7 +297,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   // Instead, called when the slides collection syncs.
   updateSelfAndSave: _.debounce(function() {
     this.updatePageURL();
-    debugger;
     this.updateSlides();
     this.saveGuide();
   }, 1000),

@@ -55,7 +55,18 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     // Perhaps something to optimize later.
     var self = this;
     this.model.slides.each(function(slide) { slide.on('change', self.model.setUnsavedChanges) });
-    this.model.on('sync', this.model.clearUnsavedChanges);
+    this.model.on('sync', function(model, response, options) {
+      console.log("GUIDE SAVED:", model, response, options);
+      self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
+      self.model.clearUnsavedChanges;
+    })
+    this.model.on('error', function(model, xhr, options) {
+      console.warn("FAILED_GUIDE_SAVE:", model, xhr, options);
+      self.$el.find("div#last-save").html(
+        "<p style='color:red;'>Last Save FAILED at: "+(new Date().toLocaleTimeString())+"</p>"+
+        "<p> You may want to try again or check the log.</p>" 
+      );
+    });
     this.model.on('save_status_change', this.renderSaveStatus);
 
     this._initializedIframeLoadFn = false;
@@ -73,7 +84,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   events: function() {
     return {
       'keyup input#guide_title'         : "updateTitle",
-      'click button.load-guided-page'   : "loadAndRender",
+      'click button.load-guided-page'   : "updateURLAndRender",
       'click button.clear-guided-page'  : "clearGuidedPage",  
       'click button.save'               : "saveGuide",
       'click button.delete'             : "destroyGuide"
@@ -96,7 +107,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
-  loadAndRender: function() {
+  updateURLAndRender: function() {
+    this.model.guided_page_url = $('input#guided_page_url').val();
     this.loadGuidedPage();
     this.guidedPageSM.load();
     this.initialRender(); 
@@ -159,28 +171,14 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   loadGuidedPage: function() {
-    var self = this,
-        src = $('input#guided_page_url').val();
-    self.model.guided_page_url = src;
-    self.usableElements = [];
-    $(self.options.iframe_selector).prop("src", src);
+    this.usableElements = [];
+    $(this.options.iframe_selector).prop("src", this.model.guided_page_url);
     this.initializeOnIframeLoadFn();
   },
 
   saveGuide: function() {
     var self = this;
-    this.model.save({
-      success: function(model, response, options) {
-        self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toString()) );
-        console.log("Guide Saved:", model, response, options);
-        guides_list.collection.add(CurrentGuide);
-        guides_list.render();
-      },
-      error: function(model, xhr, options) {
-        self.$el.find("div#last-save").html("<p style='color:red;'>Last Save FAILED at: "+(new Date().toString())+"</p><p>Please check the log.</p>" );
-        console.warn("could not save model:", model, xhr, options);
-      }
-    });
+    this.model.save();
   },
 
   _template: function(data, settings) {
@@ -256,7 +254,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   render: function (argument) {
 
-
     if (!this.initiallyRendered()) { 
 
       this.initialRender(); 
@@ -267,7 +264,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       this.loadGuidedPage();
       this.guidedPageSM.load();
     };
-
 
     if (!this.guidedPageSM.is('blank') && this.slideEditing.is("allowed")) {
       var self = this;
@@ -288,7 +284,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   }
 
 });
-
 
 editActionView = Backbone.View.extend({
   initialize: function() {
@@ -351,7 +346,6 @@ editActionView = Backbone.View.extend({
     viewAtts.actionsAvailable = this.allActions;
     viewAtts.actionTargets = this.options.actionTargets;
     viewAtts.action = this.model.toJSON();
-    debugger;
     this.$el.html(this._template(viewAtts));
   }
 
