@@ -27,6 +27,7 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     this.on('change', this.logChange);
     this.on('change', this.setUnsavedChanges);
     this.on('sync',   this.clearUnsavedChanges);
+    this._unsavedChanges = false;
   },
 
   logChange: function () { 
@@ -88,8 +89,9 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
 
   suggestSaveIfChanged: function() {
     console.log("in suggestSaveIfChanged; this._unsavedChanges= "+ this._unsavedChanges);
-    if ( this.hasUnsavedChanges() ) {
-      console.log("Suggesting", this," should be saved.");
+    if (this.hasUnsavedChanges()) {
+      console.log("Suggesting Xelements Save on:");
+      console.log(this);
       this.trigger('periodic_save:suggested');
     };
   }

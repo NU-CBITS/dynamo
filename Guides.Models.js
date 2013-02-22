@@ -16,6 +16,9 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.initAsXelement();
     this.set_field_value('xelement_type', 'guide');
 
+    //
+    this.guided_page_url = this.getPageURL();
+
     // Create a collection of slides based on the array of guids a guide has in
     // 'required_xelement_ids.
     try {
@@ -95,6 +98,16 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     return this.defaultsFor('guide');
   },
 
+  getPageURL: function () {
+    return this.metacontent().guided_page_url;
+  },
+  
+  updatePageURL: function () {
+    var mc = this.metacontent();
+    mc.guided_page_url = this.guided_page_url;
+    return this.set_field_value('metacontent_external', mc);
+  },
+
   // Should not have to call directly; 
   // called when overridden save function is called.
   saveSlides: function (argument) {
@@ -117,7 +130,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   // Shouldn't have to call this method directly, 
   // Instead, called when the slides collection syncs.
   updateSelfAndSave: _.debounce(function() {
-    // this.updateMetadata();
+    this.updatePageURL();
     this.updateSlides();
     this.saveGuide();
   }, 1000),
@@ -258,16 +271,45 @@ ActionDictionary = {
 };
 
 SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
+  
   defaults: {
-    name: "highlight",
+    label: "Test",
+    effect: "pulsate",
     target: "", //a css-style/jquery selector
     duration: 400,
     actionOptions: [],
     actionOptionValues: {}
   },
+
   effectOptions: function() {
     return {}
+  },
+
+  execute: function(iframeSelector) {
+    var self = this, 
+        duration;
+
+    try { 
+      duration = parseInt(this.get("duration")) 
+    } 
+    catch (e) { 
+      console.warn("Duration is not parse-able as a number!", this.get("duration"), "; instead, setting to 400ms");
+      this.set({"duration": 400});
+      duration = 400;
+    }; 
+
+    if (iframeSelector) {
+      $(iframeSelector).contents().find(this.get("target")).each(function() {
+        $(this).effect(self.get("effect"), self.effectOptions(), duration);
+      });
+    } else {
+      $(this.get("target")).each(function() {
+        $(this).effect(self.get("effect"), self.effectOptions(), duration);
+      });
+    };
+    
   }
+
 });
 
 SlideActionCollection = Dynamo.SlideActionCollection = Backbone.Collection.extend({
