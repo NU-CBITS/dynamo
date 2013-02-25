@@ -45,21 +45,15 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('sync', this.completeRender); //  completeRender = inherited method
     this.initializeAsSaveable(this.model);
 
-    // Set the Guide as having unsaved changes
-    // when a question changes.
-    // Currently, this makes sense b/c the view provides 1
-    // save button to the user for saving the entire question group.
-    // If any question is altered, then it qualifies as a save status
-    // change event on the questionGroup even though
-    // no data at the question-group level.
-    // Perhaps something to optimize later.
     var self = this;
-    this.model.slides.each(function(slide) { slide.on('change', self.model.setUnsavedChanges) });
+
+    //update view w/ most recent save-status information
     this.model.on('sync', function(model, response, options) {
       console.log("GUIDE SAVED:", model, response, options);
       self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
       self.model.clearUnsavedChanges;
     })
+
     this.model.on('error', function(model, xhr, options) {
       console.warn("FAILED_GUIDE_SAVE:", model, xhr, options);
       self.$el.find("div#last-save").html(
@@ -119,8 +113,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     var self = this;
     if (!this._initializedIframeLoadFn) {
       $(this.options.iframe_selector).load(function() {
-        // once the iframe is loaded...
         
+        // once the iframe is loaded...
+        self.usableElements = [];
         $(self.options.iframe_selector).contents().find("div,span,p,a,button").each(function() { 
           if (this.id || this.className ) {
             self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
@@ -159,10 +154,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
           return 0;
         }); //sort
 
-        console.log("Available Elements in Guided Page", self.usableElements);
+        console.log("Usable Elements in Guided Page", self.usableElements);
         $("#iframe-container").show();  
-        self.trigger("guided_page:loaded");        
-        alert("Loading page...");        
+        self.trigger("guided_page:loaded");         
 
       }); //load
 
@@ -171,7 +165,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   loadGuidedPage: function() {
-    this.usableElements = [];
     $(this.options.iframe_selector).prop("src", this.model.guided_page_url);
     this.initializeOnIframeLoadFn();
   },
@@ -240,7 +233,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       };
 
       self.current_slide.on('change:title', self.slidesView.render);
-      self.current_slide.on('change', self.model.setUnsavedChanges);
       // Trigger Current Slide Change
       self.trigger("slide:chosen");
 
@@ -284,6 +276,117 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   }
 
 });
+
+editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+  initialize: function (options) {
+    var self = this;
+
+    _.bindAll(this);
+    this.initializeAsUnitaryXelement();
+    this.model.on('change', this.render);
+    this.model.on('sync', this.completeRender);
+    this.initializeAsSaveable(this.model);
+
+  },
+
+  attributes: function() {
+    return {
+      id: "slide-"+this.model.cid,
+      class: "slide"
+    }
+  },
+
+  destroySlide: function() {
+    var self = this;
+    this.model.destroy(function() {
+      self.$el.empty();
+    });    
+  },
+
+  events: function() {
+    var e = {};
+    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
+    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
+    e[change_title_key] = "updateTitle";
+    e[change_content_key] = "updateContent";
+    e["click button.delete_slide"] = "destroySlide"
+    return e;
+  },
+
+  _template: function(data, settings) {
+    if (!this.compiled_template) {
+      if (!this.template) {
+        this.template = this.options.template || templates.edit_slide;
+      };
+      this.compiled_template = _.template(this.template)
+    };
+
+    return this.compiled_template(data, settings);
+  },
+
+  updateTitle: function(clickEvent) {
+    this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
+    this.model.trigger('change');
+    this.model.trigger('change:title');
+  },
+
+  updateContent: function(newContent) {
+    this.model.set_field_value('content', newContent );
+    this.model.trigger('change');
+    this.model.trigger('change:content');
+  },
+
+  initialRender: function (argument) {
+    var atts,
+        actionsView,
+        self = this;
+
+    console.log('INITIAL SLIDE RENDER');
+
+    atts = {
+      slide: self.model.get_fields_as_object()
+    };
+    self.$el.html( self._template( atts ) );
+
+    self.editor = new wysihtml5.Editor(self.model.cid+"-slide-content", { 
+      toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
+      stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
+      parserRules:  wysihtml5ParserRules // defined in parser rules set 
+    });
+
+    self.editor.on("change", function() {
+      self.updateContent( self.$el.find('textarea.slide-content:first').val() )
+    });
+
+    self.actionsView = new Dynamo.ManageCollectionView({
+      collection: self.model.actions,
+      display: { edit: true, show: false },
+      guidedPageSelector: self.options.guidedPageSelector,
+      enableAddExisting: false,
+      editViewOpts: { 
+        template: self.options.actionTemplate, 
+        actionTargets: self.options.actionTargets,
+        guidedPageSelector: self.options.guidedPageSelector,        
+      },
+      editViewClass: editActionView
+    });
+
+
+    this.$el.find('.slide-actions:first').append(self.actionsView.render().$el);
+
+  },
+
+  render: function (argument) {
+    this.renderSaveStatus();
+    if (!this.initiallyRendered()) {
+      this.initialRender();
+      this.setInitialRender();
+    } 
+    return this;
+  }
+
+});
+
 
 editActionView = Backbone.View.extend({
   initialize: function() {
@@ -347,126 +450,6 @@ editActionView = Backbone.View.extend({
     viewAtts.actionTargets = this.options.actionTargets;
     viewAtts.action = this.model.toJSON();
     this.$el.html(this._template(viewAtts));
-  }
-
-});
-
-editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
-  initialize: function (options) {
-
-    _.bindAll(this);
-    this.initializeAsUnitaryXelement();
-    this.model.on('change', this.render);
-    this.model.on('sync', this.completeRender);
-    this.initializeAsSaveable(this.model);
-
-    // Set the Guide as having unsaved changes when a slide's actions change.
-    // That is, if any slide action is altered, then it qualifies as a save-status change event
-    // on the whole Guide even though no data at the Guide level has changed.
-    
-    // Currently, this makes sense b/c the view provides 
-    // 1 save button to the user for saving the entire guide.
-    // Perhaps something to optimize later, or is this implementation better for the user?
-    // this.model.actions.on('change', this.setUnsavedChanges);
-
-  },
-
-  attributes: function() {
-    return {
-      id: "slide-"+this.model.cid,
-      class: "slide"
-    }
-  },
-
-  events: function() {
-    var e = {};
-    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
-    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
-    e[change_title_key] = "updateTitle";
-    e[change_content_key] = "updateContent";
-    return e;
-  },
-
-  _template: function(data, settings) {
-    if (!this.compiled_template) {
-      if (!this.template) {
-        this.template = this.options.template || templates.edit_slide;
-      };
-      this.compiled_template = _.template(this.template)
-    };
-
-    return this.compiled_template(data, settings);
-  },
-
-  updateTitle: function(clickEvent) {
-    this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
-    this.model.trigger('change:title');
-  },
-
-  updateContent: function(newContent) {
-    this.model.set_field_value('content', newContent );
-    this.model.trigger('change:content');
-  },
-
-  initialRender: function (argument) {
-    var atts,
-        actionsView,
-        self = this;
-
-    var atts = {
-      slide: self.model.get_fields_as_object()
-    }
-    self.$el.html( self._template( atts ) );
-
-    self.editor = new wysihtml5.Editor(self.model.cid+"-slide-content", { 
-      toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
-      stylesheets: ["css/reset.css", "css/editor.css"],
-      parserRules:  wysihtml5ParserRules // defined in parser rules set 
-    });
-
-    self.editor.on("change", function() {
-      self.updateContent( self.$el.find('textarea.slide-content:first').val() )
-    });
-
-    self.actionsView = new Dynamo.ManageCollectionView({
-      collection: self.model.actions,
-      display: { edit: true, show: false },
-      guidedPageSelector: self.options.guidedPageSelector,
-      enableAddExisting: false,
-      editViewOpts: { 
-        template: self.options.actionTemplate, 
-        actionTargets: self.options.actionTargets,
-        guidedPageSelector: self.options.guidedPageSelector,        
-      },
-      editViewClass: editActionView
-    });
-
-    this.$el.find('.slide-actions:first').append(self.actionsView.render().$el);
-
-  },
-
-  render: function (argument) {
-    this.renderSaveStatus();
-    if (!this.initiallyRendered()) {
-      
-      console.log('INITIAL SLIDE RENDER');
-      this.initialRender();
-      this.setInitialRender();
-
-    } 
-    // else {
-      
-    //   var self = this;
-
-    //   console.log('SLIDE RE-RENDER');
-    //   _.each({ 
-    //     title: 'input#slide_title'
-    //   }, function(value, key) {
-    //     self.$el.children('div#slide_attributes').find(value).val( self.model.get_field_value(key) );  
-    //   });
-
-    // };
-    return this;
   }
 
 });

@@ -767,8 +767,20 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
   setInitialRender: function() { this._initialRender = true; },
   clearInitialRender: function() { this._initialRender = false; },
   completeRender: function() {
-    this.clearInitialRender();
-    this.render();
+    if ( _.isEmpty(arguments) ) {
+      this.clearInitialRender();
+      return this.render();
+    }
+    // If arguments are not empty, then we assume it is being called after a 'sync' event.
+    // The Three arguments would be: (model, resp, options).
+    // The response will always return at least a new version_id and the received_at time (b/c 
+    // of the xelements schema and the Backbone.sync specification that the server return only 
+    // attributes changed by the server).  
+    // Since we would not have need to update the view in this case, only update it in other cases:
+    if (arguments[1] && _.keys(arguments[1]).length > 2 ) {
+      this.clearInitialRender();
+      return this.render();      
+    };
   }
 
 });

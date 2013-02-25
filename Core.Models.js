@@ -75,13 +75,16 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   },
 
   setUnsavedChanges: function() {
-    if (this._unsavedChanges != true) { this.trigger('save_status_change') };
+    var previous = this._unsavedChanges; 
     this._unsavedChanges = true;
+    if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
+    
   },
 
   clearUnsavedChanges: function() {
-    if (this._unsavedChanges != false) { this.trigger('save_status_change') };
+    var previous = this._unsavedChanges; 
     this._unsavedChanges = false;
+    if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
   },
 
   suggestSaveIfChanged: function() {
