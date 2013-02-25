@@ -59,8 +59,9 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     } else {
       console.warn("Attempted to initiate interval-initiated-save of Model<cid: "+this.cid+">"+
         " but it is already being saved at an interval.  Command Ignored. Current Interval ID is: "+ this.currentSaveIntervalID);
-    } 
+    };
     this.on('change', this.setUnsavedChanges); 
+    this.on('sync', this.clearUnsavedChanges);
     this.on('destroy', this.stopPeriodicSaving);
   },
 
@@ -68,6 +69,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     console.log('stopping scheduled saving at the model level');
     clearInterval(this.currentSaveIntervalID);
     this.currentSaveIntervalID = null;
+    this.off('change', this.setUnsavedChanges); 
+    this.off('sync', this.clearUnsavedChanges);
   },
 
   hasUnsavedChanges: function() {

@@ -649,7 +649,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     var elements = this.collection.map(function(m) { return { id: m.id, cid: m.cid, html: self.modelHTML(m) }  });
     this.$el.html(
       this._template({
-        collection_name: (this.options.collection_name || this.collection.prettyModelName()),
+        collection_name: (this.options.collection_name || this.collection.codeCollectionName || this.collection.prettyModelName()),
         elements: elements,
         canCreateNew: this.options.canCreateNew,
         xelement_type: this.options.xelement_type,
