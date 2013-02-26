@@ -1408,14 +1408,14 @@ Dynamo.EditUserView = Dynamo.BaseUnitaryXelementView.extend({
 
 
 
-//The purpose of this view is to allow programming that still
-//uses backbone for what it is good at:
-//separating concerns related to a model and view, 
-//and to allow continued use of backbone collections
+//  The purpose of this view is to allow programming that still
+//  uses backbone for what it is good at:
+//  separating concerns related to a model and view, 
+//  and to allow continued use of backbone collections
 //
-//But to then allow you to seemlessly use Knockout 
-//at what it is good at: declarative binding of 
-//dom elements to model attributes, with integrated dom manipulation.
+//  But to then allow you to seemlessly use Knockout 
+//  at what it is good at: declarative binding of 
+//  dom elements to model attributes, with integrated dom manipulation.
 ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
   initialize: function() {
@@ -1723,6 +1723,212 @@ renderInDialog = function(view, dialog_opts) {
 
   return $popup;
 };
+
+
+GoalsView = Dynamo.GoalsView = Backbone.View.extend({
+
+  className: "row-fluid",
+
+  initialize: function() {
+    _.bindAll(this);
+    this.currentStatusToDisplay = "display-all";
+    this.displayAllBtnClass = "";
+    this.unansweredBtnClass = "";
+    this.completedBtnClass = "";
+    this.ignoredBtnClass = "";
+    this.goals = this.options.goals;
+    this.goalData = this.options.goalData;
+  },
+
+  events: {
+    "click .display-all": "setToAll",
+    "click .unanswered": "setToUnanswered",
+    "click .completed": "setToCompleted",
+    "click .ignored": "setToIgnored"
+  },
+
+  setToAll: function() {
+    this.currentStatusToDisplay = "display-all";
+    this.render();
+  },
+  setToUnanswered: function() {
+    this.currentStatusToDisplay = "unanswered";
+    this.render();
+  },
+
+  setToCompleted: function() {
+    this.currentStatusToDisplay = "completed";
+    this.render();
+  },  
+
+  setToIgnored: function() {
+    this.currentStatusToDisplay = "ignored";
+    this.render();
+  },
+
+  template: function() {
+    this.setButtonStatus();
+    return _.template(''+
+      '<div id="goals-accordion-header" class="row-fluid"><legend class="span11"><span class="legend-header">Goals</span>'+
+      '<div class="btn-group pull-right">'+
+        '<button data-status="unanswered" type="button" class="goals-btn btn unanswered '+this.unansweredBtnClass+'">Current</button>'+
+        '<button class="btn dropdown-toggle" data-toggle="dropdown">'+
+          '<span class="caret"></span>'+
+        '</button>'+
+        '<ul class="dropdown-menu">'+
+          '<li><a data-status="display-all" type="button" class="goals-btn display-all '+this.displayAllBtnClass+'">All</a></li>'+
+          '<li><a data-status="completed" type="button" class="goals-btn completed '+this.completedBtnClass+'" style="color:green;">Completed</a></li>'+
+          '<li><a data-status="ignored" type="button" class="goals-btn ignored '+this.ignoredBtnClass+'" style="color:#b30000;">Ignored</a></li>'+
+        '</ul>'+
+      '</div>'+
+      '</legend>'+
+      '<div class="span1 caret-icons"><i class="icon-caret-right pull-right"></i></div></div>'+
+      '<ul id="goals" class="accordion-body"></ul>');
+  },
+
+  // filterGoalData: function(clickEvent) {
+  //   var target = clickEvent.currentTarget
+  //   var status = $(target).data('status')
+  //   console.log("status", status)
+  //   this.currentStatusToDisplay = status
+  //   this.render()
+  // },
+
+  goalSnippet: function(goalXEL, alertKlass, alertIcon) {
+    var xelementID = goalXEL.id;
+    var goalName = goalXEL.metacontent().name;
+    var goalDescription = goalXEL.metacontent().description;
+    return ""+
+      "<li>"+
+        "<div class=\"list-item span11 "+alertKlass+"\">" +
+          "<div class=\"span1\"><i class=\""+alertIcon+" icon-color\"></i></div>" +
+          "<div class=\"span9\">" +
+            "<strong>" + goalName + "</strong> - "+goalDescription +
+          "</div>" +
+          "<div class=\"span2\"><button type=\"button\" class=\"btn set-activity-goal ignore btn-remove btn-mini\" data-dismiss=\"alert\" data-xelement-id=\""+xelementID+"\"><i class=\"icon-remove\"></i></button><button type=\"button\" class=\"btn set-activity-goal btn-ok btn-mini\" data-dismiss=\"alert\" data-xelement-id=\""+xelementID+"\"><i class=\"icon-ok set-activity-goal\" data-xelement-id=\""+xelementID+"\"></i></button></div>" +
+        "</div>"+
+        "<div class=\"clearfix\"></div>"+
+      "</li>"
+  },
+
+  appendGoalData: function() {
+    var self = this
+    var data_to_display = []
+    var ul = self.$el.find('ul#goals')
+    ActivityCalGoals.each(function(goal_xel) {
+      var relevantData = ActivityCalGoalData.find(function(ud) {
+        return (ud.get("xelement_id") == goal_xel.id) 
+      });
+      switch (self.currentStatusToDisplay) {
+        case "unanswered":
+          self.displayUnansweredGoals(relevantData, ul, self, goal_xel);
+        break;
+        case "completed":
+          self.displayCompletedGoals(relevantData, ul, self, goal_xel);
+        break;
+        case "ignored":
+          self.displayIgnoredGoals(relevantData, ul, self, goal_xel);
+        break;
+        case "display-all":
+          self.displayUnansweredGoals(relevantData, ul, self, goal_xel);
+          self.displayCompletedGoals(relevantData, ul, self, goal_xel);
+          self.displayIgnoredGoals(relevantData, ul, self, goal_xel);
+        break;
+      };
+    });
+    if (ul.find('li').length === 0) {
+      ul.html("<div class='span12' style='text-align:center;padding-top: 5px;'><strong>No Goals Exist</strong></div><div class='clearfix'></div>");
+    };
+  },
+
+  displayUnansweredGoals: function(relevantData, ul, view, goalXel) {
+    if (!relevantData.id) {
+      ul.append( view.goalSnippet(goalXel, "yellow-header", "icon-remove-sign") );
+    }
+  },
+
+  displayCompletedGoals: function(relevantData, ul, view, goalXel) {
+    if (relevantData.get_field_value('status') == "completed") {
+      ul.append( view.goalSnippet(goalXel, "green-header", "icon-ok-sign"));
+      // debugger
+    };
+    ul.find('.green-header button.btn-ok').hide();
+  },
+
+  displayIgnoredGoals: function(relevantData, ul, view, goalXel) {
+    if (relevantData.get_field_value('status') == "ignored") {
+      ul.append( view.goalSnippet(goalXel, "red-header", "icon-exclamation-sign") );
+    };
+    ul.find('.red-header button.btn-remove').hide();
+  },
+
+  placeGoalTooltips: function() {
+    this.$el.find("i.icon-remove").tooltip({
+      title: "Ignore Goal"
+    });
+    this.$el.find("i.icon-ok").tooltip({
+      title: "Check if Completed"
+    });
+  },
+
+  render: function() {
+    this.$el.html(this.template())
+    this.appendGoalData();
+    this.setActivityGoalHandlers();
+    this.placeGoalTooltips();
+    return this
+  },
+
+  setButtonStatus: function(){
+    var self = this;
+    self.displayAllBtnClass = "";
+    self.unansweredBtnClass = "";
+    self.completedBtnClass = "";
+    self.ignoredBtnClass = "";
+
+    switch (this.currentStatusToDisplay) {
+      case "display-all":
+        self.displayAllBtnClass = "active";
+      break;
+      case "unanswered":
+        self.unansweredBtnClass = "active";
+      break;
+      case "completed":
+        self.completedBtnClass = "active";
+      break;
+      case "ignored":
+        self.ignoredBtnClass = "active";
+      break;
+    }
+  },
+
+  setActivityGoalHandlers: function() {
+    self = this;
+    this.$el.find('.set-activity-goal').click(function(event) {
+
+      var target = $(event.currentTarget);
+      var xelementID = target.data('xelement-id')
+      console.log("xelement", xelementID)
+      
+      var data = ActivityCalGoalData.find(function(goalData) {
+        return (goalData.get("xelement_id") == xelementID) 
+      });
+
+      if (target.hasClass('ignore')) {
+        data.set_field('status', "string", "ignored")
+      } else {
+        data.set_field('status', "string", "completed")
+      };
+
+      data.save();
+
+      console.log("status", data.get_field_value('status'))
+      self.render()
+    })
+
+  }
+
+});
 
 
 // Select the appropriate view class for a for a particular type of form input
