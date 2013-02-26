@@ -86,18 +86,17 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   destroyGuide: function() {
-    // alert("currently disabled-see Gabe");
-    // return
-    var self = this;
-    this.model.destroy(function() {
-      self.$el.empty();
-    });
+    this.model.destroy();
+    this.slidesView.remove();
+    this.slidesView = null;
+    this.$el.remove();
   },
 
   clearGuidedPage: function() {
-    this.model.set({ guided_page_url: "" });
+    this.model.guided_page_url = "";
     this.slideEditing.stop();
     this.guidedPageSM.clear();
+    this.clearInitialRender();
     this.render();
   },
 
@@ -217,6 +216,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       xelement_type: 'static_html'
     });
 
+    this.model.slides.on("add", this.slidesView.render);
+    this.model.slides.on("remove", this.slidesView.render);
+
     this.slidesView.on("element:chosen", function() {
       
       //Update Current Slide
@@ -297,10 +299,12 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   destroySlide: function() {
-    var self = this;
-    this.model.destroy(function() {
-      self.$el.empty();
-    });    
+    delete this.editor;
+    this.actionsView.remove();
+    this.actionsView = null;
+    this.model.destroy();
+    this.clearInitialRender();
+    this.$el.remove();   
   },
 
   events: function() {
@@ -309,7 +313,7 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
     e[change_title_key] = "updateTitle";
     e[change_content_key] = "updateContent";
-    e["click button.delete_slide"] = "destroySlide"
+    e["click button.delete-slide"] = "destroySlide";
     return e;
   },
 
@@ -376,6 +380,10 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
+  remove: function() {
+    this.$el.remove();
+  },
+
   render: function (argument) {
     this.renderSaveStatus();
     if (!this.initiallyRendered()) {
@@ -437,7 +445,6 @@ editActionView = Backbone.View.extend({
   updateLabel: function(changeEvent) {
     this.model.set({ label: $(changeEvent.currentTarget).val()})
     this.$el.find("button.test-action").text(this.model.get("label"));
-    debugger;
   },
 
   testAction: function() {
