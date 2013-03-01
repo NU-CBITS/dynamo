@@ -119,7 +119,7 @@
           </button>
         </div>
       (% } %)
-      (% if (display.edit)  { print(t.div('', { class: 'edit_container well well-small' })); } %)
+      (% if (display.edit)  { print(t.div('', { class: 'edit_container' })); } %)
       (% if (display.show)  { print(t.div('', { class: 'show_container' })); } %)
     </div>
     (% if (display.edit) { %)
@@ -162,14 +162,14 @@
 
   <div id="dynamo/question_groups/edit" class="template underscore">
     <div>
-      <span class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</span>
+      <span class='pull-right label save_status (%= current_save_state %)'>(%= current_save_text %)</span>
     </div>
     <div class="clearfix"></div>
     <h1>
       <label>Title</label>
       <input class="title editable" style="width:90%;" type="text" value="(%=title%)"/></h1>
     <div class="metadata"></div>
-    <h2>Questions:</h2>
+    <h1>Questions</h1>
     <div id="questions"></div>
     <div class="form-actions">
       <button class='btn save btn-primary'>Save Now</button>
@@ -184,17 +184,19 @@
   </div>
 
   <div id="dynamo/questions/edit" class="template underscore">
-    <div>
-      <span class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</span>
+    <div class="widget-header">
+      <h3 class="pull-left">(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
+      <!-- <input class="title editable" style="width:90%;" type="text" value="(%=title%)"/> -->
+
+      <h3 class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</h3>
     </div>
-    <div class="clearfix"></div>
-    <strong class="lead">(% if (position) { print(position+".") } else { print("Question)") }; %)</strong>
-    <!-- <input class="title editable" style="width:90%;" type="text" value="(%=title%)"/> -->
-    <input class="title editable" type="text" placeholder="Type question name here..."/>
-    <div class="instructions"></div>
-    <div class="content"></div>
-    <h3>Responses:</h3>
-    <div class="responseGroup"></div>
+    <div class="widget-content">
+      <label>Name</label><input class="title editable" type="text" placeholder="Type question name here..."/>  
+      <div class="instructions"></div>
+      <div class="content"></div>
+      <h3>Responses:</h3>
+      <div class="responseGroup"></div>
+    </div>
   </div>
 
   <div id="dynamo/questions/responses/edit" class="template underscore" >
