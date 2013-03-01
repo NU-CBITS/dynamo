@@ -897,6 +897,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.start_content = this.options.start_content || '';
     this.end_content = this.options.end_content || '';
     this.display = this.options.display || { show: true };
+    this.canAddExisting = !!this.options.enableAddExisting;
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
     this.collection.on("remove", this.render);
@@ -904,7 +905,8 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
 
   events: function() {
     var self = this, e ={};
-    e[("click button.insert."+self.collection.codeModelName())] = "addAtIndexHandler";
+    e[("click button.add-new-"+self.collection.codeModelName())] = "addNew";
+    e[("click button.add-existing-"+self.collection.codeModelName())] = "addExisting";
     e[("click button.delete."+self.collection.codeModelName())] = "removeElement";
     return e;
   },
@@ -917,18 +919,41 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   //    collection (but that are not already a part of it) can also be
   //    added to the collection.
   //
-  addAtIndexHandler: function(clickEvent) {
 
-    if (this.options.addAtIndexHandler) { return this.options.addAtIndexHandler() };
+  addNew: function(clickEvent) {
+    
+    if (this.options.addNewHandler) { 
+      return this.options.addNewHandler(clickEvent) 
+    };
+    
+    return this.addNewAtIndex( $(clickEvent.currentTarget).data("collection-index") );
 
-    if (this.options.enableAddExisting) {
-      this.addNewOrExistingAtIndexDialog(clickEvent, this.addNewAtIndex, this.chooseExistingToAddAtIndex);
-    } else {
-      var index = clickEvent.currentTarget.dataset.collection_index;
-      this.addNewAtIndex(index);
+  },
+
+  addExisting: function(clickEvent) {
+    
+    if (this.options.enableAddExisting) { 
+      
+      if (this.options.addExistingHandler) {
+        return this.options.addExistingHandler( $(clickEvent.currentTarget).data("collection-index") )
+      }
+      return chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
+    
     };
 
   },
+
+  // addAtIndexHandler: function(clickEvent) {
+  //   if (this.options.addAtIndexHandler) { return this.options.addAtIndexHandler() };
+
+  //   if (this.options.enableAddExisting) {
+  //     this.addNewOrExistingAtIndexDialog(clickEvent, this.addNewAtIndex, this.chooseExistingToAddAtIndex);
+  //   } else {
+  //     var index = clickEvent.currentTarget.dataset.collection_index;
+  //     this.addNewAtIndex(index);
+  //   };
+
+  // },
 
   //  When someone clicks 'New [Model Class]' on an instantiation of the
   //  ManageCollectionView, they may want the choice to
@@ -938,40 +963,41 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   //  then this function creates the dialog that allows the user to choose
   //  between the options of 'New' or 'Existing' and
   //  then handles the result of the user's selection.
-  addNewOrExistingAtIndexDialog: function(clickEvent, newAtIndexCallback, existingAtIndexCallback) {
+  // addNewOrExistingAtIndexDialog: function(clickEvent, newAtIndexCallback, existingAtIndexCallback) {
+  //   var self = this,
+  //       $btn_clicked = $(clickEvent.currentTarget),
+  //       // Fetch the current index at which we want to insert a question.
+  //       element_index = parseInt($btn_clicked.attr("data-collection_index"));
 
-    var self = this,
-        $btn_clicked = $(clickEvent.currentTarget),
-        // Fetch the current index at which we want to insert a question.
-        element_index = parseInt($btn_clicked.attr("data-collection_index"));
+  //   //insert dialog
+  //   $btn_clicked.after(""+
+  //     "<div class='add_dialog btn-toolbar'>"+
+  //       "<div class='btn-group'>"+
+  //         "<button class='add_new btn'>New</button>"+
+  //         "<button class='add_existing btn'>Existing</button>"+
+  //       "</div>"+
+  //     "</div>");
 
-    //insert dialog
-    $btn_clicked.after(""+
-      "<div class='add_dialog btn-toolbar'>"+
-        "<button class='add_new btn'>New</button>" +
-        "<button class='add_existing btn'>Existing</button>"+
-      "</div>");
+  //   //find inserted dialog
+  //   $add_dlg = $btn_clicked.parent().find("div.add_dialog");
 
-    //find inserted dialog
-    $add_dlg = $btn_clicked.parent().find("div.add_dialog");
+  //   //add_new element handler
+  //   $add_dlg.find("button.add_new").click(function() {
+  //     newAtIndexCallback(element_index);
+  //     //cleanup
+  //     $add_dlg.remove();
+  //     $add_dlg = null;
+  //   });
 
-    //add_new element handler
-    $add_dlg.find("button.add_new").click(function() {
-      newAtIndexCallback(element_index);
-      //cleanup
-      $add_dlg.remove();
-      $add_dlg = null;
-    });
+  //   //add_existing element handler
+  //   $add_dlg.find("button.add_existing").click(function() {
+  //     existingAtIndexCallback(element_index)
+  //     //cleanup
+  //     $add_dlg.remove();
+  //     $add_dlg = null;
+  //   });
 
-    //add_existing element handler
-    $add_dlg.find("button.add_existing").click(function() {
-      existingAtIndexCallback(element_index)
-      //cleanup
-      $add_dlg.remove();
-      $add_dlg = null;
-    });
-
-  },
+  // },
 
   //  Default implementation of addNewAtIndex;
   //  called by default addAtIndexHandler can be overridden
@@ -1107,6 +1133,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       element_code_name: this.collection.codeModelName(),
       element_pretty_name: this.collection.prettyModelName(),
       display: this.display,
+      canAddExisting: this.canAddExisting,
       num_elements: self.collection.length,
       end_content: this.end_content
     }));
@@ -1119,6 +1146,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
         self._elementTemplate({
           index: index,
           display: self.display,
+          canAddExisting: self.canAddExisting,
           element_code_name: self.collection.codeModelName(),
           element_pretty_name: self.collection.prettyModelName()
         })
@@ -1225,7 +1253,6 @@ Dynamo.ShowGroupView = Dynamo.BaseUnitaryXelementView.extend({
       $groups = this.$el.find('div.groups:first');
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
-        display:{ show: true, edit: false, del: false },
         enableAddExisting: true,
         getExistingAddablesCollection: this.options.existingUsers
       });
@@ -1864,7 +1891,6 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   displayCompletedGoals: function(relevantData, ul, view, goalXel) {
     if (relevantData.get_field_value('status') == "completed") {
       ul.append( view.goalSnippet(goalXel, "green-header", "icon-ok-sign"));
-      // debugger
     };
     ul.find('.green-header button.btn-ok').hide();
   },
