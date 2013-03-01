@@ -45,7 +45,7 @@
   <div id="dynamo/core/choose_one_xelement" class="template underscore">
     (% if (canCreateNew) { %) 
       <div>
-        <button class="create_new" data-xelement_type="(%= xelement_type %)">New (%= element_pretty_name %)</button>
+        <button class="btn create_new" data-xelement_type="(%= xelement_type %)">New (%= element_pretty_name %)</button>
       </div>
     (% }; %)
 
@@ -96,7 +96,7 @@
             //  index location. hence if you want to insert at the beginning, t   he index
             //  is -1 so that you actually insert at 0.
           %)
-          <button class="insert (%= element_code_name %)" data-collection_index="0">
+          <button class="btn insert (%= element_code_name %)" data-collection_index="0">
             Add (%= element_pretty_name %) Here
           </button>
         </div>
@@ -110,7 +110,7 @@
     <div class="(%= element_code_name %) element" data-collection_index="(%= index %)">
       (% if (display.del)   { %)
         <div class="delete_container">
-          <button class="delete (%= element_code_name %)" data-collection_index="(%= index %)" >
+          <button class="btn delete (%= element_code_name %)" data-collection_index="(%= index %)" >
             Delete (%= element_pretty_name %)
           </button>
         </div>
@@ -120,7 +120,7 @@
     </div>
     (% if (display.edit) { %)
       <div>
-        <button class="insert (%= element_code_name %)" data-collection_index="(%= index + 1 %)">
+        <button class="btn insert (%= element_code_name %)" data-collection_index="(%= index + 1 %)">
           Add (%= element_pretty_name %) Here
         </button>
       </div>
@@ -154,14 +154,17 @@
   </div>
 
   <div id="dynamo/question_groups/edit" class="template underscore">
-    <h1><input class="title editable" value="(%=title%)"/></h1>
     <div>
-      <span class='save_status (%= current_save_state %)'>(%= current_save_text %)</span>
-      <button class='btn save'>Save Now</button>
+      <span class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</span>
     </div>
+    <div class="clearfix"></div>
+    <h1><input class="title editable" type="text" value="(%=title%)"/></h1>
     <div class="metadata"></div>
     <h2>Questions:</h2>
     <div id="questions"></div>
+    <div class="form-actions">
+      <button class='btn save btn-primary'>Save Now</button>
+    </div>
   </div>
 
   <div id="dynamo/questions/show" class="template underscore">
@@ -173,7 +176,7 @@
 
   <div id="dynamo/questions/edit" class="template underscore">
     <span class="h2">(% if (position) { print(position+")") } else { print("Question)") }; %)</span>
-    <h3><input class="title editable" value="(%=title%)"/>
+    <h3><input class="title editable" type="text" value="(%=title%)"/>
     <div><span class='save_status (%= current_save_state %)'>(%= current_save_text %)</span></div>
     <div class="instructions"></div>
     <div class="content"></div>
