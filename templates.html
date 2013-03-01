@@ -22,7 +22,7 @@
     $("div.template").each(function() {
 
       $t = $(this);
-      DIT[$t.attr("id")] = $t.html().replace(/(\r\n|\n|\r)/gm," ");
+      DIT[$t.attr("id")] = $t.html().replace(/(\r\n|\n|\r|\s+)/gm," ");
 
     });
 
@@ -40,7 +40,6 @@
     WILL BE when they are stringified into local storage!
     SO currently, we have to be very careful about what we put in here.
   -->
-
 
   <div id="dynamo/core/choose_one_xelement" class="template underscore">
     (% if (canCreateNew) { %) 
@@ -60,7 +59,6 @@
       </ul>
     </div>
   </div>
-
 
   <div id="dynamo/core/input_group" class="template underscore">
     <div id="(%=id%)" name="(%= name %)_field" class="(%=type%)_group">
@@ -194,7 +192,7 @@
   </div>
 
   <div id="dynamo/activity_tracker/edit_event" class="template underscore">
-    <div class="navbar" style="margin-bottom: 0px;">
+    <div id="edit-event-toggle-bar" class="navbar" style="margin-bottom: 0px;">
       <div class="navbar-inner" style="border-bottom-width:0px;">
         <a class="brand">Event Editor</a>
         <ul class="nav pull-right accordion-header">
@@ -205,16 +203,18 @@
       </div>
     </div>
 
-    <form class="form-horizontal widget-content form-condensed accordion-body">
+    <form id="edit-event" class="form-horizontal widget-content form-condensed accordion-body">
       <div class="row-fluid">
-        <div class="control-group span12">
-          <label class="control-label">Title</label>
+        <div id="edit-title-attribute-container" class="control-group span12">
+          <label id="title-attribute-label" class="control-label">Title</label>
           <div class="controls">
-            <input type="text" 
+            <input
+                  id="title-attribute-input" 
+                  type="text" 
                   placeholder="Description"
                   class="input-xlarge"
                   data-bind="value: title">
-            <div style="font-size: 24.5px;" class="inline text-prog-gray">
+            <div id="title-attribute-question-icon" style="font-size: 24.5px;" class="inline text-prog-gray">
               <i class="icon-question-sign"></i>
             </div>
           </div>
@@ -222,10 +222,10 @@
       </div>
 
       <!-- Start and End Times -->
-      <div class="control-group">
-        <label class="control-label">Starts</label>
+      <div id="edit-start-time-attribute-container" class="control-group">
+        <label id="start-time-attribute-label" class="control-label">Starts</label>
         <div class="controls">
-          <select data-bind="value: start_month" class="input-mini">
+          <select id="start-time-month" data-bind="value: start_month" class="input-mini">
             <option value="0">Jan</option>
             <option value="1">Feb</option>
             <option value="2">Mar</option>
@@ -239,15 +239,17 @@
             <option value="10">Nov</option>
             <option value="11">Dec</option>
           </select>
-          <input  type="text" 
+          <input  id="start-time-day"
+                  type="text" 
                   placeholder="dd" 
                   class="input-xmini" 
                   data-bind="value: start_date">
-          <input  type="text" 
+          <input  id="start-time-year"
+                  type="text" 
                   placeholder="yyyy" 
                   class="input-xmini" 
                   data-bind="value: start_year">
-          <select data-bind="value: start_hour" class="input-small">
+          <select id="start-time-hour" data-bind="value: start_hour" class="input-small">
             <option value="0">12 am</option>
             <option value="1">1 am</option>
             <option value="2">2 am</option>
@@ -273,15 +275,17 @@
             <option value="22">10 pm</option>
             <option value="23">11 pm</option>
           </select>
-          <input  type="text" 
+          <input  
+                  id="start-time-minute"
+                  type="text" 
                   placeholder="min" 
                   class="input-xmini" 
                   data-bind="value: start_minute">
         </div>
       </div>
-      <div class="control-group">
-        <label class="control-label">Ends</label>
-        <div class="controls">
+      <div id="edit-end-time-attribute-container" class="control-group">
+        <label id="end-time-attribute-label" class="control-label">Ends</label>
+        <div id="end-time-month" class="controls">
           <select data-bind="value: end_month" class="input-mini">
             <option value="0">Jan</option>
             <option value="1">Feb</option>
@@ -296,15 +300,17 @@
             <option value="10">Nov</option>
             <option value="11">Dec</option>
           </select>
-          <input  type="text" 
+          <input  id="end-time-day" 
+                  type="text" 
                   placeholder="dd" 
                   class="input-xmini" 
                   data-bind="value: end_date">
-          <input  type="text" 
+          <input  id="end-time-year" 
+                  type="text" 
                   placeholder="yyyy" 
                   class="input-xmini" 
                   data-bind="value: end_year">
-          <select data-bind="value: end_hour" class="input-small">
+          <select id="end-time-hour" data-bind="value: end_hour" class="input-small">
             <option value="0">12 am</option>
             <option value="1">1 am</option>
             <option value="2">2 am</option>
@@ -330,7 +336,8 @@
             <option value="22">10 pm</option>
             <option value="23">11 pm</option>
           </select>
-          <input  type="text" 
+          <input  id="end-time-minute" 
+                  type="text" 
                   placeholder="min" 
                   class="input-xmini" 
                   data-bind="value: end_minute">
@@ -338,42 +345,42 @@
       </div>
 
       <!-- TAGS -->
-      <div class="control-group">
-        <label class="control-label">Tags (<span data-bind="text: tags().length"></span>)</label>
+      <div id="edit-tags-attribute-container" class="control-group">
+        <label id="tags-attribute-label" class="control-label">Tags (<span data-bind="text: tags().length"></span>)</label>
         <div class="controls">
           <div data-bind="foreach: { data: tags, as: 'tag' }">
             <div class="input-tag">
-              <input type="text" data-bind="value: tag.value, valueUpdate: 'afterkeydown'" />
-              <button class="btn" data-bind="click: tag.remove"><i class="icon-remove"> Remove</i></button>
+              <input class="edit-tag-attribute" type="text" data-bind="value: tag.value, valueUpdate: 'afterkeydown'" />
+              <button class="btn remove-tag-attribute" data-bind="click: tag.remove"><i class="icon-remove"> Remove</i></button>
             </div>
           </div>
-          <button class="btn" data-bind="click: tags_addElement"><i class="icon-plus"></i> Add Tag</button>
+          <button class="btn add-tag-attribute" data-bind="click: tags_addElement"><i class="icon-plus"></i> Add Tag</button>
         </div>
       </div>
 
       <!-- ACTIVITY COMPLETION -->
-      <div class="control-group" data-bind="if: inReviewing">
+      <div id="edit-event-completed-attribute-container" class="control-group" data-bind="if: inReviewing">
         <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px;">Completed This Activity</label>
-        <div id="event_completed_container" class="controls">
-          <label class="radio inline">
+        <div  class="controls">
+          <label id="event-completed-no-label" class="radio inline">
             <input type="radio" value="0" data-bind="checked: eventCompleted" />No
           </label>
-          <label class="radio inline">
+          <label id="event-completed-yes-label" class="radio inline">
             <input type="radio" value="1" data-bind="checked: eventCompleted" />Yes 
           </label>
         </div>
       </div>    
 
-      <div class="control-group">
+      <div id="pleasure-attributes-container" class="control-group">
           
         <!-- PLEASURE - PREDICT -->
-        <div data-bind="if: inScheduling">
+        <div id="edit-pleasure-predict-attribute-container" data-bind="if: inScheduling">
           <div class="text-center" style="font-weight:bold;padding:5px 0px;">
             Please rate your predicted PLEASURE during the event
           </div>
           <div class="row-fluid">
             <div class="span11">
-              <div id="predict-slider" class="slider" style="margin-top: 3px;" data-bind="slider: predicted_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+              <div id="edit-pleasure-predict-slider" class="slider" style="margin-top: 3px;" data-bind="slider: predicted_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
             </div>
             <div class="span1">
               <strong data-bind="text: predicted_pleasure, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
@@ -382,13 +389,13 @@
         </div>
 
         <!-- PLEASURE - ACTUAL -->
-        <div data-bind="ifnot: inScheduling">
+        <div id="edit-pleasure-actual-attribute-container" data-bind="ifnot: inScheduling">
           <div class="text-center" style="font-weight:bold;padding:5px 0px;">
             Please rate your actual PLEASURE during the event
           </div>
           <div class="row-fluid">
             <div class="span11">
-              <div class="slider" style="margin-top: 3px;" data-bind="slider: actual_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+              <div id="edit-pleasure-actual-slider" class="slider" style="margin-top: 3px;" data-bind="slider: actual_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
             </div>
             <div class="span1">
               <strong data-bind="text: actual_pleasure, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
@@ -397,29 +404,27 @@
         </div>
 
         <!-- PLEASURE - PREVIOUSLY PREDICTED -->
-        <div data-bind="if: inReviewing" class="row-fluid text-prof-blue">
-
+        <div id="pleasure-previously-predicted-container" data-bind="if: inReviewing" class="row-fluid text-prof-blue">
           <div class="span11">
             <strong class="pull-right"><i class="icon-lightbulb"></i> Predicted Pleasure:</strong>
           </div>
           <div class="span1">
             <strong data-bind="text: predicted_pleasure, valueUpdate: 'afterkeydown'"></strong>
           </div>
-
         </div>
 
       </div>
 
-      <div class="row-fluid">
+      <div id="accomplishment-attributes-container" class="row-fluid">
 
-        <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
-        <div data-bind="if: inScheduling">
+        <!-- ACCOMPLISHMENT - PREDICT -->
+        <div id="edit-accomplishment-predict-attribute-container" data-bind="if: inScheduling">
           <div class="text-center" style="font-weight:bold;padding:5px 0px;">
             Please rate your predicted ACCOMPLISHMENT during the event
           </div>
           <div class="row-fluid">
             <div class="span11">
-              <div class="slider" style="margin-top: 3px;" data-bind="slider: predicted_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+              <div id="edit-accomplishment-predicted-slider" class="slider" style="margin-top: 3px;" data-bind="slider: predicted_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
             </div>
             <div class="span1">
               <strong data-bind="text: predicted_accomplishment, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
@@ -428,13 +433,13 @@
         </div>
 
         <!-- ACCOMPLISHMENT - ACTUAL -->
-        <div data-bind="ifnot: inScheduling">
+        <div id="edit-accomplishment-actual-attribute-container" data-bind="ifnot: inScheduling">
           <div class="text-center" style="font-weight:bold;padding:5px 0px;">
             Please rate your actual ACCOMPLISHMENT during the event
           </div>
           <div class="row-fluid">
             <div class="span11">
-              <div class="slider" style="margin-top: 3px;" data-bind="slider: actual_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+              <div id="edit-accomplishment-actual-slider" class="slider" style="margin-top: 3px;" data-bind="slider: actual_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
             </div>
             <div class="span1">
               <strong data-bind="text: actual_accomplishment, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
@@ -443,23 +448,21 @@
         </div>
 
         <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
-        <div data-bind="if: inReviewing" class="row-fluid text-prof-blue">
-
+        <div id="accomplishment-previously-predicted-container" data-bind="if: inReviewing" class="row-fluid text-prof-blue">
           <div class="span11">
             <strong class="pull-right"><i class="icon-lightbulb"></i> Predicted Accomplishment:</strong>
           </div>
           <div class='span1'>
             <strong data-bind="text: predicted_accomplishment, valueUpdate: 'afterkeydown'"></strong>
           </div>
-
         </div>
 
       </div>
       
       <div data-bind="ifnot: inScheduling">
-        <div class="text-center" style="font-weight:bold;padding:5px 0px;">
+        <div id="edit-emotion-attribute-container" class="text-center" style="font-weight:bold;padding:5px 0px;">
           Please rate your 
-          <select class="input-small" data-bind="value: emotion">
+          <select id="edit-emotion" class="input-small" data-bind="value: emotion">
             <option value="">None</option>
             <option value="sad">Sad</option>
             <option value="happy">Happy</option>
@@ -468,20 +471,20 @@
           </select>
           Intensity
         </div>
-        <div class="row-fluid">
+        <div id="edit-emotion-intensity-attribute-container" class="row-fluid">
           <div class="span11">
-            <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}"></div>
+            <div id="edit-emotion-intensity-slider" class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}"></div>
           </div>
           <div class="span1">
             <strong data-bind="text: emotion_intensity, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
           </div>
         </div>
-        <div data-bind="if: inMonitoring">
+        <div id="edit-motivation-attribute-container" data-bind="if: inMonitoring">
           <div class="row-fluid">
             <div class="control-group">
               <label class="control-label">Motivation</label>
               <div class="controls">
-                <select data-bind="value: motivation">
+                <select id="edit-motivation" data-bind="value: motivation">
                   <option value="">None</option>
                   <option value="mood_directed">Mood Directed</option>
                   <option value="goal_directed">Goal Directed</option>
@@ -492,9 +495,9 @@
         </div>
       </div>
 
-      <div class="form-actions" style="padding-left:20px;">
-        <button class="save btn btn-primary" data-bind="click: save">Save And Create New Event</button>
-        <button class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
+      <div id="event-form-save-delete-buttons-container" class="form-actions" style="padding-left:20px;">
+        <button id="event-save-button" class="save btn btn-primary" data-bind="click: save">Save Event</button>
+        <button id="event-delete-button" class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
       </div>
     </form>
   </div> <!-- end 'dynamo/activity_tracker/edit_form' -->
@@ -502,28 +505,30 @@
 
   <div id="dynamo/activity_tracker/show_event" class="template underscore">
     <div class="patient-health-record-header list-item" data-cid="(%= item.cid %)">
-      <h4>(%= item.title %)</h4>
-      <strong>From: </strong>(%= item.start.toString() %)
-      <div class="clearfix"></div>
-      <strong>Until: </strong>(%= item.end.toString() %)
+      <h4 id="show-event-title">(%= item.title %)</h4>
+      <div id="show-start-end-times-container">
+        <strong>From: </strong><span id="show-event-start-time">(%= item.start.toString() %)</span>
+        <div class="clearfix"></div>
+        <strong>Until: </strong><span id="show-event-end-time">(%= item.end.toString() %)</span>
+      </div>
       <div class="row-fluid">
         <div class="span6">
           <strong>Pleasure</strong>
           <ul> 
-            <li>Predicted: (%= item.predicted_pleasure %)</li>
-            <li>Actual: (%= item.actual_pleasure %)</li>
+            <li id="show-predicted-pleasure">Predicted: (%= item.predicted_pleasure %)</li>
+            <li id="show-predicted-pleasure">Actual: (%= item.actual_pleasure %)</li>
           </ul>
         </div>
         <div class="span6">
           <strong>Accomplishment</strong>
           <ul>
-            <li>Predicted: (%= item.predicted_accomplishment %)</li>
-            <li>Actual: (%= item.actual_accomplishment %)</li>
+            <li id="show-predicted-accomplishment">Predicted: (%= item.predicted_accomplishment %)</li>
+            <li id="show-predicted-accomplishment">Actual: (%= item.actual_accomplishment %)</li>
           </ul>
         </div>
       </div>
       <strong>Emotional Intensity</strong>
-      <span>(%= item.emotion %) ((%= item.emotion_intensity %))</span>
+      <span id="show-emotion">(%= item.emotion %)</span><span id="show-emotion-intensity">((%= item.emotion_intensity %))</span>
     </div>
   </div>
 
@@ -545,20 +550,19 @@
   </div>
 
   <div id="dynamo/guides/show" class="template underscore">
-    <div class="navbar" style="margin-bottom: 0px;">
-      <div class="navbar-inner" id="guide-select-nav" style="border-bottom-width:0px;">
+    <div id="guides-selector-title-bar" class="navbar" style="margin-bottom: 0px;">
+      <div id="guide-select-nav" class="navbar-inner"  style="border-bottom-width:0px;">
       </div>
-    </div>
-
-    <div class="accordion-body widget-content">
-      <div id="current-slide" class="well-white well well-small" style="margin-bottom:0px;">
+    </div> 
+    <div id="current-guide-slide-container" class="accordion-body widget-content">
+      <div id="current-guide-slide-content" class="well-white well well-small" style="margin-bottom:0px;">
         <div style="margin:0 auto; text-align:center;">
           <h3> Choose a Guide using the dropdown menu above</h3>
         </div>
       </div>
-      <div id="current-slide-actions" class="well-white well well-small" style="margin:10px 0;">
+      <div id="current-guide-slide-actions" class="well-white well well-small" style="margin:10px 0;">
       </div>    
-      <ul class="pager">
+      <ul id="current-guide-navigation-buttons" class="pager">
         <li><a href="#" class="previous">&larr; Previous</a></li>
         <li><a href="#" class="next">Next &rarr;</a></li>
       </ul>

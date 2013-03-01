@@ -98,6 +98,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.$el.find("div#current-slide").html( this.currentSlide.get_field_value("content") );
     this.$el.find("div#current-slide").prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
     var $actions = $("div#current-slide-actions");
+    $actions.empty();
     this.currentSlide.actions.each(function(action) {
 
       $actions.append( 
