@@ -94,10 +94,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   renderSlide: function() {
+    var $slide_content = this.$el.find("div#current-guide-slide-content"),
+        $actions = $("div#current-slide-actions");
+
     this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );
-    this.$el.find("div#current-slide").html( this.currentSlide.get_field_value("content") );
-    this.$el.find("div#current-slide").prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
-    var $actions = $("div#current-slide-actions");
+
+    $slide_content.html( this.currentSlide.get_field_value("content") );
+    $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
+    
     $actions.empty();
     this.currentSlide.actions.each(function(action) {
 
