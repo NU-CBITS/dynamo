@@ -1,29 +1,111 @@
 //
-//
 //  Dynamo.Core.Views.js
-//
 //
 //  Dependencies:
 //    - Dynamo.Core.js
 //    - Dynamo.Core.Models.js
 
 
+// ************************************************
+// GLOBAL TEMPLATES
+// ----------------
+// 
+// Global templates are defined in templates.html
+// and are loaded on Dynamo.initialize into a Global object, DIT 
+// (the acronym for the silly name, Dynamo Instant Templates);
 //
-// A Global templates object is initialized.
-// Each view in the file depends upon a specific key
-// w/in this object being defined, but the way in which
-// that is done is left up to the user.
+// Each Dynamo view has a default template in templates.html 
+// for which the id of the template is the key in the DIT object.
 //
-// For example,
-// The question editor currently does this in a 2 step process:
-// 1) the templates are injected into the index file as script blocks
-// through the CMS and,
-// 2) These script blocks are then reads them into the templates object as strings
-// through JQUERY
-//
-templates = {};
+// Instead of using the default template loaded into the DIT object 
+// from templates.html, users can pass in their own template as an option
+// to a view.
+// ************************************************
 
 
+
+// ************************************************
+//
+// View Helper Vars and Functions
+//
+// ************************************************
+
+
+renderInDialog = function(view, dialog_opts) {
+  var $popup, opts;
+
+  opts = {
+    autoOpen: true,
+    modal: true,
+    width: "auto",
+    height: "auto",
+    position: { my: "right top", at: "right top" },
+
+    close: function (beforeCloseEvent) {
+      //Attempt cleanup / avoid mem leaks.
+      view.trigger('close');
+      view.remove()
+      view = null;
+    }
+  };
+
+  opts = _.extend(opts, dialog_opts);
+
+  // Global Popup Container
+  if ( $('div#popup_container').length == 0 ) {
+    $('body').append('<div id="popup_container"><div>')
+  };
+
+  $popup = $('div#popup_container');
+  $popup.empty();
+  $popup.dialog(opts);
+  $popup.append( view.$el );
+  view.render();
+
+  return $popup;
+};
+
+
+// Select the appropriate view class for a for a particular type of form input
+viewClassForInputType = function (input_type) {
+  var self = this
+  switch( input_type ) {
+    case "text": case "textarea":
+      return Dynamo.TextInputView;
+      break;
+    case "radio": case "select": case "checkbox":
+      return Dynamo.InputGroupView;
+      break;
+    case "range":
+      return Dynamo.InputRangeView;
+      break;
+    case "slide": case "slider":
+      return Dynamo.InputSliderView;
+      break;
+    default:
+      throw "viewClassForInputType: No view class defined for input_type '"+input_type+"'";
+      break;
+  };
+};
+
+function HTMLizeJSON(obj) {
+  html = "";
+  _.each(obj, function(value, key) {
+    if ( _.isObject(value) ) {
+      html = html +
+            "<div>"+
+              "<span class='key'>"+key+"</span>" +
+              "<span class='value'><div class='sub_object'>"+(HTMLizeJSON(value))+"</div></span></div>";
+    }
+    else if ( _.isArray(value) ) {
+      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'><div class='array'>"+(_.each( value, function(el) { return HTMLizeJSON(el)} ))+"</div></span></div>";
+    }
+    else {
+      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'>"+value+"</span></div>";
+    }
+  })
+  return html;
+}
 
 
 // 
@@ -84,9 +166,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 
 }) ();
 
-
-
-//
+/**************************************
 //
 //  InputViews
 //
@@ -110,7 +190,9 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 //      - canHaveResponseValues: A boolean specifying whether this InputView can (must?) accept
 //          a discrete set of values as its reply.
 //
-//
+**************************************/
+
+
 
 // Dynamo.TextInputView
 //  A general purpose way to create a text input
@@ -266,10 +348,11 @@ Dynamo.InputGroupView = Backbone.View.extend(
       this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
       this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
     },
-    template: '<div id="<%=id%>" name="<%= name %>_field" class="<%=type%>_group"> <% if (type == "select") { %> <%= t.span(label) %> <select name="<%= name %>"> <% _.each(options, function(o, index) { html_atts = { value: o.value }; if (selected_value == o.value) { html_atts.selected = "selected" }; print( t.formInput("option", o.label, html_atts) ); }); %> </select> <% }; %> <% if (type == "radio" || type == "checkbox") { %> <%= t.div(label) %> <% _.each(options, function(o, index) { html_atts = { name: name, value: o.value}; console.log("option: ", o, "html_atts: ", html_atts); if (selected_value == o.value) { html_atts.checked = "checked" }; print( t.div(t.formInput(type, o.label, html_atts), { class: "label_and_input" } ) ); }); %> <% }; %> </div>',
     _template: function(data, settings) {
       if (!this.compiled_template) {
-        if (!this.template) { throw new Error("No valid template found") };
+        if (!this.template) { 
+          this.template = this.options.template || DIT["dynamo/core/input_group"];
+        };
         this.compiled_template = _.template(this.template);
       };
       return this.compiled_template(data, settings);
@@ -581,7 +664,7 @@ Dynamo.InputSliderView = Backbone.View.extend(
 );
 
 
-//
+/**************************************************
 //
 // Aspect Views
 //
@@ -591,7 +674,9 @@ Dynamo.InputSliderView = Backbone.View.extend(
 // that lets the user select one model out of a collection,
 // regardless of what is contained within the collection
 //
-//
+**************************************************/
+
+
 
 //  Dynamo.ChooseFromCollectionView
 //  expects:
@@ -637,7 +722,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || templates.choose_one_xelement;
+        this.template = this.options.template || DIT["dynamo/core/choose_one_xelement"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -651,7 +736,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
       this._template({
         collection_name: (this.options.collection_name || this.collection.codeCollectionName || this.collection.prettyModelName()),
         elements: elements,
-        canCreateNew: this.options.canCreateNew,
+        canCreateNew: this.options.canCreateNew || false,
         xelement_type: this.options.xelement_type,
         element_pretty_name: this.options.element_pretty_name
       })
@@ -960,37 +1045,6 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       title: "Add a "+self.collection.prettyModelName()+" (in position "+(element_index+1)+")"
     });
 
-
-    // if ( $('div#popup_container').length == 0 ) {
-    //   $('body').append('<div id="popup_container"><div>')
-    // };
-    // self.$popup = $('div#popup_container');
-
-    // //Show the dialog
-    // self.$popup.empty();
-
-    // self.$popup.dialog({
-    //   autoOpen: true,
-    //   modal: true,
-    //   width: "auto",
-    //   height: "auto",
-    //   title: "Add a "+self.collection.prettyModelName()+" (in position "+(element_index+1)+")",
-    //   position: { my: "right top", at: "right top" },
-
-    //   close: function (beforeCloseEvent) {
-    //     //Attempt to cleanup / avoid mem leaks.
-    //     self.trigger('chooseExistingModelView:close');
-
-    //     if (self.chooseExistingModelView) { self.chooseExistingModelView.remove() };
-    //     self.chooseExistingModelView = null;
-    //     $chooseQcontainer = null;
-    //   }
-
-    // });
-
-    // self.$popup.append( self.chooseExistingModelView.$el );
-    // self.chooseExistingModelView.render();
-
   },
 
   onChoosingModelToAdd: function(chosen_element, element_index) {
@@ -1013,7 +1067,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || templates.manage_collection_widget;
+        this.template = this.options.template || DIT["dynamo/core/manage_collection"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -1024,7 +1078,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   _elementTemplate: function(data, settings) {
     if (!this.compiledElementTemplate) {
       if (!this.elementTemplate) {
-        this.elementTemplate = this.options.elementTemplate || templates.collection_widget_element;
+        this.elementTemplate = this.options.elementTemplate || DIT["dynamo/core/manage_collection/element"];
       }
     };
     this.compiledElementTemplate = _.template(this.elementTemplate)
@@ -1287,7 +1341,9 @@ Dynamo.ShowXelementSimpleView =  Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = templates.show_xelement_simple; }
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/xelements/show"]; 
+      };
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -1334,7 +1390,7 @@ Dynamo.ShowUserView = Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = this.options.template || templates.show_user; }
+      if (!this.template) { this.template = this.options.template || DIT["dynamo/users/show"]; }
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -1381,7 +1437,7 @@ Dynamo.EditUserView = Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = this.options.template || templates.edit_user; }
+      if (!this.template) { this.template = this.options.template || DIT["dynamo/users/edit"] }
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -1683,46 +1739,6 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
 });
 
-// ************************************************
-//
-// View Helper Vars and Functions
-//
-// ************************************************
-//
-
-renderInDialog = function(view, dialog_opts) {
-  var $popup, opts;
-
-  opts = {
-    autoOpen: true,
-    modal: true,
-    width: "auto",
-    height: "auto",
-    position: { my: "right top", at: "right top" },
-
-    close: function (beforeCloseEvent) {
-      //Attempt cleanup / avoid mem leaks.
-      view.trigger('close');
-      view.remove()
-      view = null;
-    }
-  };
-
-  opts = _.extend(opts, dialog_opts);
-
-  // Global Popup Container
-  if ( $('div#popup_container').length == 0 ) {
-    $('body').append('<div id="popup_container"><div>')
-  };
-
-  $popup = $('div#popup_container');
-  $popup.empty();
-  $popup.dialog(opts);
-  $popup.append( view.$el );
-  view.render();
-
-  return $popup;
-};
 
 
 GoalsView = Dynamo.GoalsView = Backbone.View.extend({
@@ -1929,45 +1945,3 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   }
 
 });
-
-
-// Select the appropriate view class for a for a particular type of form input
-viewClassForInputType = function (input_type) {
-  var self = this
-  switch( input_type ) {
-    case "text": case "textarea":
-      return Dynamo.TextInputView;
-      break;
-    case "radio": case "select": case "checkbox":
-      return Dynamo.InputGroupView;
-      break;
-    case "range":
-      return Dynamo.InputRangeView;
-      break;
-    case "slide": case "slider":
-      return Dynamo.InputSliderView;
-      break;
-    default:
-      throw "viewClassForInputType: No view class defined for input_type '"+input_type+"'";
-      break;
-  };
-};
-
-function HTMLizeJSON(obj) {
-  html = "";
-  _.each(obj, function(value, key) {
-    if ( _.isObject(value) ) {
-      html = html +
-            "<div>"+
-              "<span class='key'>"+key+"</span>" +
-              "<span class='value'><div class='sub_object'>"+(HTMLizeJSON(value))+"</div></span></div>";
-    }
-    else if ( _.isArray(value) ) {
-      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'><div class='array'>"+(_.each( value, function(el) { return HTMLizeJSON(el)} ))+"</div></span></div>";
-    }
-    else {
-      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'>"+value+"</span></div>";
-    }
-  })
-  return html;
-}

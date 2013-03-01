@@ -316,10 +316,25 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
 
     if (iframeSelector) {
       $(iframeSelector).contents().find(this.get("target")).each(function() {
+        // if target is not currently viewable, show it.
+        if ( $(this).is(":hidden") )  {
+          $(this).ancestors().andSelf().each(function() {
+            $(this).show();
+          })
+        };
         $(this).effect(self.get("effect"), self.effectOptions(), duration);
+
       });
     } else {
-      $(this.get("target")).each(function() {
+      var $targets = $(this.get("target"));
+      // if target is not currently viewable, show it.
+    
+      $targets.each(function() {
+        if ( $(this).is(":hidden") )  {
+          $(this).ancestors().andSelf().each(function() {
+            $(this).show();
+          });
+        };
         $(this).effect(self.get("effect"), self.effectOptions(), duration);
       });
     };

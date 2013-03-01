@@ -1,0 +1,519 @@
+<!-- templates.html -->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Templates</title>
+<style>
+  div.template {
+    visibility:hidden;
+  };
+</style>
+
+<script type="text/javascript" src="../js/vendor/jquery-1.9.1.min.js"></script>
+
+<script type="text/javascript">
+
+  $(function() { 
+    
+    // "Dynamo Instant Templates";
+    window.DIT = {};
+
+    var $t;
+    $("div.template").each(function() {
+
+      $t = $(this);
+      DIT[$t.attr("id")] = $t.html().replace(/(\r\n|\n|\r)/gm," ");
+
+    });
+
+    localStorage.setItem("DYNAMO_TEMPLATES", JSON.stringify(DIT));
+    window.location.href = localStorage.getItem("DIT_AFTER_LOAD_URL");
+
+  });
+
+</script>
+</head>
+
+<body>
+  <!--
+    Warning! Any characters in the template that can be HTML escaped, 
+    WILL BE when they are stringified into local storage!
+    SO currently, we have to be very careful about what we put in here.
+  -->
+
+
+  <div id="dynamo/core/choose_one_xelement" class="template underscore">
+    (% if (canCreateNew) { %) 
+      <div>
+        <button class="create_new" data-xelement_type="(%= xelement_type %)">New (%= element_pretty_name %)</button>
+      </div>
+    (% }; %)
+
+    <h3><span>(%= collection_name %)</span></h3>
+    
+    <div>
+      <h4><span>Choose One:</span></h4>
+      <ul style="list-style: none;">
+        (% _.each(elements, function(e) { %)
+          <li style="list-style: none;"><span class="choose_element btn" data-cid="(%= e.cid %)">(%= e.html %)</span></li>
+        (% }); %)
+      </ul>
+    </div>
+  </div>
+
+
+  <div id="dynamo/core/input_group" class="template underscore">
+    <div id="(%=id%)" name="(%= name %)_field" class="(%=type%)_group">
+      (% if (type == 'select') { %)
+        (%= t.span(label) %)
+        <select name="(%= name %)"> 
+          (% _.each(options, function(o, index) {
+              html_atts = { value: o.value };
+              if (selected_value == o.value) { html_atts.selected = 'selected' };
+              print( t.formInput('option', o.label, html_atts) );
+          }); %)
+        </select>
+      (% }; %)
+      (% if (type == 'radio' || type == 'checkbox') { %)
+        (%= t.div(label) %)
+        (% _.each(options, function(o, index) { 
+            html_atts = { name: name, value: o.value};
+            if (selected_value == o.value) { html_atts.checked = 'checked' };
+            print( t.div(t.formInput(type, o.label, html_atts), { class: 'label_and_input' } ) );
+          }); %)
+      (% }; %)
+    </div>
+  </div>
+
+  <div id="dynamo/core/manage_collection" class="template underscore">
+    <div class="collection_widget">
+      <div class="start">(% start_content ? print(start_content) : null; %)</div>
+      (% if (display.edit) { %)
+        <div>
+          (% 
+            //  first data collection index is '-1' 
+            //  b/c later code increments the index so as to let it insert 'after' this
+            //  index location. hence if you want to insert at the beginning, t   he index
+            //  is -1 so that you actually insert at 0.
+          %)
+          <button class="insert (%= element_code_name %)" data-collection_index="0">
+            Add (%= element_pretty_name %) Here
+          </button>
+        </div>
+      (% }; %)
+      <div class="elements"></div>
+      <div class="end">(% end_content ? print(end_content) : null; %)</div>
+    </div>
+  </div>
+
+  <div id="dynamo/core/manage_collection/element" class="template underscore">      
+    <div class="(%= element_code_name %) element" data-collection_index="(%= index %)">
+      (% if (display.del)   { %)
+        <div class="delete_container">
+          <button class="delete (%= element_code_name %)" data-collection_index="(%= index %)" >
+            Delete (%= element_pretty_name %)
+          </button>
+        </div>
+      (% } %)
+      (% if (display.edit)  { print(t.div('', { class: 'edit_container' })); } %)
+      (% if (display.show)  { print(t.div('', { class: 'show_container' })); } %)
+    </div>
+    (% if (display.edit) { %)
+      <div>
+        <button class="insert (%= element_code_name %)" data-collection_index="(%= index + 1 %)">
+          Add (%= element_pretty_name %) Here
+        </button>
+      </div>
+    (% }; %)
+  </div>  
+
+  <div id="dynamo/users/show" type="text/underscore_template">
+    <div class='user' data-position="(%= position %)">
+      <span class='attribute username'>(%= user.username %)</span>
+      <span class='attribute guid'>((%= user.guid %))</span>
+    </div>
+  </div>
+
+  <div id="dynamo/xelements/show" type="text/underscore_template">
+    <div class='attribute title'> (%= data.title %)</div>
+    (% _.each(data, function(value, label) { %) 
+      <div>
+        <span class='label'>(%= label %)</span>:
+        <span class='attribute (%= label %)'>(%= value %)</span>
+      </div>
+    (% }); %)
+  </div>
+
+  <div id="dynamo/activity_tracker/edit_event" class="template underscore">
+    <div class="navbar" style="margin-bottom: 0px;">
+      <div class="navbar-inner" style="border-bottom-width:0px;">
+        <a class="brand">Event Editor</a>
+        <ul class="nav pull-right accordion-header">
+          <li class="caret-icons">
+            <a><i class="icon-caret-right"></i></a>
+          </li>
+        <ul>
+      </div>
+    </div>
+
+    <form class="form-horizontal widget-content form-condensed accordion-body">
+      <div class="row-fluid">
+        <div class="control-group span12">
+          <label class="control-label">Title</label>
+          <div class="controls">
+            <input type="text" 
+                  placeholder="Description"
+                  class="input-xlarge"
+                  data-bind="value: title">
+            <div style="font-size: 24.5px;" class="inline text-prog-gray">
+              <i class="icon-question-sign"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start and End Times -->
+      <div class="control-group">
+        <label class="control-label">Starts</label>
+        <div class="controls">
+          <select data-bind="value: start_month" class="input-mini">
+            <option value="0">Jan</option>
+            <option value="1">Feb</option>
+            <option value="2">Mar</option>
+            <option value="3">Apr</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">Aug</option>
+            <option value="8">Sept</option>
+            <option value="9">Oct</option>
+            <option value="10">Nov</option>
+            <option value="11">Dec</option>
+          </select>
+          <input  type="text" 
+                  placeholder="dd" 
+                  class="input-xmini" 
+                  data-bind="value: start_date">
+          <input  type="text" 
+                  placeholder="yyyy" 
+                  class="input-xmini" 
+                  data-bind="value: start_year">
+          <select data-bind="value: start_hour" class="input-small">
+            <option value="0">12 am</option>
+            <option value="1">1 am</option>
+            <option value="2">2 am</option>
+            <option value="3">3 am</option>
+            <option value="4">4 am</option>
+            <option value="5">5 am</option>
+            <option value="6">6 am</option>
+            <option value="7">7 am</option>
+            <option value="8">8 am</option>
+            <option value="9">9 am</option>
+            <option value="10">10 am</option>
+            <option value="11">11 am</option>
+            <option value="12">12 pm</option>
+            <option value="13">1 pm</option>
+            <option value="14">2 pm</option>
+            <option value="15">3 pm</option>
+            <option value="16">4 pm</option>
+            <option value="17">5 pm</option>
+            <option value="18">6 pm</option>
+            <option value="19">7 pm</option>
+            <option value="20">8 pm</option>
+            <option value="21">9 pm</option>
+            <option value="22">10 pm</option>
+            <option value="23">11 pm</option>
+          </select>
+          <input  type="text" 
+                  placeholder="min" 
+                  class="input-xmini" 
+                  data-bind="value: start_minute">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Ends</label>
+        <div class="controls">
+          <select data-bind="value: end_month" class="input-mini">
+            <option value="0">Jan</option>
+            <option value="1">Feb</option>
+            <option value="2">Mar</option>
+            <option value="3">Apr</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">Aug</option>
+            <option value="8">Sept</option>
+            <option value="9">Oct</option>
+            <option value="10">Nov</option>
+            <option value="11">Dec</option>
+          </select>
+          <input  type="text" 
+                  placeholder="dd" 
+                  class="input-xmini" 
+                  data-bind="value: end_date">
+          <input  type="text" 
+                  placeholder="yyyy" 
+                  class="input-xmini" 
+                  data-bind="value: end_year">
+          <select data-bind="value: end_hour" class="input-small">
+            <option value="0">12 am</option>
+            <option value="1">1 am</option>
+            <option value="2">2 am</option>
+            <option value="3">3 am</option>
+            <option value="4">4 am</option>
+            <option value="5">5 am</option>
+            <option value="6">6 am</option>
+            <option value="7">7 am</option>
+            <option value="8">8 am</option>
+            <option value="9">9 am</option>
+            <option value="10">10 am</option>
+            <option value="11">11 am</option>
+            <option value="12">12 pm</option>
+            <option value="13">1 pm</option>
+            <option value="14">2 pm</option>
+            <option value="15">3 pm</option>
+            <option value="16">4 pm</option>
+            <option value="17">5 pm</option>
+            <option value="18">6 pm</option>
+            <option value="19">7 pm</option>
+            <option value="20">8 pm</option>
+            <option value="21">9 pm</option>
+            <option value="22">10 pm</option>
+            <option value="23">11 pm</option>
+          </select>
+          <input  type="text" 
+                  placeholder="min" 
+                  class="input-xmini" 
+                  data-bind="value: end_minute">
+        </div>
+      </div>
+
+      <!-- TAGS -->
+      <div class="control-group">
+        <label class="control-label">Tags (<span data-bind="text: tags().length"></span>)</label>
+        <div class="controls">
+          <div data-bind="foreach: { data: tags, as: 'tag' }">
+            <div class="input-tag">
+              <input type="text" data-bind="value: tag.value, valueUpdate: 'afterkeydown'" />
+              <button class="btn" data-bind="click: tag.remove"><i class="icon-remove"> Remove</i></button>
+            </div>
+          </div>
+          <button class="btn" data-bind="click: tags_addElement"><i class="icon-plus"></i> Add Tag</button>
+        </div>
+      </div>
+
+      <!-- ACTIVITY COMPLETION -->
+      <div class="control-group" data-bind="if: inReviewing">
+        <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px;">Completed This Activity</label>
+        <div id="event_completed_container" class="controls">
+          <label class="radio inline">
+            <input type="radio" value="0" data-bind="checked: eventCompleted" />No
+          </label>
+          <label class="radio inline">
+            <input type="radio" value="1" data-bind="checked: eventCompleted" />Yes 
+          </label>
+        </div>
+      </div>    
+
+      <div class="control-group">
+          
+        <!-- PLEASURE - PREDICT -->
+        <div data-bind="if: inScheduling">
+          <div class="text-center" style="font-weight:bold;padding:5px 0px;">
+            Please rate your predicted PLEASURE during the event
+          </div>
+          <div class="row-fluid">
+            <div class="span11">
+              <div id="predict-slider" class="slider" style="margin-top: 3px;" data-bind="slider: predicted_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+            </div>
+            <div class="span1">
+              <strong data-bind="text: predicted_pleasure, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLEASURE - ACTUAL -->
+        <div data-bind="ifnot: inScheduling">
+          <div class="text-center" style="font-weight:bold;padding:5px 0px;">
+            Please rate your actual PLEASURE during the event
+          </div>
+          <div class="row-fluid">
+            <div class="span11">
+              <div class="slider" style="margin-top: 3px;" data-bind="slider: actual_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+            </div>
+            <div class="span1">
+              <strong data-bind="text: actual_pleasure, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLEASURE - PREVIOUSLY PREDICTED -->
+        <div data-bind="if: inReviewing" class="row-fluid text-prof-blue">
+
+          <div class="span11">
+            <strong class="pull-right"><i class="icon-lightbulb"></i> Predicted Pleasure:</strong>
+          </div>
+          <div class="span1">
+            <strong data-bind="text: predicted_pleasure, valueUpdate: 'afterkeydown'"></strong>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="row-fluid">
+
+        <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
+        <div data-bind="if: inScheduling">
+          <div class="text-center" style="font-weight:bold;padding:5px 0px;">
+            Please rate your predicted ACCOMPLISHMENT during the event
+          </div>
+          <div class="row-fluid">
+            <div class="span11">
+              <div class="slider" style="margin-top: 3px;" data-bind="slider: predicted_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+            </div>
+            <div class="span1">
+              <strong data-bind="text: predicted_accomplishment, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCOMPLISHMENT - ACTUAL -->
+        <div data-bind="ifnot: inScheduling">
+          <div class="text-center" style="font-weight:bold;padding:5px 0px;">
+            Please rate your actual ACCOMPLISHMENT during the event
+          </div>
+          <div class="row-fluid">
+            <div class="span11">
+              <div class="slider" style="margin-top: 3px;" data-bind="slider: actual_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: 'min', step: 1}"></div>
+            </div>
+            <div class="span1">
+              <strong data-bind="text: actual_accomplishment, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
+        <div data-bind="if: inReviewing" class="row-fluid text-prof-blue">
+
+          <div class="span11">
+            <strong class="pull-right"><i class="icon-lightbulb"></i> Predicted Accomplishment:</strong>
+          </div>
+          <div class='span1'>
+            <strong data-bind="text: predicted_accomplishment, valueUpdate: 'afterkeydown'"></strong>
+          </div>
+
+        </div>
+
+      </div>
+      
+      <div data-bind="ifnot: inScheduling">
+        <div class="text-center" style="font-weight:bold;padding:5px 0px;">
+          Please rate your 
+          <select class="input-small" data-bind="value: emotion">
+            <option value="">None</option>
+            <option value="sad">Sad</option>
+            <option value="happy">Happy</option>
+            <option value="angry">Angry</option>
+            <option value="anxious">Anxious</option>
+          </select>
+          Intensity
+        </div>
+        <div class="row-fluid">
+          <div class="span11">
+            <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}"></div>
+          </div>
+          <div class="span1">
+            <strong data-bind="text: emotion_intensity, valueUpdate: 'afterkeydown'" style="font-size:2em;"></strong>
+          </div>
+        </div>
+        <div data-bind="if: inMonitoring">
+          <div class="row-fluid">
+            <div class="control-group">
+              <label class="control-label">Motivation</label>
+              <div class="controls">
+                <select data-bind="value: motivation">
+                  <option value="">None</option>
+                  <option value="mood_directed">Mood Directed</option>
+                  <option value="goal_directed">Goal Directed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions" style="padding-left:20px;">
+        <button class="save btn btn-primary" data-bind="click: save">Save And Create New Event</button>
+        <button class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
+      </div>
+    </form>
+  </div> <!-- end 'dynamo/activity_tracker/edit_form' -->
+
+
+  <div id="dynamo/activity_tracker/show_event" class="template underscore">
+    <div class="patient-health-record-header list-item" data-cid="(%= item.cid %)">
+      <h4>(%= item.title %)</h4>
+      <strong>From: </strong>(%= item.start.toString() %)
+      <div class="clearfix"></div>
+      <strong>Until: </strong>(%= item.end.toString() %)
+      <div class="row-fluid">
+        <div class="span6">
+          <strong>Pleasure</strong>
+          <ul> 
+            <li>Predicted: (%= item.predicted_pleasure %)</li>
+            <li>Actual: (%= item.actual_pleasure %)</li>
+          </ul>
+        </div>
+        <div class="span6">
+          <strong>Accomplishment</strong>
+          <ul>
+            <li>Predicted: (%= item.predicted_accomplishment %)</li>
+            <li>Actual: (%= item.actual_accomplishment %)</li>
+          </ul>
+        </div>
+      </div>
+      <strong>Emotional Intensity</strong>
+      <span>(%= item.emotion %) ((%= item.emotion_intensity %))</span>
+    </div>
+  </div>
+
+  <div id="dynamo/guides/index" class="template underscore">
+    <a class="brand">Guides</a>
+    <ul id="guide-select" class="accordion-header nav pull-right">
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
+        <ul id="guides-list" class="dropdown-menu">
+          (% _.each(elements, function(e) { %)
+            <li><a><span class="choose_element" data-cid="(%= e.id %)">(%= e.html %)</span></a></li>
+          (% }) %)
+        </ul>
+      </li>
+      <li class="caret-icons">
+        <a><i class="icon-caret-right"></i></a>
+      </li>
+    </ul>
+  </div>
+
+  <div id="dynamo/guides/show" class="template underscore">
+    <div class="navbar" style="margin-bottom: 0px;">
+      <div class="navbar-inner" id="guide-select-nav" style="border-bottom-width:0px;">
+      </div>
+    </div>
+
+    <div class="accordion-body widget-content">
+      <div id="current-slide" class="well-white well well-small" style="margin-bottom:0px;">
+        <div style="margin:0 auto; text-align:center;">
+          <h3> Choose a Guide using the dropdown menu above</h3>
+        </div>
+      </div>
+      <div id="current-slide-actions" class="well-white well well-small" style="margin:10px 0;">
+      </div>    
+      <ul class="pager">
+        <li><a href="#" class="previous">&larr; Previous</a></li>
+        <li><a href="#" class="next">Next &rarr;</a></li>
+      </ul>
+    </div>
+  </div>  
+
+</body>

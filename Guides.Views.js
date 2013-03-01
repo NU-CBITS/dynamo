@@ -19,6 +19,99 @@
 //   }
 // });
 
+GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
+
+  initialize: function() {
+    this.guideData = this.options.guideData;
+  },
+
+  events: {
+    "click .next" : "moveForward",
+    "click .previous" : "moveBack",
+    "click .do-action" : "performAction"
+  },
+
+  currentSlideIndex: function() {
+    return this._currentSlideIndex;
+  },
+
+  moveBack: function() {
+    try {
+      this._currentSlideIndex = this._currentSlideIndex - 1;
+      if (this._currentSlideIndex < 0) { this._currentSlideIndex = 0 };
+      this.renderSlide();     
+    } 
+    catch (e) {
+      console.warn("Error when clicking back: ", e);
+    }
+  },
+
+  moveForward: function() {
+    try {
+      this._currentSlideIndex = this._currentSlideIndex + 1;
+      if (this._currentSlideIndex >= this.currentGuide.slides.length) { 
+        this._currentSlideIndex = this.currentGuide.slides.length - 1;
+      };
+      this.renderSlide();
+    }
+    catch (e) {
+      console.warn("Error when clicking next: ", e);
+    }
+  },
+
+  resetCurrentSlide: function() {
+    this._currentSlideIndex = 0;
+  },
+
+  performAction: function(clickEvent) {
+    var cid = $(clickEvent.currentTarget).data("cid");
+    var action = this.currentSlide.actions.get(cid);
+    action.execute();
+  },
+
+  render: function() {
+
+    var self = this;
+
+    this.$el.html( self._template({}) );
+
+    self.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
+      template: DIT["dynamo/guides/index"],
+      collection: self.collection
+    });
+
+    self.guideSelect.on("element:chosen", function() {
+      
+      self.currentGuide = self.guideSelect.chosen_element;
+      self.currentGuideData = self.guideData.filter(function(guide) { return guide.xelement_id == self.currentGuide.id });
+      self.resetCurrentSlide();
+      self.renderSlide();
+    });
+    self.$el.find("div#guide-select-nav").prepend(self.guideSelect.render().$el);
+
+    return this;
+
+  },
+
+  renderSlide: function() {
+    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );
+    this.$el.find("div#current-slide").html( this.currentSlide.get_field_value("content") );
+    this.$el.find("div#current-slide").prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
+    var $actions = $("div#current-slide-actions");
+    this.currentSlide.actions.each(function(action) {
+
+      $actions.append( 
+        t.span({ style:"margin-right:10px;"},
+          t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
+        ) 
+      );
+
+    });
+    return this;
+  }
+
+});
+
 // Depends on https://github.com/jakesgordon/javascript-state-machine
 EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function (options) {

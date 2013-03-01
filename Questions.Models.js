@@ -276,6 +276,3 @@ ResponseValueModel = Dynamo.Model.extend({
   viewClass: function() { return showResponseValueView; },
   editViewClass: function() { return editResponseValueView; }
 });
-
-//Declares that Question Models have been defined.
-Dynamo.mantleDefinitions.QuestionModels = true;
