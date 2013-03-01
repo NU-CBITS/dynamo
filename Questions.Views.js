@@ -140,7 +140,7 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     switch(this.displayEdit) {
       case true:
         return {
-          'click h1 > span.title.editable': "editTitleInPopup",
+          'keyup h1 > input.title.editable': "updateTitle",
           'click button.btn.save': "saveSaveableModel"
         };
         break;
@@ -237,6 +237,10 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
+  updateTitle: function(keyupEvent) {
+    this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
+  },
+
   render: function (argument) {
     if (!this.initiallyRendered()) {
       console.log('INITIAL QUESTION_GROUP SHOW RENDER');
@@ -263,10 +267,6 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('change', this.renderTitle);
     this.initializeAsSaveable(this.model);
     this.template = this.options.template || templates.edit_question;
-  },
-
-  editTitleInPopup: function(click_event) {
-    this.editTextFieldInPopup('title', click_event);
   },
 
   events: {

@@ -93,7 +93,9 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
   },
 
   defaults: function() { 
-    return this.defaultsFor('question_group');
+    var d = this.defaultsFor('question_group');
+    d.xel_data_values.title = "Assessment";
+    return d;
   },
 
   // Should not have to call directly; 
