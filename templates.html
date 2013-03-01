@@ -9,7 +9,7 @@
   };
 </style>
 
-<script type="text/javascript" src="../js/vendor/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="vendor/jquery-1.9.1.min.js"></script>
 
 <script type="text/javascript">
 
@@ -127,14 +127,14 @@
     (% }; %)
   </div>  
 
-  <div id="dynamo/users/show" type="text/underscore_template">
+  <div id="dynamo/users/show" class="template underscore">
     <div class='user' data-position="(%= position %)">
       <span class='attribute username'>(%= user.username %)</span>
       <span class='attribute guid'>((%= user.guid %))</span>
     </div>
   </div>
 
-  <div id="dynamo/xelements/show" type="text/underscore_template">
+  <div id="dynamo/xelements/show" class="template underscore">
     <div class='attribute title'> (%= data.title %)</div>
     (% _.each(data, function(value, label) { %) 
       <div>
@@ -142,6 +142,55 @@
         <span class='attribute (%= label %)'>(%= value %)</span>
       </div>
     (% }); %)
+  </div>
+
+  <div id="dynamo/question_groups/show" class="template underscore">
+    <h1><span class="title">(%=title%)</span></h1>
+    (% if (directions) { %)
+      <h2>Directions:</h2>
+      <div id="directions">(%= directions %)</div>
+    (% }; %)  
+    <div id="questions"></div>
+  </div>
+
+  <div id="dynamo/question_groups/edit" class="template underscore">
+    <h1><input class="title editable" value="(%=title%)"/></h1>
+    <div>
+      <span class='save_status (%= current_save_state %)'>(%= current_save_text %)</span>
+      <button class='btn save'>Save Now</button>
+    </div>
+    <div class="metadata"></div>
+    <h2>Questions:</h2>
+    <div id="questions"></div>
+  </div>
+
+  <div id="dynamo/questions/show" class="template underscore">
+    (% if (position) { print( t.div(position+")", {class: 'position'}) ); }; %)
+    <div class='instructions'></div>
+    <div class='content'></div>
+    <div class="responseGroup"></div>
+  </div>
+
+  <div id="dynamo/questions/edit" class="template underscore">
+    <span class="h2">(% if (position) { print(position+")") } else { print("Question)") }; %)</span>
+    <h3><input class="title editable" value="(%=title%)"/>
+    <div><span class='save_status (%= current_save_state %)'>(%= current_save_text %)</span></div>
+    <div class="instructions"></div>
+    <div class="content"></div>
+    <h3>Responses:</h3>
+    <div class="responseGroup"></div>
+  </div>
+
+  <div id="dynamo/questions/responses/edit" class="template underscore" >
+    <div class='name attribute edit'><span class="name_value"></span></div>
+    <div class="responseType attribute edit"></div>
+    <div class="typeSpecificAttributesContainer"></div>
+    <div class='responseValuesContainer'></div>
+  </div>
+
+  <div id="dynamo/questions/responses/response_values/edit" class="template underscore">
+    <span class='responseValue label'></span>
+    <span class='responseValue value'></span>
   </div>
 
   <div id="dynamo/activity_tracker/edit_event" class="template underscore">

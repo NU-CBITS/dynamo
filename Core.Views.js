@@ -20,16 +20,14 @@
 // Instead of using the default template loaded into the DIT object 
 // from templates.html, users can pass in their own template as an option
 // to a view.
+// See Core.js and the loadTemplates function for deeper grokking.
 // ************************************************
-
-
 
 // ************************************************
 //
 // View Helper Vars and Functions
 //
 // ************************************************
-
 
 renderInDialog = function(view, dialog_opts) {
   var $popup, opts;

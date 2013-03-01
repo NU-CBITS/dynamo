@@ -133,16 +133,26 @@ Dynamo.isCoreStable = function() {
 
 
 //
-// instant-load Dynamo Templates!!
+// loadTemplates
+// -------------
 //
+// If no templates exist, change to to templates.html
+// in order to load them into local storage.
+// upon completion, templates.html will return to this page, 
+// and this method will again be called from the beginning
 Dynamo.loadTemplates = function() {
   DIT = localStorage.getItem("DYNAMO_TEMPLATES");
   if (!DIT) {
+
+    // If we are currently on:
+    //   http://www.somedomain.com/index.html
+    // templates.html is assumed to be at:
+    //   http://www.somedomain.com/dynamo/templates.html
     var currentLocation = window.location.href;
     localStorage.setItem("DIT_AFTER_LOAD_URL", currentLocation);
-    var locationArray = window.location.href.split("/");
-    locationArray[locationArray.length - 1] = "dynamo/templates.html";
-    templatesLocation = locationArray.join("/");
+    var pathComponents = window.location.href.split("/");
+    pathComponents[pathComponents.length - 1] = "dynamo/templates.html";
+    templatesLocation = pathComponents.join("/");
     window.location.href = templatesLocation;
   } else {
     $(window).unload(function() {

@@ -132,16 +132,16 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   // },
 
-  editTitleInPopup: function(click_event) {
-    this.editTextFieldInPopup('title', click_event);
-  },
+  // editTitleInPopup: function(click_event) {
+  //   this.editTextFieldInPopup('title', click_event);
+  // },
 
   events: function() {
     switch(this.displayEdit) {
       case true:
         return {
-          // 'keyup h1 > input.title.editable': "updateTitle",
-          'click h1 > span.title.editable': "editTitleInPopup",
+          'keyup h1 > input.title.editable': "updateTitle",
+          // 'click h1 > span.title.editable': "editTitleInPopup",
           'click button.btn.save': "saveSaveableModel"
         };
         break;
@@ -150,21 +150,24 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     };
   },
 
-  template: function(data, settings) {
-    if (!this._template) {
-      if (this.displayEdit) {
-        this._template = templates.edit_question_group;
-      }
-      else {
-        this._template = templates.show_question_group;
+  _template: function(data, settings) {
+    if (!this.compiled_template) {
+      if (!this.template) {
+        if (this.displayEdit) {
+          this.template = this.options.edit_template || DIT["dynamo/question_groups/edit"];
+        }
+        else {
+          this.template = this.options.show_template || DIT["dynamo/question_groups/show"];
+        };
       };
+      this.compiled_template = _.template(this.template);
     };
-    return _.template(this._template, data, settings);
+    return this.compiled_template(data, settings);
   },
 
   initialRender: function (argument) {
     var self = this, view;
-    this.$el.html( this.template({
+    this.$el.html( this._template({
         title: this.model.get_field_value('title'),
         directions: this.model.metadata.toJSON().directions,
         current_save_state: this.model.currentSaveState(),
@@ -238,10 +241,10 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
-  // updateTitle: function(keyupEvent) {
-  //   No doing anything - the models attribute is already saved here on keyup
-  //   this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
-  // },
+  updateTitle: function(keyupEvent) {
+    // No doing anything - the models attribute is already saved here on keyup
+    this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
+  },
 
   render: function (argument) {
     if (!this.initiallyRendered()) {
@@ -268,16 +271,27 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('change', this.renderSaveStatus);
     this.model.on('change', this.renderTitle);
     this.initializeAsSaveable(this.model);
-    this.template = this.options.template || templates.edit_question;
   },
 
   events: {
-    'click h3 > span.title.editable': "editTitleInPopup"
+    'click h3 > input.title.editable': "updateTitle"
+    // 'click h3 > span.title.editable': "editTitleInPopup"
+  },
+
+  // editTitleInPopup: function(click_event) {
+  //   this.editTextFieldInPopup('title', click_event);
+  // },  
+
+  updateTitle: function(keyupEvent) {
+    // No doing anything - the models attribute is already saved here on keyup
+    this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
   },
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { throw new Error("No valid template found") };
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/questions/edit"]; 
+      };
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -371,12 +385,13 @@ editResponseView = Backbone.View.extend({
     this.cid = _.uniqueId('editResponseView-');
     this.form_id = this.options.form_id || this.cid;
     this.model.on('change:responseType', this.render);
-    this.template = this.options.template || templates.edit_response;
   },
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { throw new Error("No valid template found") };
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/questions/responses/edit"] 
+      };
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -547,9 +562,11 @@ editResponseValueView = Backbone.View.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = templates.edit_response_value; }
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/questions/responses/response_values/edit"]; 
+      }
       this.compiled_template = _.template(this.template);
-    };
+    }
     return this.compiled_template(data, settings);
   },
 
@@ -985,7 +1002,7 @@ showQuestionView = protoQuestionView.extend({
     this.subViews = [];
     this.position = this.options.position;
 
-    this.template = this.options.template || this.model.show_template || templates.show_question;
+    this.template = this.options.template || this.model.show_template || DIT["dynamo/questions/show"];
 
     this.model.responses.on("add", this.initialRender);
     this.model.responses.on("add", this.render);
