@@ -1238,26 +1238,26 @@ TwoTruthsLieDataView = protoKnockoutView.extend({
 PollResponseView = protoKnockoutView.extend({
 
   template: "" +
-    '<% _.each(responses, function(r) { %>'+
-      '<% if (r.label) { print( t.div(r.label+":") ) }; %>'+
-      '<% _.each(r.responseValues, function(rv) { %>'+
+    '(% _.each(responses, function(r) { %)'+
+      '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
+      '(% _.each(r.responseValues, function(rv) { %)'+
         '<div class="row-fluid person-rating">'+
           '<div class="span4">'+
-            '<strong class="response_option"><%= rv.value %></strong> - '+
-            '<span class="response_percentage"><%= rv.percentage %>%</span>'+
+            '<strong class="response_option">(%= rv.value %)</strong> - '+
+            '<span class="response_percentage">(%= rv.percentage %)%</span>'+
           '</div>'+
           '<div class="response_choosers span8">'+
-            '<% _.each(rv.choosers, function(user) { %>'+
+            '(% _.each(rv.choosers, function(user) { %)'+
               '<div class="user person">'+
                 '<img src="../img/big-person-icon.png" style="width:90px;"><br />'+
-                '<span class="name"><%= user.username %></span>'+
+                '<span class="name">(%= user.username %)</span>'+
               '</div>'+
-            '<% }); %>'+
+            '(% }); %)'+
           '</div>'+
         '</div>'+
       '<hr>'+
-    '<% }); %>'+
-   ' <% }); %>',
+    '(% }); %)'+
+   ' (% }); %)',
 
 
   initialize: function() {
@@ -1432,6 +1432,3 @@ showQuestionPerDatumInCollectionView = protoQuestionView.extend({
     return this.buildViewModel();
   }
 })
-
-//Declares that Question Views have been defined.
-Dynamo.mantleDefinitions.QuestionViews = true;
