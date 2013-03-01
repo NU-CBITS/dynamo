@@ -140,12 +140,8 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     switch(this.displayEdit) {
       case true:
         return {
-<<<<<<< HEAD
-          'keyup h1 > input.title.editable': "updateTitle",
-=======
+          // 'keyup h1 > input.title.editable': "updateTitle",
           'click h1 > span.title.editable': "editTitleInPopup",
-          // 'keyup input': "updateTitle",
->>>>>>> fixed_dynamo_error
           'click button.btn.save': "saveSaveableModel"
         };
         break;
@@ -242,16 +238,10 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
-<<<<<<< HEAD
-  updateTitle: function(keyupEvent) {
-    this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
-  },
-=======
   // updateTitle: function(keyupEvent) {
   //   No doing anything - the models attribute is already saved here on keyup
   //   this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
   // },
->>>>>>> fixed_dynamo_error
 
   render: function (argument) {
     if (!this.initiallyRendered()) {
