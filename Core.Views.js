@@ -864,7 +864,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
 
     //insert dialog
     $btn_clicked.after(""+
-      "<div class='add_dialog btn-group'>"+
+      "<div class='add_dialog btn-toolbar'>"+
         "<button class='add_new btn'>New</button>" +
         "<button class='add_existing btn'>Existing</button>"+
       "</div>");
