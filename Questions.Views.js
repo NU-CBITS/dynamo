@@ -306,6 +306,9 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     this.$el.html( this._template({
       position: this.position,
       title: this.model.get_field_value('title'),
+
+      display:{ del: false },
+
       current_save_state: this.model.currentSaveState(),
       current_save_text: this.model.currentSaveText()
     }));
@@ -326,7 +329,7 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     });
     view.render();
 
-    element = this.$el.find('blockquote.imperative-content:first');
+    element = this.$el.find('div.content:first');
     view = new Dynamo.TextInputView({
       el: element,
       form_id: self.cid,
@@ -400,7 +403,6 @@ editResponseView = Backbone.View.extend({
   initialRender: function() {
     var self = this, view_class, view;
     this.$el.html( this._template(this.model.toJSON()) );
-
     view = new Dynamo.TextInputView({
       el: (this.$el.find('div.name.attribute span.name_value:first')),
       form_id: self.form_id,
@@ -415,7 +417,6 @@ editResponseView = Backbone.View.extend({
       }
     });
     view.render();
-
 
     view = new Dynamo.InputGroupView({
       el: (this.$el.find('div.attribute.responseType')),
