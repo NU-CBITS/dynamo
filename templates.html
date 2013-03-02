@@ -149,6 +149,185 @@
     (% }); %)
   </div>
 
+<div id="dynamo/guides/edit" class="template underscore">
+  <fieldset>
+    <div id="guide_attributes">
+      <label class="text" for="guide_title">Title 
+        <input type="text" placeholder="Guide Title" id="guide_title" value="(%= guide.title %)" class="span6">
+      </label>
+      (%; console.log("guidedPageState: ", guidedPageState); %)
+      (% if (!guide.guided_page_url) { %)
+        <h3> Guided Page </h3>
+        <div><p>
+          Specify the current version of the page for which this guide is being developed.   
+          If you <strong>do not know</strong> what page you are developing this guide for, 
+          you may have <strong>larger problems than I am able to help you with.</strong>
+        </p></div>
+        <label class="text" for="guided_page_url">URL 
+          <input id="guided_page_url"
+                type="text"
+                class="span12" 
+                placeholder="URL of the page this guide is for" value="(%= guide.guided_page_url %)">
+        </label>
+        <div class="btn-toolbar">
+          <button class="load-guided-page btn btn-primary"><i class="icon-upload-alt"></i> Load Guided Page</button>
+        </div>        
+      (% } else { %) 
+        <label class="text" for="guided_page_url">URL 
+          <input id="guided_page_url"
+                type="text"
+                class="span12" 
+                placeholder="URL of the page this guide is for" 
+                value="(%= guide.guided_page_url %)"
+                disabled="disabled">
+        </label>
+        <div class="btn-toolbar">
+          <button class="load-guided-page btn"><i class="icon-upload-alt"></i> Reload</button>
+          <button 
+            class="clear-guided-page btn btn-danger"
+            title="Changing the page to which this guide refers to has a chance of screwing up any actions you've configured.  Make sure you <strong>know what you are doing.</strong>"
+          ><i class="icon-upload-alt"></i> Clear Guided Page</button>
+        </div>
+
+      (% }; %)
+
+      <div class="on-slide-edit" style="(% if (!guide.guided_page_url) { %) display:none; (%} else { %) display:block; (% }; %)">
+        <hr>
+        <div id="slides"></div>
+      </div>
+
+      <hr>
+      <div id="last-save"></div>
+      <div class="save_status"></div>
+      <div class="btn-toolbar">
+        <button class="save btn btn-primary">Save Guide</button>
+        <button class="delete btn btn-danger "><i class="icon-trash"></i> Delete</button>
+      </div>
+    </div>
+  </fieldset>
+</div>  
+
+<div id="dynamo/guides/slides/edit" class="template underscore">
+  <div style="display:block;clear:auto;">
+    <span class="pull-right"><button class="btn btn-danger delete-slide">Delete Slide</button></span>
+  </div>
+  <form>
+    <div id="slide_attributes">
+      <div>
+        <label for="(%= slide.cid %)-slide-title">Title</label>
+        <input  id="(%= slide.cid %)-slide-title"
+                class="title input-large"
+                type="text"
+                placeholder="Slide Title" 
+                value="(%= slide.title %)"/>
+      </div>
+      <div>
+        <div id="(%= slide.cid %)-wysihtml5-toolbar" class="toolbar" style="display: none;">
+          <a data-wysihtml5-command="bold" title="CTRL+B">bold</a> |
+          <a data-wysihtml5-command="italic" title="CTRL+I">italic</a> |
+          <a data-wysihtml5-command="createLink">insert link</a> |
+          <a data-wysihtml5-command="insertImage">insert image</a> |
+          <a data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h1">h1</a> |
+          <a data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h2">h2</a> |
+          <a data-wysihtml5-command="insertUnorderedList">insertUnorderedList</a> |
+          <a data-wysihtml5-command="insertOrderedList">insertOrderedList</a> |
+          <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="red">red</a> |
+          <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="green">green</a> |
+          <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="blue">blue</a> |
+          <a data-wysihtml5-command="undo">undo</a> |
+          <a data-wysihtml5-command="redo">redo</a> |
+          <a data-wysihtml5-command="insertSpeech">speech</a>
+          <a data-wysihtml5-action="change_view">switch to html view</a>
+          
+          <div data-wysihtml5-dialog="createLink" style="display: none;">
+            <label>
+              Link:
+              <input data-wysihtml5-dialog-field="href" value="http://">
+            </label>
+            <a data-wysihtml5-dialog-action="save">OK</a>&nbsp;<a data-wysihtml5-dialog-action="cancel">Cancel</a>
+          </div>
+          
+          <div data-wysihtml5-dialog="insertImage" style="display: none;">
+            <label>
+              Image:
+              <input data-wysihtml5-dialog-field="src" value="http://">
+            </label>
+            <label>
+              Align:
+              <select data-wysihtml5-dialog-field="className">
+                <option value="">default</option>
+                <option value="wysiwyg-float-left">left</option>
+                <option value="wysiwyg-float-right">right</option>
+              </select>
+            </label>
+            <a data-wysihtml5-dialog-action="save">OK</a>&nbsp;<a data-wysihtml5-dialog-action="cancel">Cancel</a>
+          </div>
+        </div>
+        
+        <textarea id="(%= slide.cid %)-slide-content"
+                  class="slide-content" 
+                  style="width:95%;height:400px"
+                  placeholder="Enter content">(%= slide.content %)</textarea>
+        <br />
+        <input type="reset" value="Reset form!">
+      </div>
+    </div>
+  </form>
+
+  <div class="actions-container">
+    <div class="table" style="display:table; width:100%">
+      <div style="display:table-row;">
+          <span style="display:table-cell;"> Label </span>
+          <span style="display:table-cell;"> Action </span>
+          <span style="display:table-cell;"> Target </span>
+          <span style="display:table-cell;"> Duration </span>
+          <span style="display:table-cell;"> Additional </span>
+          <span style="display:table-cell;"> Test </span>
+      </div>
+    </div>
+    <div id="(%= slide.cid %)-slide-actions" class="slide-actions" style="width:100%">
+    </div>
+  </div>
+
+  </div>  
+</div>
+
+  <div id="edit-action-template" class="template underscore">
+    <div class="action">
+      <span class="cell attribute">
+        <input class="input-small" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
+      </span>
+      <span class="cell attribute effect">
+        <select name="effect" class="input-small">
+          (% _.each(actionsAvailable, function(effect_name) { %)
+            <option value="(%= effect_name %)" 
+              (% if (action.effect == effect_name ) { %) selected="selected" (% }; %) >(%= effect_name %)</option>
+          (% }); %)
+        </select>
+      </span>
+      <span class="cell attribute target">
+        <select name="target">
+          (% _.each(actionTargets, function(selector) { %)
+            <option value="(%= selector %)" (% if (action.target == selector ) { %) selected="selected" (% }; %) >
+              (%= selector %)
+            </option>
+          (% }); %)
+        </select>
+      </span>
+      <span class="cell attribute duration">
+        <input class="input-small" 
+                type="text" 
+                name="duration" 
+                data-attribute-name="duration" 
+                value="(%= action.duration %)" /> ms
+      </span>
+      <span class="cell attribute action_attributes"></span>
+      <span>
+        <button class="cell test-action">(%= action.label %)</button>
+      </span>
+    </div>
+  </div>
+
   <div id="dynamo/question_groups/show" class="template underscore">
     <h1><span class="title">(%=title%)</span></h1>
     (% if (directions) { %)

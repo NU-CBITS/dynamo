@@ -274,7 +274,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = templates.edit_guide;
+        this.template = this.options.template || DIT["dynamo/guides/edit"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -418,7 +418,7 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || templates.edit_slide;
+        this.template = this.options.template || DIT["dynamo/guides/slides/edit"];
       };
       this.compiled_template = _.template(this.template)
     };
