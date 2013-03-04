@@ -211,20 +211,18 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     if (!this._initializedIframeLoadFn) {
       $(this.options.iframe_selector).load(function() {
         
-        // once the iframe is loaded...
+        // Once the iframe is loaded...
         self.usableElements = [];
-        $(self.options.iframe_selector).contents().find("div,span,p,a,button").each(function() { 
-          if (this.id || this.className ) {
-            self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
-          };
+        $(self.options.iframe_selector).contents().find("[id]").each(function() {
+          self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
         });
 
         self.usableElements.sort(function(a,b) {
-          //put all elements w/ id's first
+          // Put all elements w/ id's first
           if (a.idName && !b.idName) { return -1 }
           if (!a.idName && b.idName) { return 1  }
 
-          //if they both have id's, sort by tag first
+          // If they both have id's, sort by tag first
           if ( a.tagName < b.tagName ) {
             return -1
           }
@@ -240,7 +238,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
             return 1
           }
 
-          //If we've gotten here, both id's were ""
+          // If we've gotten here, both id's were ""
           if ( a.className < b.className ) {
             return -1
           }
@@ -249,7 +247,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
           }
 
           return 0;
-        }); //sort
+        });// sort
 
         console.log("Usable Elements in Guided Page", self.usableElements);
         $("#iframe-container").show();  
@@ -472,9 +470,9 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       },
       editViewClass: editActionView
     });
+    
+    this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
-
-    this.$el.find('.slide-actions:first').append(self.actionsView.render().$el);
 
   },
 
@@ -511,7 +509,7 @@ editActionView = Backbone.View.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || "NO EDIT-ACTION TEMPLATE";
+        this.template = this.options.template || DIT["dynamo/guides/slides/actions/edit"];
       };
       this.compiled_template = _.template(this.template)
     };

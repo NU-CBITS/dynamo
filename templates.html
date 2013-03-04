@@ -61,7 +61,7 @@
   </div>
 
   <div id="dynamo/core/input_group" class="template underscore">
-    <div id="(%=id%)" name="(%= name %)_field" class="(%=type%)_group">
+    <div id="(%= id %)" name="(%= name %)_field" class="(%= type %)_group">
       (% if (type == 'select') { %)
         (%= t.span(label) %)
         <select name="(%= name %)"> 
@@ -292,17 +292,22 @@
   </div>  
 </div>
 
-  <div id="edit-action-template" class="template underscore">
+  <div id="dynamo/guides/slides/actions/edit" class="template underscore">
     <div class="action">
       <span class="cell attribute">
         <input class="input-small" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
       </span>
       <span class="cell attribute effect">
         <select name="effect" class="input-small">
-          (% _.each(actionsAvailable, function(effect_name) { %)
-            <option value="(%= effect_name %)" 
-              (% if (action.effect == effect_name ) { %) selected="selected" (% }; %) >(%= effect_name %)</option>
-          (% }); %)
+          (% 
+            _.each( actionsAvailable, function(effect_name) { 
+              if (action.effect == effect_name) {
+                print("<option value='"+effect_name+"' selected='selected'>"+effect_name+"</option>")
+              }
+              else {
+                print("<option value='"+effect_name+"'>"+effect_name+"</option>")
+              }
+          }); %)
         </select>
       </span>
       <span class="cell attribute target">
@@ -758,7 +763,7 @@
         </div>
       </div>
       <div id="current-guide-slide-actions" class="well-white well well-small" style="margin:10px 0;">
-      </div>    
+      </div>
       <ul id="current-guide-navigation-buttons" class="pager">
         <li><a href="#" class="previous">&larr; Previous</a></li>
         <li><a href="#" class="next">Next &rarr;</a></li>
