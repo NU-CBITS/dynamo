@@ -295,31 +295,28 @@
   <div id="dynamo/guides/slides/actions/edit" class="template underscore">
     <div class="action">
       <span class="cell attribute">
-        <input class="input-small" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
+        <input class="input-medium" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
       </span>
       <span class="cell attribute effect">
         <select name="effect" class="input-small">
           (%
             var selected_clause;
             _.each(actionsAvailable, function(effect_name) {
-              (action.effect == effect_name) ? selected_clause = " selected='selected'" : selected_clause = "";
-              print("<option value='"+effect_name+"'"+selected_clause+">"+effect_name+"</option>");
+              (action.effect == effect_name) ? (selected_clause = "selected='selected'") : (selected_clause = "");
+              %)<option value="(%= effect_name %)" (%= selected_clause %)>(%= effect_name %)</option>(%
             });
           %)
         </select>
       </span>
       <span class="cell attribute target">
         <select name="target">
-          (% 
+          (%
+            var selected_clause;
             _.each(actionTargets, function(selector) {
-              if (action.target == selector) {
-                print("<option value='"+selector+"' selected='selected'>"+selector+"</option>");
-              }
-              else {
-                print("<option value='"+selector+"'>"+selector+"</option>");
-              };
-            }); 
-           %)
+              (action.target == selector) ? (selected_clause = " selected='selected'") : (selected_clause = "");
+              %)<option value="(%= selector %)" (%= selected_clause %)>(%= selector %)</option>(%
+            });
+          %)
         </select>
       </span>
       <span class="cell attribute duration">
@@ -330,9 +327,7 @@
                 value="(%= action.duration %)" /> ms
       </span>
       <span class="cell attribute action_attributes"></span>
-      <span>
-        <button class="cell test-action">(%= action.label %)</button>
-      </span>
+      <span><button class="cell test-action">(%= action.label %)</button></span>
     </div>
   </div>
 
