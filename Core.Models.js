@@ -27,6 +27,7 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     this.on('change', this.logChange);
     this.on('change', this.setUnsavedChanges);
     this.on('sync',   this.clearUnsavedChanges);
+    this.on('change', this.initiateDebouncedSave);
     this._unsavedChanges = false;
   },
 
@@ -50,6 +51,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
         return 'All changes saved'
     };
   },
+
+  initiateDebouncedSave: _.debounce(function() { this.save(); }, 3000),
 
   startPeriodicSaving: function(interval_in_seconds) {
     console.log('started Periodic saving at the model level every '+interval_in_seconds+' seconds');
