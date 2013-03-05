@@ -213,7 +213,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       $(this.options.iframe_selector).load(function() {
 
         console.log("IFRAME LOADED", this.contentWindow.Backbone);
-        debugger;
 
         this.contentWindow.Backbone.on("PageLoad:Complete", function() {
 
