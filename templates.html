@@ -299,24 +299,27 @@
       </span>
       <span class="cell attribute effect">
         <select name="effect" class="input-small">
-          (% 
-            _.each( actionsAvailable, function(effect_name) { 
-              if (action.effect == effect_name) {
-                print("<option value='"+effect_name+"' selected='selected'>"+effect_name+"</option>")
-              }
-              else {
-                print("<option value='"+effect_name+"'>"+effect_name+"</option>")
-              }
-          }); %)
+          (%
+            var selected_clause;
+            _.each(actionsAvailable, function(effect_name) {
+              (action.effect == effect_name) ? selected_clause = " selected='selected'" : selected_clause = "";
+              print("<option value='"+effect_name+"'"+selected_clause+">"+effect_name+"</option>");
+            });
+          %)
         </select>
       </span>
       <span class="cell attribute target">
         <select name="target">
-          (% _.each(actionTargets, function(selector) { %)
-            <option value="(%= selector %)" (% if (action.target == selector ) { %) selected="selected" (% }; %) >
-              (%= selector %)
-            </option>
-          (% }); %)
+          (% 
+            _.each(actionTargets, function(selector) {
+              if (action.target == selector) {
+                print("<option value='"+selector+"' selected='selected'>"+selector+"</option>");
+              }
+              else {
+                print("<option value='"+selector+"'>"+selector+"</option>");
+              };
+            }); 
+           %)
         </select>
       </span>
       <span class="cell attribute duration">
