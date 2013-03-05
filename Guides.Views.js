@@ -209,51 +209,62 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   initializeOnIframeLoadFn: function() {
     var self = this;
     if (!this._initializedIframeLoadFn) {
+      
       $(this.options.iframe_selector).load(function() {
-        
-        // Once the iframe is loaded...
-        self.usableElements = [];
-        $(self.options.iframe_selector).contents().find("[id]").each(function() {
-          self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
+
+        console.log("IFRAME LOADED", this.contentWindow.Backbone);
+        debugger;
+
+        this.contentWindow.Backbone.on("PageLoad:Complete", function() {
+
+          window.console.log("In Page-Load Callback");
+
+          // Once the iframe is loaded...
+          self.usableElements = [];
+          $(self.options.iframe_selector).contents().find("[id]").each(function() {
+            self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
+          });
+
+          self.usableElements.sort(function(a,b) {
+            // Put all elements w/ id's first
+            if (a.idName && !b.idName) { return -1 }
+            if (!a.idName && b.idName) { return 1  }
+
+            // If they both have id's, sort by tag first
+            if ( a.tagName < b.tagName ) {
+              return -1
+            }
+            if ( a.tagName > b.tagName ) {
+              return 1
+            } 
+
+            // Then by ID name
+            if ( a.idName < b.idName ) {
+              return -1
+            }
+            if ( a.idName > b.idName ) {
+              return 1
+            }
+
+            // If we've gotten here, both id's were ""
+            // if ( a.className < b.className ) {
+            //   return -1
+            // }
+            // if ( a.className > b.className ) {
+            //   return 1
+            // }
+
+            return 0;
+          });// sort
+
         });
 
-        self.usableElements.sort(function(a,b) {
-          // Put all elements w/ id's first
-          if (a.idName && !b.idName) { return -1 }
-          if (!a.idName && b.idName) { return 1  }
-
-          // If they both have id's, sort by tag first
-          if ( a.tagName < b.tagName ) {
-            return -1
-          }
-          if ( a.tagName > b.tagName ) {
-            return 1
-          } 
-
-          // Then by ID name
-          if ( a.idName < b.idName ) {
-            return -1
-          }
-          if ( a.idName > b.idName ) {
-            return 1
-          }
-
-          // If we've gotten here, both id's were ""
-          if ( a.className < b.className ) {
-            return -1
-          }
-          if ( a.className > b.className ) {
-            return 1
-          }
-
-          return 0;
-        });// sort
-
         console.log("Usable Elements in Guided Page", self.usableElements);
-        $("#iframe-container").show();  
-        self.trigger("guided_page:loaded");         
+        $("#iframe-container").show();
+        self.trigger("guided_page:loaded");
 
       }); //load
+
 
     }; // if
     this._initializedIframeLoadFn = true;
