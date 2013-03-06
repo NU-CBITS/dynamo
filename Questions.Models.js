@@ -254,7 +254,9 @@ ResponseModel = Dynamo.Model.extend({
   updateResponseValues: function() {
     this.set('responseValues', this.responseValues.toJSON() );
   },
-  viewClass: function() { return showResponseView },
+  viewClass: function() { 
+    return showResponseView
+  },
   editViewClass: function() { return editResponseView }
 });
 

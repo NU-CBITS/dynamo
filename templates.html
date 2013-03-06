@@ -63,7 +63,7 @@
   <div id="dynamo/core/input_group" class="template underscore">
     <div id="(%= id %)" name="(%= name %)_field" class="(%= type %)_group">
       (% if (type == 'select') { %)
-        (%= t.span(label) %)
+        (%= t.label(label) %)
         <select name="(%= name %)"> 
           (% _.each(options, function(o, index) {
               html_atts = { value: o.value };
@@ -110,20 +110,20 @@
   <div id="dynamo/core/manage_collection/element" class="template underscore">      
     <div class="(%= element_code_name %) element" data-collection_index="(%= index %)">
       (% if (display.del)   { %)
-        <div class="delete_container">
+        <div class="delete_container btn-toolbar" style="margin-top: 0px;">
           <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)" >
             <!-- <i class="icon-trash"></i> -->
             Delete (%= element_pretty_name %)
           </button>
         </div>
       (% } %)
-      (% if (display.edit)  { print(t.div('', { class: 'edit_container' })); } %)
-      (% if (display.show)  { print(t.div('', { class: 'show_container' })); } %)
+      (% if (display.edit)  { print(t.form('', { class: 'edit_container widget' })); } %)
+      (% if (display.show)  { print(t.div('', { class: 'show_container widget' })); } %)
     </div>
     (% if (display.edit) { %)
       <div class="btn-toolbar">
         <div class="btn-group">
-          <button class='btn add-new-(%=element_code_name%)' data-collection-index="0">Add New (%= element_pretty_name %)</button>
+          <button class='btn add-new-(%=element_code_name%)' data-collection-index="0">Create (%= element_pretty_name %)</button>
         (% if (canAddExisting) { %)
           <button class='btn add-existing-(%=element_code_name%)' data-collection-index="0">Add Existing (%= element_pretty_name %)</button>
         (% }; %)
@@ -357,17 +357,19 @@
   </div>
 
   <div id="dynamo/questions/show" class="template underscore">
-    (% if (position) { print( t.div(position+")", {class: 'position'}) ); }; %)
-    <div class='instructions'></div>
-    <div class='content'></div>
-    <div class="responseGroup"></div>
+    <div class="widget-header">
+      (% if (position) { print( t.h3(position+".", {class: 'position'}) ); }; %)
+    </div>
+    <div class="widget-content">
+      <div class='instructions'></div>
+      <div class='content'></div>
+      <div class="responseGroup"></div>
+    </div>
   </div>
 
   <div id="dynamo/questions/edit" class="template underscore">
     <div class="widget-header">
       <h3 class="pull-left">(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
-      <!-- <input class="title editable" style="width:90%;" type="text" value="(%=title%)"/> -->
-
       <h3 class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</h3>
     </div>
     <div class="widget-content">
@@ -380,7 +382,9 @@
   </div>
 
   <div id="dynamo/questions/responses/edit" class="template underscore" >
-    <div class='name attribute edit'><span class="name_value"></span></div>
+    <div class='name attribute edit'>
+      <label class="name_value"></label>
+    </div>
     <div class="responseType attribute edit"></div>
     <div class="typeSpecificAttributesContainer"></div>
     <div class='responseValuesContainer'></div>
