@@ -1176,7 +1176,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
           position: (index+1)
         });
         view = new view_class(view_options);
-        view.setElement( root_element.find("div.edit_container:first") );
+        view.setElement( root_element.find("form.edit_container:first") );
         view.render();
       };
 
@@ -1331,7 +1331,6 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
       $users = this.$el.find('div.users:first');
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
-        display:{ show: true, edit: true, del: false }
       });
       $users.append(self.usersView.$el)
     // };

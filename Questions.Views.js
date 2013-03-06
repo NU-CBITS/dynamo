@@ -404,11 +404,11 @@ editResponseView = Backbone.View.extend({
     var self = this, view_class, view;
     this.$el.html( this._template(this.model.toJSON()) );
     view = new Dynamo.TextInputView({
-      el: (this.$el.find('div.name.attribute span.name_value:first')),
+      el: (this.$el.find('div.name.attribute label.name_value:first')),
       form_id: self.form_id,
       responseType: 'line',
       updateOn: 'keypress',
-      label: 'Name of Field',
+      label: 'Name',
       getValue: function() {
         return self.model.get('name');
       },
@@ -421,7 +421,7 @@ editResponseView = Backbone.View.extend({
     view = new Dynamo.InputGroupView({
       el: (this.$el.find('div.attribute.responseType')),
       form_id: self.form_id,
-      label: 'responseType',
+      label: 'Response Type',
       getValue: function() {
         return self.model.get('responseType');
       },
@@ -445,13 +445,17 @@ editResponseView = Backbone.View.extend({
         view,
         view_options = {
           tagName: 'div',
-          className: 'attribute edit '+attr,
+          className: 'attribute edit',
           form_id: self.cid,
-          label: attr,
+          label: attr.capitalize(),
           getValue: function() {
             return self.model.get(attr);
           },
           setValue: function(new_value) {
+            // set name attribute as default 'tableized' label value
+            if (self.model.attributes.name.length !== 0) { 
+              self.model.set("name", new_value.toLowerCase().replace(/ /g,"_"));
+            };
             return self.model.set(attr, new_value);
           }
         };
@@ -959,7 +963,16 @@ protoQuestionView = Dynamo.protoQuestionView = Dynamo.BaseUnitaryXelementView.ex
     if (  (!this.options.xelement_id && (!this.model || (this.model && !this.model.id)) ) || 
           !this.options.user_id || 
           !this.options.group_id ) {
-      throw new Error("(xelement_id or model.id), user_id, and group_id are all required")
+          
+          console.warn("(xelement_id or model.id), user_id, and group_id are required to actually save data to the server!/n We will be returning a TempData object instead");
+
+          this.userResponseModel = new Dynamo.TempData({
+            xelement_id: this.options.xelement_id || this.model.id,
+            user_id: this.options.user_id,
+            group_id: this.options.group_id,
+          })
+
+
     }
     else {
       this.userResponseModel = new Dynamo.Data({
@@ -1092,7 +1105,7 @@ showQuestionView = protoQuestionView.extend({
       console.log('RE-RENDERING QUESTION');
     };
     this.$el.find('div.instructions:first').html(this.model.metaContent.get('instructions'));
-    this.$el.find('blockquote.imperative-content:first').html(this.model.get_field_value('content'));
+    this.$el.find('div.content:first').html(this.model.get_field_value('content'));
     // Do not worry about subView rendering; they can re-render themselves as necessary.
     return this;
   }

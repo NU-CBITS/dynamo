@@ -99,6 +99,16 @@ t.div = function(content, attributes) {
   return t.tag('div', attributes, content);
 };
 
+// form
+t.form = function(content, attributes) {
+  return t.tag('form', attributes, content);
+};
+
+// form
+t.h3 = function(content, attributes) {
+  return t.tag('h3', attributes, content);
+};
+
 //link
 t.link = function(label, href, attributes) {
   attributes = attributes || {};
