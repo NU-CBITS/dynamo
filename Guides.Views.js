@@ -149,7 +149,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('sync', function(model, response, options) {
       console.log("GUIDE SAVED:", model, response, options);
       self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
-      self.model.clearUnsavedChanges;
+      // self.model.clearUnsavedChanges;
     })
 
     this.model.on('error', function(model, xhr, options) {
