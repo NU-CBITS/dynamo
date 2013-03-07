@@ -147,7 +147,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   showArrayView.prototype.render = function() {
     var self = this, fields;
     this.$el.empty();
-    if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
+    // if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
 
     _.each(this.getArrayFn(), function(event) {
       fields = event.get_fields_as_object();

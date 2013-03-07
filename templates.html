@@ -706,32 +706,48 @@
 
 
   <div id="dynamo/activity_tracker/show_event" class="template underscore">
-    <div class="patient-health-record-header list-item" data-cid="(%= item.cid %)">
-      <h4 id="show-event-title">(%= item.title %)</h4>
-      <div id="show-start-end-times-container">
-        <strong>From: </strong><span id="show-event-start-time">(%= item.start.toString() %)</span>
-        <div class="clearfix"></div>
-        <strong>Until: </strong><span id="show-event-end-time">(%= item.end.toString() %)</span>
+    <div class="item" data-cid="<%= item.cid %>">
+
+      <div class="stream-icon orange">
+        <i class="icon-calendar"></i>
       </div>
+      <p class="date">(%= item.start.toString().replace("GMT-0600 (CST)", "") %)</p>
+
+      <!-- <h4 id="show-event-title">(%= item.title %)</h4> -->
+      <h4>(%= item.title %)</h4>
       <div class="row-fluid">
-        <div class="span6">
-          <strong>Pleasure</strong>
-          <ul> 
-            <li id="show-predicted-pleasure">Predicted: (%= item.predicted_pleasure %)</li>
-            <li id="show-predicted-pleasure">Actual: (%= item.actual_pleasure %)</li>
-          </ul>
-        </div>
-        <div class="span6">
-          <strong>Accomplishment</strong>
-          <ul>
-            <li id="show-predicted-accomplishment">Predicted: (%= item.predicted_accomplishment %)</li>
-            <li id="show-predicted-accomplishment">Actual: (%= item.actual_accomplishment %)</li>
-          </ul>
-        </div>
+        <p style="color:black;">
+          <div id="show-start-end-times-container">
+            From: <span id="show-event-start-time">(%= item.start.toString() %)</span>
+            <div class="clearfix"></div>
+            Until: <span id="show-event-end-time">(%= item.end.toString() %)</span>
+          </div>
+        </p>
+        <p style="color:black;">
+          <div class="row-fluid">
+            <div class="span6">
+              Pleasure:
+              <ul> 
+                <li id="show-predicted-pleasure">Predicted: (%= item.predicted_pleasure %)</li>
+                <li id="show-predicted-pleasure">Actual: (%= item.actual_pleasure %)</li>
+              </ul>
+            </div>
+            <div class="span6">
+              Accomplishment:
+              <ul>
+                <li id="show-predicted-accomplishment">Predicted: (%= item.predicted_accomplishment %)</li>
+                <li id="show-predicted-accomplishment">Actual: (%= item.actual_accomplishment %)</li>
+              </ul>
+            </div>
+          </div>
+          Emotional Intensity:
+          <span id="show-emotion">(%= item.emotion %)</span>
+          <span id="show-emotion-intensity"> (%= item.emotion_intensity %)</span>
+        </p>
       </div>
-      <strong>Emotional Intensity</strong>
-      <span id="show-emotion">(%= item.emotion %)</span><span id="show-emotion-intensity">((%= item.emotion_intensity %))</span>
+
     </div>
+
   </div>
 
   <div id="dynamo/guides/index" class="template underscore">
