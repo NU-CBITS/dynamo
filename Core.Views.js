@@ -1163,7 +1163,7 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function() {
 
     _.bindAll(this);
-    this.cid = _.uniqueId('ShowGroupView-');
+    this.cid = _.uniqueId('EditGroupView-');
     this.subViews = [];
     this.position = this.options.position
     this.model.on("change",   this.render);
@@ -1178,7 +1178,8 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   attributes: function() {
     return {
       id: "group-"+this.model.cid,
-      class: "group"
+      class: "group",
+      "data-id": this.model.id
     }
   },
 
@@ -1211,25 +1212,25 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
     //render template
     var self, view_class, view;
 
-    console.log('-> ShowGroupView render');
-
     self = this;
-    self.$el.html( self.template({
-        position: this.position,
-        group: this.model.toJSON()
+    self.$el.html( self._template({
+        group: this.model.toJSON(),
+        position: this.position
       })
     );
 
-    // if (!self.usersView) {
-      $users = this.$el.find('div.users:first');
+    $users = this.$el.find('div.users:first');
+    if ( $users.length !== 0 ) {
+
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
         display:{ show: true, edit: true, del: false }
       });
-      $users.append(self.usersView.$el)
-    // };
 
-    self.usersView.render();
+      $users.append(self.usersView.$el)
+
+      self.usersView.render();
+    };
 
     return this;
   }
