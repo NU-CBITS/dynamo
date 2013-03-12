@@ -156,7 +156,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
       self.$el.append( self._elementTemplate({item: fields}) );
     });
 
-    $('div.list-item', this.$el).on('click', this.onElementClick);
+    $('div.item', this.$el).on('click', this.onElementClick);
   
   };
   
@@ -1990,5 +1990,46 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
     })
 
   }
+
+  // Setup Thought Goals  
+
+  // ThoughtsToolGoals = new XelementCollection(XELEMENTS.filter(function(xel) {
+  //   return (xel.get_field_value("title") == "Thought  Goal")
+  // })); 
+
+  // ThoughtsToolGoalData = new DataCollection(null);
+
+  // ThoughtsToolGoals.each(function(goal_xel) {
+  //   var data;
+
+  //   //Fetch any existing data on the server for this user and goal.
+  //   var dc = new DataCollection(null, {
+  //     xelement_id: goal_xel.id,
+  //     user_id: Dynamo.CURRENT_USER_ID,
+  //     group_id: Dynamo.CURRENT_GROUP_ID      
+  //   });
+  //   dc.fetch({async: false});
+
+  //   if (dc.length > 0) {
+  //     data = dc.first();
+  //   }
+  //   else {
+  //     //if length is 0, then no data exists, create new object.
+  //     data = new Dynamo.Data({
+  //       server_url: Dynamo.TriremeURL,
+  //       xelement_id: goal_xel.id,
+  //       user_id: Dynamo.CURRENT_USER_ID,
+  //       group_id: Dynamo.CURRENT_GROUP_ID       
+  //     });
+  //   };
+    
+  //   ThoughtsToolGoalData.add(data); 
+  //   //either way, it gets added to the collection of user data about calendar goals.
+  // });
+
+  // goalsView = new GoalsView({
+  //   goals:  ThoughtsToolGoals,
+  //   goalData: ThoughtsToolGoalData
+  // });
 
 });
