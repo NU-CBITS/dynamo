@@ -124,8 +124,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.guidedPageSM = StateMachine.create({
       initial: 'blank',
       events: [
-        { name: 'load', from: ['blank', 'loaded'], to: 'loaded' },
-        { name: 'clear', from: ['blank', 'loaded'], to: 'blank' }
+        { name: 'skip',   from: ['blank', 'none', 'loaded'], to: 'none'   },
+        { name: 'load',   from: ['blank', 'loaded'], to: 'loaded' },
+        { name: 'clear',  from: ['blank', 'loaded'], to: 'blank'  }
       ]
     });
 
@@ -176,7 +177,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   events: function() {
     return {
       'keyup input#guide_title'         : "updateTitle",
-      'click button.load-guided-page'   : "updateURLAndRender",
+      'keyup input#guide_description'   : "updateDescription",
+      'click button.skip-guided-page'   : "skipGuidedPage",
+      'click button.load-guided-page'   : "updateGuidedPage",
       'click button.clear-guided-page'  : "clearGuidedPage",  
       'click button.save'               : "saveGuide",
       'click button.delete'             : "destroyGuide"
@@ -198,11 +201,18 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
-  updateURLAndRender: function() {
+  updateGuidedPage: function() {
     this.model.guided_page_url = $('input#guided_page_url').val();
     this.loadGuidedPage();
     this.guidedPageSM.load();
     this.initialRender(); 
+    this.render();
+  },
+
+  skipGuidedPage: function() {
+    this.model.guided_page_url = "[None]";
+    this.guidedPageSM.skip();
+    this.initialRender();
     this.render();
   },
 
@@ -297,10 +307,21 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     self.model.set_field_value('title', val );
   },
 
+  updateDescription: function(clickEvent) {
+    var self = this;
+    var val = $(clickEvent.currentTarget).val();
+    self.model.set_field_value('content_description', val );
+  },  
+
   initialRender: function (argument) {
     //more of a 'state-based' render when it comes to guides...
 
     var atts;
+
+    if (this.model.guided_page_url === "[None]") {
+      this.guidedPageSM.skip();
+    };
+
 
     atts = { 
       guide: this.model.get_fields_as_object(),
@@ -355,7 +376,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   render: function (argument) {
 
     if (!this.initiallyRendered()) { 
-
       this.initialRender(); 
       this.setInitialRender(); 
     };
