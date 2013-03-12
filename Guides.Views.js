@@ -99,6 +99,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
     this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );
 
+    $slide_content.empty();
     $slide_content.html( this.currentSlide.get_field_value("content") );
     $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
     
