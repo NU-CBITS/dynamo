@@ -1,29 +1,109 @@
 //
-//
 //  Dynamo.Core.Views.js
-//
 //
 //  Dependencies:
 //    - Dynamo.Core.js
 //    - Dynamo.Core.Models.js
 
 
+// ************************************************
+// GLOBAL TEMPLATES
+// ----------------
+// 
+// Global templates are defined in templates.html
+// and are loaded on Dynamo.initialize into a Global object, DIT 
+// (the acronym for the silly name, Dynamo Instant Templates);
 //
-// A Global templates object is initialized.
-// Each view in the file depends upon a specific key
-// w/in this object being defined, but the way in which
-// that is done is left up to the user.
+// Each Dynamo view has a default template in templates.html 
+// for which the id of the template is the key in the DIT object.
 //
-// For example,
-// The question editor currently does this in a 2 step process:
-// 1) the templates are injected into the index file as script blocks
-// through the CMS and,
-// 2) These script blocks are then reads them into the templates object as strings
-// through JQUERY
+// Instead of using the default template loaded into the DIT object 
+// from templates.html, users can pass in their own template as an option
+// to a view.
+// See Core.js and the loadTemplates function for deeper grokking.
+// ************************************************
+
+// ************************************************
 //
-templates = {};
+// View Helper Vars and Functions
+//
+// ************************************************
+
+renderInDialog = function(view, dialog_opts) {
+  var $popup, opts;
+
+  opts = {
+    autoOpen: true,
+    modal: true,
+    width: "auto",
+    height: "auto",
+    position: { my: "right top", at: "right top" },
+
+    close: function (beforeCloseEvent) {
+      //Attempt cleanup / avoid mem leaks.
+      view.trigger('close');
+      view.remove()
+      view = null;
+    }
+  };
+
+  opts = _.extend(opts, dialog_opts);
+
+  // Global Popup Container
+  if ( $('div#popup_container').length == 0 ) {
+    $('body').append('<div id="popup_container"><div>')
+  };
+
+  $popup = $('div#popup_container');
+  $popup.empty();
+  $popup.dialog(opts);
+  $popup.append( view.$el );
+  view.render();
+
+  return $popup;
+};
 
 
+// Select the appropriate view class for a for a particular type of form input
+viewClassForInputType = function (input_type) {
+  var self = this
+  switch( input_type ) {
+    case "text": case "textarea":
+      return Dynamo.TextInputView;
+      break;
+    case "radio": case "select": case "checkbox":
+      return Dynamo.InputGroupView;
+      break;
+    case "range":
+      return Dynamo.InputRangeView;
+      break;
+    case "slide": case "slider":
+      return Dynamo.InputSliderView;
+      break;
+    default:
+      throw "viewClassForInputType: No view class defined for input_type '"+input_type+"'";
+      break;
+  };
+};
+
+function HTMLizeJSON(obj) {
+  html = "";
+  _.each(obj, function(value, key) {
+    if ( _.isObject(value) ) {
+      html = html +
+            "<div>"+
+              "<span class='key'>"+key+"</span>" +
+              "<span class='value'><div class='sub_object'>"+(HTMLizeJSON(value))+"</div></span></div>";
+    }
+    else if ( _.isArray(value) ) {
+      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'><div class='array'>"+(_.each( value, function(el) { return HTMLizeJSON(el)} ))+"</div></span></div>";
+    }
+    else {
+      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'>"+value+"</span></div>";
+    }
+  })
+  return html;
+}
 
 
 // 
@@ -67,7 +147,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   showArrayView.prototype.render = function() {
     var self = this, fields;
     this.$el.empty();
-    if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
+    // if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
 
     _.each(this.getArrayFn(), function(event) {
       fields = event.get_fields_as_object();
@@ -84,9 +164,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 
 }) ();
 
-
-
-//
+/**************************************
 //
 //  InputViews
 //
@@ -110,7 +188,9 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 //      - canHaveResponseValues: A boolean specifying whether this InputView can (must?) accept
 //          a discrete set of values as its reply.
 //
-//
+**************************************/
+
+
 
 // Dynamo.TextInputView
 //  A general purpose way to create a text input
@@ -121,6 +201,20 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 //    a setter method - called whenever there is a 'new value' event generated from the view.
 //    updateOn - if set to 'keyup', it will call the setter method after each character typed.
 //               By default, the setter method is only the text-field's 'change' event
+
+// var someExternalModel = new Backbone.Model({});
+// //stuff...
+// var attrView = Dynamo.TextInputView({
+//   responseType: "textarea",
+//   getValue: function() {
+//     return someExternalModel.get("someAttributeOfTheModel")
+//   },
+//   setValue: function(new_val) {
+//     return someExternalModel.set({  someAttributeOfTheModel: new_val});
+//   }
+// });
+// attrView.render();
+
 Dynamo.TextInputView = Backbone.View.extend(
   //
   //instance properties
@@ -252,10 +346,11 @@ Dynamo.InputGroupView = Backbone.View.extend(
       this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
       this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
     },
-    template: '<div id="<%=id%>" name="<%= name %>_field" class="<%=type%>_group"> <% if (type == "select") { %> <%= t.span(label) %> <select name="<%= name %>"> <% _.each(options, function(o, index) { html_atts = { value: o.value }; if (selected_value == o.value) { html_atts.selected = "selected" }; print( t.formInput("option", o.label, html_atts) ); }); %> </select> <% }; %> <% if (type == "radio" || type == "checkbox") { %> <%= t.div(label) %> <% _.each(options, function(o, index) { html_atts = { name: name, value: o.value}; console.log("option: ", o, "html_atts: ", html_atts); if (selected_value == o.value) { html_atts.checked = "checked" }; print( t.div(t.formInput(type, o.label, html_atts), { class: "label_and_input" } ) ); }); %> <% }; %> </div>',
     _template: function(data, settings) {
       if (!this.compiled_template) {
-        if (!this.template) { throw new Error("No valid template found") };
+        if (!this.template) { 
+          this.template = this.options.template || DIT["dynamo/core/input_group"];
+        };
         this.compiled_template = _.template(this.template);
       };
       return this.compiled_template(data, settings);
@@ -567,7 +662,7 @@ Dynamo.InputSliderView = Backbone.View.extend(
 );
 
 
-//
+/**************************************************
 //
 // Aspect Views
 //
@@ -577,7 +672,9 @@ Dynamo.InputSliderView = Backbone.View.extend(
 // that lets the user select one model out of a collection,
 // regardless of what is contained within the collection
 //
-//
+**************************************************/
+
+
 
 //  Dynamo.ChooseFromCollectionView
 //  expects:
@@ -623,7 +720,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || templates.choose_one_xelement;
+        this.template = this.options.template || DIT["dynamo/core/choose_one_xelement"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -635,9 +732,9 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     var elements = this.collection.map(function(m) { return { id: m.id, cid: m.cid, html: self.modelHTML(m) }  });
     this.$el.html(
       this._template({
-        collection_name: (this.options.collection_name || this.collection.prettyModelName()),
+        collection_name: (this.options.collection_name || this.collection.codeCollectionName || this.collection.prettyModelName()),
         elements: elements,
-        canCreateNew: this.options.canCreateNew,
+        canCreateNew: this.options.canCreateNew || false,
         xelement_type: this.options.xelement_type,
         element_pretty_name: this.options.element_pretty_name
       })
@@ -753,8 +850,20 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
   setInitialRender: function() { this._initialRender = true; },
   clearInitialRender: function() { this._initialRender = false; },
   completeRender: function() {
-    this.clearInitialRender();
-    this.render();
+    if ( _.isEmpty(arguments) ) {
+      this.clearInitialRender();
+      return this.render();
+    }
+    // If arguments are not empty, then we assume it is being called after a 'sync' event.
+    // The Three arguments would be: (model, resp, options).
+    // The response will always return at least a new version_id and the received_at time (b/c 
+    // of the xelements schema and the Backbone.sync specification that the server return only 
+    // attributes changed by the server).  
+    // Since we would not have need to update the view in this case, only update it in other cases:
+    if (arguments[1] && _.keys(arguments[1]).length > 2 ) {
+      this.clearInitialRender();
+      return this.render();      
+    };
   }
 
 });
@@ -788,6 +897,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.start_content = this.options.start_content || '';
     this.end_content = this.options.end_content || '';
     this.display = this.options.display || { show: true };
+    this.canAddExisting = !!this.options.enableAddExisting;
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
     this.collection.on("remove", this.render);
@@ -795,7 +905,8 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
 
   events: function() {
     var self = this, e ={};
-    e[("click button.insert."+self.collection.codeModelName())] = "addAtIndexHandler";
+    e[("click button.add-new-"+self.collection.codeModelName())] = "addNew";
+    e[("click button.add-existing-"+self.collection.codeModelName())] = "addExisting";
     e[("click button.delete."+self.collection.codeModelName())] = "removeElement";
     return e;
   },
@@ -808,18 +919,41 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   //    collection (but that are not already a part of it) can also be
   //    added to the collection.
   //
-  addAtIndexHandler: function(clickEvent) {
 
-    if (this.options.addAtIndexHandler) { return this.options.addAtIndexHandler() };
+  addNew: function(clickEvent) {
+    
+    if (this.options.addNewHandler) { 
+      return this.options.addNewHandler(clickEvent) 
+    };
+    
+    return this.addNewAtIndex( $(clickEvent.currentTarget).data("collection-index") );
 
-    if (this.options.enableAddExisting) {
-      this.addNewOrExistingAtIndexDialog(clickEvent, this.addNewAtIndex, this.chooseExistingToAddAtIndex);
-    } else {
-      var index = clickEvent.currentTarget.dataset.collection_index;
-      this.addNewAtIndex(index);
+  },
+
+  addExisting: function(clickEvent) {
+    
+    if (this.options.enableAddExisting) { 
+      
+      if (this.options.addExistingHandler) {
+        return this.options.addExistingHandler( $(clickEvent.currentTarget).data("collection-index") )
+      }
+      return chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
+    
     };
 
   },
+
+  // addAtIndexHandler: function(clickEvent) {
+  //   if (this.options.addAtIndexHandler) { return this.options.addAtIndexHandler() };
+
+  //   if (this.options.enableAddExisting) {
+  //     this.addNewOrExistingAtIndexDialog(clickEvent, this.addNewAtIndex, this.chooseExistingToAddAtIndex);
+  //   } else {
+  //     var index = clickEvent.currentTarget.dataset.collection_index;
+  //     this.addNewAtIndex(index);
+  //   };
+
+  // },
 
   //  When someone clicks 'New [Model Class]' on an instantiation of the
   //  ManageCollectionView, they may want the choice to
@@ -829,40 +963,41 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   //  then this function creates the dialog that allows the user to choose
   //  between the options of 'New' or 'Existing' and
   //  then handles the result of the user's selection.
-  addNewOrExistingAtIndexDialog: function(clickEvent, newAtIndexCallback, existingAtIndexCallback) {
+  // addNewOrExistingAtIndexDialog: function(clickEvent, newAtIndexCallback, existingAtIndexCallback) {
+  //   var self = this,
+  //       $btn_clicked = $(clickEvent.currentTarget),
+  //       // Fetch the current index at which we want to insert a question.
+  //       element_index = parseInt($btn_clicked.attr("data-collection_index"));
 
-    var self = this,
-        $btn_clicked = $(clickEvent.currentTarget),
-        // Fetch the current index at which we want to insert a question.
-        element_index = parseInt($btn_clicked.attr("data-collection_index"));
+  //   //insert dialog
+  //   $btn_clicked.after(""+
+  //     "<div class='add_dialog btn-toolbar'>"+
+  //       "<div class='btn-group'>"+
+  //         "<button class='add_new btn'>New</button>"+
+  //         "<button class='add_existing btn'>Existing</button>"+
+  //       "</div>"+
+  //     "</div>");
 
-    //insert dialog
-    $btn_clicked.after(""+
-      "<div class='add_dialog'>"+
-        "<button class='add_new'>New</button>" +
-        "<button class='add_existing'>Existing</button>"
-      +"</div>");
+  //   //find inserted dialog
+  //   $add_dlg = $btn_clicked.parent().find("div.add_dialog");
 
-    //find inserted dialog
-    $add_dlg = $btn_clicked.parent().find("div.add_dialog");
+  //   //add_new element handler
+  //   $add_dlg.find("button.add_new").click(function() {
+  //     newAtIndexCallback(element_index);
+  //     //cleanup
+  //     $add_dlg.remove();
+  //     $add_dlg = null;
+  //   });
 
-    //add_new element handler
-    $add_dlg.find("button.add_new").click(function() {
-      newAtIndexCallback(element_index);
-      //cleanup
-      $add_dlg.remove();
-      $add_dlg = null;
-    });
+  //   //add_existing element handler
+  //   $add_dlg.find("button.add_existing").click(function() {
+  //     existingAtIndexCallback(element_index)
+  //     //cleanup
+  //     $add_dlg.remove();
+  //     $add_dlg = null;
+  //   });
 
-    //add_existing element handler
-    $add_dlg.find("button.add_existing").click(function() {
-      existingAtIndexCallback(element_index)
-      //cleanup
-      $add_dlg.remove();
-      $add_dlg = null;
-    });
-
-  },
+  // },
 
   //  Default implementation of addNewAtIndex;
   //  called by default addAtIndexHandler can be overridden
@@ -934,37 +1069,6 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       title: "Add a "+self.collection.prettyModelName()+" (in position "+(element_index+1)+")"
     });
 
-
-    // if ( $('div#popup_container').length == 0 ) {
-    //   $('body').append('<div id="popup_container"><div>')
-    // };
-    // self.$popup = $('div#popup_container');
-
-    // //Show the dialog
-    // self.$popup.empty();
-
-    // self.$popup.dialog({
-    //   autoOpen: true,
-    //   modal: true,
-    //   width: "auto",
-    //   height: "auto",
-    //   title: "Add a "+self.collection.prettyModelName()+" (in position "+(element_index+1)+")",
-    //   position: { my: "right top", at: "right top" },
-
-    //   close: function (beforeCloseEvent) {
-    //     //Attempt to cleanup / avoid mem leaks.
-    //     self.trigger('chooseExistingModelView:close');
-
-    //     if (self.chooseExistingModelView) { self.chooseExistingModelView.remove() };
-    //     self.chooseExistingModelView = null;
-    //     $chooseQcontainer = null;
-    //   }
-
-    // });
-
-    // self.$popup.append( self.chooseExistingModelView.$el );
-    // self.chooseExistingModelView.render();
-
   },
 
   onChoosingModelToAdd: function(chosen_element, element_index) {
@@ -987,7 +1091,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || templates.manage_collection_widget;
+        this.template = this.options.template || DIT["dynamo/core/manage_collection"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -998,7 +1102,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   _elementTemplate: function(data, settings) {
     if (!this.compiledElementTemplate) {
       if (!this.elementTemplate) {
-        this.elementTemplate = this.options.elementTemplate || templates.collection_widget_element;
+        this.elementTemplate = this.options.elementTemplate || DIT["dynamo/core/manage_collection/element"];
       }
     };
     this.compiledElementTemplate = _.template(this.elementTemplate)
@@ -1029,6 +1133,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       element_code_name: this.collection.codeModelName(),
       element_pretty_name: this.collection.prettyModelName(),
       display: this.display,
+      canAddExisting: this.canAddExisting,
       num_elements: self.collection.length,
       end_content: this.end_content
     }));
@@ -1041,6 +1146,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
         self._elementTemplate({
           index: index,
           display: self.display,
+          canAddExisting: self.canAddExisting,
           element_code_name: self.collection.codeModelName(),
           element_pretty_name: self.collection.prettyModelName()
         })
@@ -1053,7 +1159,9 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
         view_options = self.options.viewOpts || {};
         view_options = _.extend(view_options, {
           model: model,
-          position: (index+1)
+          position: (index+1),
+          user_id: (Dynamo.CurrentUser().id || "GUEST-USER-GUID"),
+          group_id:  (Dynamo.CurrentUser().get("group_id") || "GUEST-GROUP-GUID"),
         });
         view = new view_class(view_options);
         view.setElement( root_element.find("div.show_container:first") );
@@ -1068,7 +1176,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
           position: (index+1)
         });
         view = new view_class(view_options);
-        view.setElement( root_element.find("div.edit_container:first") );
+        view.setElement( root_element.find("form.edit_container:first") );
         view.render();
       };
 
@@ -1145,7 +1253,6 @@ Dynamo.ShowGroupView = Dynamo.BaseUnitaryXelementView.extend({
       $groups = this.$el.find('div.groups:first');
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
-        display:{ show: true, edit: false, del: false },
         enableAddExisting: true,
         getExistingAddablesCollection: this.options.existingUsers
       });
@@ -1224,7 +1331,6 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
-        display:{ show: true, edit: true, del: false }
       });
 
       $users.append(self.usersView.$el)
@@ -1260,7 +1366,9 @@ Dynamo.ShowXelementSimpleView =  Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = templates.show_xelement_simple; }
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/xelements/show"]; 
+      };
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -1307,7 +1415,7 @@ Dynamo.ShowUserView = Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = this.options.template || templates.show_user; }
+      if (!this.template) { this.template = this.options.template || DIT["dynamo/users/show"]; }
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -1354,7 +1462,7 @@ Dynamo.EditUserView = Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = this.options.template || templates.edit_user; }
+      if (!this.template) { this.template = this.options.template || DIT["dynamo/users/edit"] }
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -1381,14 +1489,14 @@ Dynamo.EditUserView = Dynamo.BaseUnitaryXelementView.extend({
 
 
 
-//The purpose of this view is to allow programming that still
-//uses backbone for what it is good at:
-//separating concerns related to a model and view, 
-//and to allow continued use of backbone collections
+//  The purpose of this view is to allow programming that still
+//  uses backbone for what it is good at:
+//  separating concerns related to a model and view, 
+//  and to allow continued use of backbone collections
 //
-//But to then allow you to seemlessly use Knockout 
-//at what it is good at: declarative binding of 
-//dom elements to model attributes, with integrated dom manipulation.
+//  But to then allow you to seemlessly use Knockout 
+//  at what it is good at: declarative binding of 
+//  dom elements to model attributes, with integrated dom manipulation.
 ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
   initialize: function() {
@@ -1656,85 +1764,208 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
 });
 
-// ************************************************
-//
-// View Helper Vars and Functions
-//
-// ************************************************
-//
 
-renderInDialog = function(view, dialog_opts) {
-  var $popup, opts;
 
-  opts = {
-    autoOpen: true,
-    modal: true,
-    width: "auto",
-    height: "auto",
-    position: { my: "right top", at: "right top" },
+GoalsView = Dynamo.GoalsView = Backbone.View.extend({
 
-    close: function (beforeCloseEvent) {
-      //Attempt cleanup / avoid mem leaks.
-      view.trigger('close');
-      view.remove()
-      view = null;
+  className: "row-fluid",
+
+  initialize: function() {
+    _.bindAll(this);
+    this.currentStatusToDisplay = "display-all";
+    this.displayAllBtnClass = "";
+    this.unansweredBtnClass = "";
+    this.completedBtnClass = "";
+    this.ignoredBtnClass = "";
+    this.goals = this.options.goals;
+    this.goalData = this.options.goalData;
+  },
+
+  events: {
+    "click .display-all": "setToAll",
+    "click .unanswered": "setToUnanswered",
+    "click .completed": "setToCompleted",
+    "click .ignored": "setToIgnored"
+  },
+
+  setToAll: function() {
+    this.currentStatusToDisplay = "display-all";
+    this.render();
+  },
+  setToUnanswered: function() {
+    this.currentStatusToDisplay = "unanswered";
+    this.render();
+  },
+
+  setToCompleted: function() {
+    this.currentStatusToDisplay = "completed";
+    this.render();
+  },  
+
+  setToIgnored: function() {
+    this.currentStatusToDisplay = "ignored";
+    this.render();
+  },
+
+  template: function() {
+    this.setButtonStatus();
+    return _.template(''+
+      '<div id="goals-accordion-header" class="row-fluid"><legend class="span11"><span class="legend-header">Goals</span>'+
+      '<div class="btn-group pull-right">'+
+        '<button data-status="unanswered" type="button" class="goals-btn btn unanswered '+this.unansweredBtnClass+'">Current</button>'+
+        '<button class="btn dropdown-toggle" data-toggle="dropdown">'+
+          '<span class="caret"></span>'+
+        '</button>'+
+        '<ul class="dropdown-menu">'+
+          '<li><a data-status="display-all" type="button" class="goals-btn display-all '+this.displayAllBtnClass+'">All</a></li>'+
+          '<li><a data-status="completed" type="button" class="goals-btn completed '+this.completedBtnClass+'" style="color:green;">Completed</a></li>'+
+          '<li><a data-status="ignored" type="button" class="goals-btn ignored '+this.ignoredBtnClass+'" style="color:#b30000;">Ignored</a></li>'+
+        '</ul>'+
+      '</div>'+
+      '</legend>'+
+      '<div class="span1 caret-icons"><i class="icon-caret-right pull-right"></i></div></div>'+
+      '<ul id="goals" class="accordion-body"></ul>');
+  },
+
+  // filterGoalData: function(clickEvent) {
+  //   var target = clickEvent.currentTarget
+  //   var status = $(target).data('status')
+  //   console.log("status", status)
+  //   this.currentStatusToDisplay = status
+  //   this.render()
+  // },
+
+  goalSnippet: function(goalXEL, alertKlass, alertIcon) {
+    var xelementID = goalXEL.id;
+    var goalName = goalXEL.metacontent().name;
+    var goalDescription = goalXEL.metacontent().description;
+    return ""+
+      "<li>"+
+        "<div class=\"list-item span11 "+alertKlass+"\">" +
+          "<div class=\"span1\"><i class=\""+alertIcon+" icon-color\"></i></div>" +
+          "<div class=\"span9\">" +
+            "<strong>" + goalName + "</strong> - "+goalDescription +
+          "</div>" +
+          "<div class=\"span2\"><button type=\"button\" class=\"btn set-activity-goal ignore btn-remove btn-mini\" data-dismiss=\"alert\" data-xelement-id=\""+xelementID+"\"><i class=\"icon-remove\"></i></button><button type=\"button\" class=\"btn set-activity-goal btn-ok btn-mini\" data-dismiss=\"alert\" data-xelement-id=\""+xelementID+"\"><i class=\"icon-ok set-activity-goal\" data-xelement-id=\""+xelementID+"\"></i></button></div>" +
+        "</div>"+
+        "<div class=\"clearfix\"></div>"+
+      "</li>"
+  },
+
+  appendGoalData: function() {
+    var self = this
+    var data_to_display = []
+    var ul = self.$el.find('ul#goals')
+    ActivityCalGoals.each(function(goal_xel) {
+      var relevantData = ActivityCalGoalData.find(function(ud) {
+        return (ud.get("xelement_id") == goal_xel.id) 
+      });
+      switch (self.currentStatusToDisplay) {
+        case "unanswered":
+          self.displayUnansweredGoals(relevantData, ul, self, goal_xel);
+        break;
+        case "completed":
+          self.displayCompletedGoals(relevantData, ul, self, goal_xel);
+        break;
+        case "ignored":
+          self.displayIgnoredGoals(relevantData, ul, self, goal_xel);
+        break;
+        case "display-all":
+          self.displayUnansweredGoals(relevantData, ul, self, goal_xel);
+          self.displayCompletedGoals(relevantData, ul, self, goal_xel);
+          self.displayIgnoredGoals(relevantData, ul, self, goal_xel);
+        break;
+      };
+    });
+    if (ul.find('li').length === 0) {
+      ul.html("<div class='span12' style='text-align:center;padding-top: 5px;'><strong>No Goals Exist</strong></div><div class='clearfix'></div>");
+    };
+  },
+
+  displayUnansweredGoals: function(relevantData, ul, view, goalXel) {
+    if (!relevantData.id) {
+      ul.append( view.goalSnippet(goalXel, "yellow-header", "icon-remove-sign") );
     }
-  };
+  },
 
-  opts = _.extend(opts, dialog_opts);
+  displayCompletedGoals: function(relevantData, ul, view, goalXel) {
+    if (relevantData.get_field_value('status') == "completed") {
+      ul.append( view.goalSnippet(goalXel, "green-header", "icon-ok-sign"));
+    };
+    ul.find('.green-header button.btn-ok').hide();
+  },
 
-  // Global Popup Container
-  if ( $('div#popup_container').length == 0 ) {
-    $('body').append('<div id="popup_container"><div>')
-  };
+  displayIgnoredGoals: function(relevantData, ul, view, goalXel) {
+    if (relevantData.get_field_value('status') == "ignored") {
+      ul.append( view.goalSnippet(goalXel, "red-header", "icon-exclamation-sign") );
+    };
+    ul.find('.red-header button.btn-remove').hide();
+  },
 
-  $popup = $('div#popup_container');
-  $popup.empty();
-  $popup.dialog(opts);
-  $popup.append( view.$el );
-  view.render();
+  placeGoalTooltips: function() {
+    this.$el.find("i.icon-remove").tooltip({
+      title: "Ignore Goal"
+    });
+    this.$el.find("i.icon-ok").tooltip({
+      title: "Check if Completed"
+    });
+  },
 
-  return $popup;
-};
+  render: function() {
+    this.$el.html(this.template())
+    this.appendGoalData();
+    this.setActivityGoalHandlers();
+    this.placeGoalTooltips();
+    return this
+  },
 
+  setButtonStatus: function(){
+    var self = this;
+    self.displayAllBtnClass = "";
+    self.unansweredBtnClass = "";
+    self.completedBtnClass = "";
+    self.ignoredBtnClass = "";
 
-// Select the appropriate view class for a for a particular type of form input
-viewClassForInputType = function (input_type) {
-  var self = this
-  switch( input_type ) {
-    case "text": case "textarea":
-      return Dynamo.TextInputView;
+    switch (this.currentStatusToDisplay) {
+      case "display-all":
+        self.displayAllBtnClass = "active";
       break;
-    case "radio": case "select": case "checkbox":
-      return Dynamo.InputGroupView;
+      case "unanswered":
+        self.unansweredBtnClass = "active";
       break;
-    case "range":
-      return Dynamo.InputRangeView;
+      case "completed":
+        self.completedBtnClass = "active";
       break;
-    case "slide": case "slider":
-      return Dynamo.InputSliderView;
+      case "ignored":
+        self.ignoredBtnClass = "active";
       break;
-    default:
-      throw "viewClassForInputType: No view class defined for input_type '"+input_type+"'";
-      break;
-  };
-};
-
-function HTMLizeJSON(obj) {
-  html = "";
-  _.each(obj, function(value, key) {
-    if ( _.isObject(value) ) {
-      html = html +
-            "<div>"+
-              "<span class='key'>"+key+"</span>" +
-              "<span class='value'><div class='sub_object'>"+(HTMLizeJSON(value))+"</div></span></div>";
     }
-    else if ( _.isArray(value) ) {
-      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'><div class='array'>"+(_.each( value, function(el) { return HTMLizeJSON(el)} ))+"</div></span></div>";
-    }
-    else {
-      html = html + "<div><span class='key'>"+key+"</span>"+"<span class='value'>"+value+"</span></div>";
-    }
-  })
-  return html;
-}
+  },
+
+  setActivityGoalHandlers: function() {
+    self = this;
+    this.$el.find('.set-activity-goal').click(function(event) {
+
+      var target = $(event.currentTarget);
+      var xelementID = target.data('xelement-id')
+      console.log("xelement", xelementID)
+      
+      var data = ActivityCalGoalData.find(function(goalData) {
+        return (goalData.get("xelement_id") == xelementID) 
+      });
+
+      if (target.hasClass('ignore')) {
+        data.set_field('status', "string", "ignored")
+      } else {
+        data.set_field('status', "string", "completed")
+      };
+
+      data.save();
+
+      console.log("status", data.get_field_value('status'))
+      self.render()
+    })
+
+  }
+
+});

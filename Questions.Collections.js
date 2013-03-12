@@ -53,6 +53,3 @@
     prettyCollectionName: "Response Values"
 
   });
-
-  //Declares that Question Collections Have Been defined.
-  Dynamo.mantleDefinitions.QuestionCollections = true;

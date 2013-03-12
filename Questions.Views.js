@@ -132,15 +132,16 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   // },
 
-  editTitleInPopup: function(click_event) {
-    this.editTextFieldInPopup('title', click_event);
-  },
+  // editTitleInPopup: function(click_event) {
+  //   this.editTextFieldInPopup('title', click_event);
+  // },
 
   events: function() {
     switch(this.displayEdit) {
       case true:
         return {
-          'click h1 > span.title.editable': "editTitleInPopup",
+          'keyup h1 > input.title.editable': "updateTitle",
+          // 'click h1 > span.title.editable': "editTitleInPopup",
           'click button.btn.save': "saveSaveableModel"
         };
         break;
@@ -149,21 +150,24 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     };
   },
 
-  template: function(data, settings) {
-    if (!this._template) {
-      if (this.displayEdit) {
-        this._template = templates.edit_question_group;
-      }
-      else {
-        this._template = templates.show_question_group;
+  _template: function(data, settings) {
+    if (!this.compiled_template) {
+      if (!this.template) {
+        if (this.displayEdit) {
+          this.template = this.options.edit_template || DIT["dynamo/question_groups/edit"];
+        }
+        else {
+          this.template = this.options.show_template || DIT["dynamo/question_groups/show"];
+        };
       };
+      this.compiled_template = _.template(this.template);
     };
-    return _.template(this._template, data, settings);
+    return this.compiled_template(data, settings);
   },
 
   initialRender: function (argument) {
     var self = this, view;
-    this.$el.html( this.template({
+    this.$el.html( this._template({
         title: this.model.get_field_value('title'),
         directions: this.model.metadata.toJSON().directions,
         current_save_state: this.model.currentSaveState(),
@@ -237,6 +241,11 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
+  updateTitle: function(keyupEvent) {
+    // No doing anything - the models attribute is already saved here on keyup
+    this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
+  },
+
   render: function (argument) {
     if (!this.initiallyRendered()) {
       console.log('INITIAL QUESTION_GROUP SHOW RENDER');
@@ -262,20 +271,27 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('change', this.renderSaveStatus);
     this.model.on('change', this.renderTitle);
     this.initializeAsSaveable(this.model);
-    this.template = this.options.template || templates.edit_question;
-  },
-
-  editTitleInPopup: function(click_event) {
-    this.editTextFieldInPopup('title', click_event);
   },
 
   events: {
-    'click h3 > span.title.editable': "editTitleInPopup"
+    'click h3 > input.title.editable': "updateTitle"
+    // 'click h3 > span.title.editable': "editTitleInPopup"
+  },
+
+  // editTitleInPopup: function(click_event) {
+  //   this.editTextFieldInPopup('title', click_event);
+  // },  
+
+  updateTitle: function(keyupEvent) {
+    // No doing anything - the models attribute is already saved here on keyup
+    this.model.set_field_value("title", $(keyupEvent.currentTarget).val());
   },
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { throw new Error("No valid template found") };
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/questions/edit"]; 
+      };
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -290,6 +306,9 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     this.$el.html( this._template({
       position: this.position,
       title: this.model.get_field_value('title'),
+
+      display:{ del: false },
+
       current_save_state: this.model.currentSaveState(),
       current_save_text: this.model.currentSaveText()
     }));
@@ -310,7 +329,7 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     });
     view.render();
 
-    element = this.$el.find('blockquote.imperative-content:first');
+    element = this.$el.find('div.content:first');
     view = new Dynamo.TextInputView({
       el: element,
       form_id: self.cid,
@@ -369,12 +388,13 @@ editResponseView = Backbone.View.extend({
     this.cid = _.uniqueId('editResponseView-');
     this.form_id = this.options.form_id || this.cid;
     this.model.on('change:responseType', this.render);
-    this.template = this.options.template || templates.edit_response;
   },
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { throw new Error("No valid template found") };
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/questions/responses/edit"] 
+      };
       this.compiled_template = _.template(this.template);
     };
     return this.compiled_template(data, settings);
@@ -383,13 +403,12 @@ editResponseView = Backbone.View.extend({
   initialRender: function() {
     var self = this, view_class, view;
     this.$el.html( this._template(this.model.toJSON()) );
-
     view = new Dynamo.TextInputView({
-      el: (this.$el.find('div.name.attribute span.name_value:first')),
+      el: (this.$el.find('div.name.attribute label.name_value:first')),
       form_id: self.form_id,
       responseType: 'line',
       updateOn: 'keypress',
-      label: 'Name of Field',
+      label: 'Name',
       getValue: function() {
         return self.model.get('name');
       },
@@ -399,11 +418,10 @@ editResponseView = Backbone.View.extend({
     });
     view.render();
 
-
     view = new Dynamo.InputGroupView({
       el: (this.$el.find('div.attribute.responseType')),
       form_id: self.form_id,
-      label: 'responseType',
+      label: 'Response Type',
       getValue: function() {
         return self.model.get('responseType');
       },
@@ -427,13 +445,17 @@ editResponseView = Backbone.View.extend({
         view,
         view_options = {
           tagName: 'div',
-          className: 'attribute edit '+attr,
+          className: 'attribute edit',
           form_id: self.cid,
-          label: attr,
+          label: attr.capitalize(),
           getValue: function() {
             return self.model.get(attr);
           },
           setValue: function(new_value) {
+            // set name attribute as default 'tableized' label value
+            if (self.model.attributes.name.length !== 0) { 
+              self.model.set("name", new_value.toLowerCase().replace(/ /g,"_"));
+            };
             return self.model.set(attr, new_value);
           }
         };
@@ -545,9 +567,11 @@ editResponseValueView = Backbone.View.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { this.template = templates.edit_response_value; }
+      if (!this.template) { 
+        this.template = this.options.template || DIT["dynamo/questions/responses/response_values/edit"]; 
+      }
       this.compiled_template = _.template(this.template);
-    };
+    }
     return this.compiled_template(data, settings);
   },
 
@@ -939,7 +963,16 @@ protoQuestionView = Dynamo.protoQuestionView = Dynamo.BaseUnitaryXelementView.ex
     if (  (!this.options.xelement_id && (!this.model || (this.model && !this.model.id)) ) || 
           !this.options.user_id || 
           !this.options.group_id ) {
-      throw new Error("(xelement_id or model.id), user_id, and group_id are all required")
+          
+          console.warn("(xelement_id or model.id), user_id, and group_id are required to actually save data to the server!/n We will be returning a TempData object instead");
+
+          this.userResponseModel = new Dynamo.TempData({
+            xelement_id: this.options.xelement_id || this.model.id,
+            user_id: this.options.user_id,
+            group_id: this.options.group_id,
+          })
+
+
     }
     else {
       this.userResponseModel = new Dynamo.Data({
@@ -983,7 +1016,7 @@ showQuestionView = protoQuestionView.extend({
     this.subViews = [];
     this.position = this.options.position;
 
-    this.template = this.options.template || this.model.show_template || templates.show_question;
+    this.template = this.options.template || this.model.show_template || DIT["dynamo/questions/show"];
 
     this.model.responses.on("add", this.initialRender);
     this.model.responses.on("add", this.render);
@@ -1072,7 +1105,7 @@ showQuestionView = protoQuestionView.extend({
       console.log('RE-RENDERING QUESTION');
     };
     this.$el.find('div.instructions:first').html(this.model.metaContent.get('instructions'));
-    this.$el.find('blockquote.imperative-content:first').html(this.model.get_field_value('content'));
+    this.$el.find('div.content:first').html(this.model.get_field_value('content'));
     // Do not worry about subView rendering; they can re-render themselves as necessary.
     return this;
   }
@@ -1226,26 +1259,26 @@ TwoTruthsLieDataView = protoKnockoutView.extend({
 PollResponseView = protoKnockoutView.extend({
 
   template: "" +
-    '<% _.each(responses, function(r) { %>'+
-      '<% if (r.label) { print( t.div(r.label+":") ) }; %>'+
-      '<% _.each(r.responseValues, function(rv) { %>'+
+    '(% _.each(responses, function(r) { %)'+
+      '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
+      '(% _.each(r.responseValues, function(rv) { %)'+
         '<div class="row-fluid person-rating">'+
           '<div class="span4">'+
-            '<strong class="response_option"><%= rv.value %></strong> - '+
-            '<span class="response_percentage"><%= rv.percentage %>%</span>'+
+            '<strong class="response_option">(%= rv.value %)</strong> - '+
+            '<span class="response_percentage">(%= rv.percentage %)%</span>'+
           '</div>'+
           '<div class="response_choosers span8">'+
-            '<% _.each(rv.choosers, function(user) { %>'+
+            '(% _.each(rv.choosers, function(user) { %)'+
               '<div class="user person">'+
                 '<img src="../img/big-person-icon.png" style="width:90px;"><br />'+
-                '<span class="name"><%= user.username %></span>'+
+                '<span class="name">(%= user.username %)</span>'+
               '</div>'+
-            '<% }); %>'+
+            '(% }); %)'+
           '</div>'+
         '</div>'+
       '<hr>'+
-    '<% }); %>'+
-   ' <% }); %>',
+    '(% }); %)'+
+   ' (% }); %)',
 
 
   initialize: function() {
@@ -1420,6 +1453,3 @@ showQuestionPerDatumInCollectionView = protoQuestionView.extend({
     return this.buildViewModel();
   }
 })
-
-//Declares that Question Views have been defined.
-Dynamo.mantleDefinitions.QuestionViews = true;

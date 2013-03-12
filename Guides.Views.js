@@ -1,5 +1,121 @@
 // Guides.Views.js
 
+// PlayGuideView = Dynamo.PlayGuideView = Dynamo.BaseUnitaryXelementView.extend({
+
+//   events: function() {
+//     return {
+//       'click button.next-slide'         : "nextAndRender",
+//       'click button.previous-slide'     : "previousAndRender",
+//       'click button.jump-to-slide'      : "jumpAndRender",
+//     };
+//   },
+
+//   render: function (argument) {
+
+//     this.renderTemplate();
+//     this.renderCurrentSlide();
+
+//     return this;
+//   }
+// });
+
+GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
+
+  initialize: function() {
+    this.guideData = this.options.guideData;
+  },
+
+  events: {
+    "click .next" : "moveForward",
+    "click .previous" : "moveBack",
+    "click .do-action" : "performAction"
+  },
+
+  currentSlideIndex: function() {
+    return this._currentSlideIndex;
+  },
+
+  moveBack: function() {
+    try {
+      this._currentSlideIndex = this._currentSlideIndex - 1;
+      if (this._currentSlideIndex < 0) { this._currentSlideIndex = 0 };
+      this.renderSlide();     
+    } 
+    catch (e) {
+      console.warn("Error when clicking back: ", e);
+    }
+  },
+
+  moveForward: function() {
+    try {
+      this._currentSlideIndex = this._currentSlideIndex + 1;
+      if (this._currentSlideIndex >= this.currentGuide.slides.length) { 
+        this._currentSlideIndex = this.currentGuide.slides.length - 1;
+      };
+      this.renderSlide();
+    }
+    catch (e) {
+      console.warn("Error when clicking next: ", e);
+    }
+  },
+
+  resetCurrentSlide: function() {
+    this._currentSlideIndex = 0;
+  },
+
+  performAction: function(clickEvent) {
+    var cid = $(clickEvent.currentTarget).data("cid");
+    var action = this.currentSlide.actions.get(cid);
+    action.execute();
+  },
+
+  render: function() {
+
+    var self = this;
+
+    this.$el.html( self._template({}) );
+
+    self.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
+      template: DIT["dynamo/guides/index"],
+      collection: self.collection
+    });
+
+    self.guideSelect.on("element:chosen", function() {
+      
+      self.currentGuide = self.guideSelect.chosen_element;
+      self.currentGuideData = self.guideData.filter(function(guide) { return guide.xelement_id == self.currentGuide.id });
+      self.resetCurrentSlide();
+      self.renderSlide();
+    });
+    self.$el.find("div#guide-select-nav").prepend(self.guideSelect.render().$el);
+
+    return this;
+
+  },
+
+  renderSlide: function() {
+    var $slide_content = this.$el.find("div#current-guide-slide-content"),
+        $actions = $("div#current-slide-actions");
+
+    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );
+
+    $slide_content.html( this.currentSlide.get_field_value("content") );
+    $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
+    
+    $actions.empty();
+    this.currentSlide.actions.each(function(action) {
+
+      $actions.append( 
+        t.span({ style:"margin-right:10px;"},
+          t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
+        ) 
+      );
+
+    });
+    return this;
+  }
+
+});
 
 // Depends on https://github.com/jakesgordon/javascript-state-machine
 EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
@@ -13,18 +129,10 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       ]
     });
 
-    this.gDocSM = StateMachine.create({
-      initial: 'blank',
-      events: [
-        { name: 'load', from: ['blank', 'loaded'], to: 'loaded' },
-        { name: 'clear', from: ['blank', 'loaded'], to: 'blank' }
-      ]
-    });
-
     this.slideEditing = StateMachine.create({
       initial: 'forbidden',
       events: [
-        { name: 'allow', from: 'forbidden', to: 'allowed' },
+        { name: 'allow', from: ['forbidden', 'allowed'], to: 'allowed' },
         { name: 'stop', from: ['forbidden', 'allowed'], to: 'forbidden' }
       ]
     });
@@ -35,23 +143,26 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('sync', this.completeRender); //  completeRender = inherited method
     this.initializeAsSaveable(this.model);
 
-    // Set the Guide as having unsaved changes
-    // when a question changes.
-    // Currently, this makes sense b/c the view provides 1
-    // save button to the user for saving the entire question group.
-    // If any question is altered, then it qualifies as a save status
-    // change event on the questionGroup even though
-    // no data at the question-group level.
-    // Perhaps something to optimize later.
-    this.model.slides.on('change', this.setUnsavedChanges);
+    var self = this;
 
-    this.model.on("import:success", this.completeRender); //  completeRender = inherited method
+    //update view w/ most recent save-status information
+    this.model.on('sync', function(model, response, options) {
+      console.log("GUIDE SAVED:", model, response, options);
+      self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
+      // self.model.clearUnsavedChanges;
+    })
 
-    this.model.on("import:error", function() {
-      alert("There was an error importing the Google Doc, you can check the console for more information.");
+    this.model.on('error', function(model, xhr, options) {
+      console.warn("FAILED_GUIDE_SAVE:", model, xhr, options);
+      self.$el.find("div#last-save").html(
+        "<p style='color:red;'>Last Save FAILED at: "+(new Date().toLocaleTimeString())+"</p>"+
+        "<p> You may want to try again or check the log.</p>" 
+      );
     });
+    this.model.on('save_status_change', this.renderSaveStatus);
 
     this._initializedIframeLoadFn = false;
+    this._additionalRender = false;
 
   },
 
@@ -65,122 +176,119 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   events: function() {
     return {
       'keyup input#guide_title'         : "updateTitle",
-      'click button.load-guided-page'   : "loadAndRender",
-      'click button.clear-guided-page'  : "clearGuidedPage",
-      'click button.import'             : "updateDocURLAndImport",
-      'click button.clear-import'       : "clearImport",      
-      'click button.save'               : "saveSaveableModel"
+      'click button.load-guided-page'   : "updateURLAndRender",
+      'click button.clear-guided-page'  : "clearGuidedPage",  
+      'click button.save'               : "saveGuide",
+      'click button.delete'             : "destroyGuide"
     };
   },
 
+  destroyGuide: function() {
+    this.model.destroy();
+    this.slidesView.remove();
+    this.slidesView = null;
+    this.$el.remove();
+  },
+
   clearGuidedPage: function() {
-    this.model.set({ guided_page_url: "" });
+    this.model.guided_page_url = "";
     this.slideEditing.stop();
-    this.gDocSM.clear();
     this.guidedPageSM.clear();
+    this.clearInitialRender();
     this.render();
   },
 
-  clearImport: function() {
-    this.model.set({ private_gdoc_url: "" });
-    this.slideEditing.stop();
-    this.gDocSM.clear();
-    this.render();
-  },  
-
-  importFromGDoc: function() {
-    this.model.importFromGDoc();
-    this.gDocSM.load();
-  },
-
-  loadAndRender: function() {
+  updateURLAndRender: function() {
+    this.model.guided_page_url = $('input#guided_page_url').val();
     this.loadGuidedPage();
     this.guidedPageSM.load();
+    this.initialRender(); 
     this.render();
   },
 
   initializeOnIframeLoadFn: function() {
     var self = this;
     if (!this._initializedIframeLoadFn) {
+      
       $(this.options.iframe_selector).load(function() {
-        // once the iframe is loaded...
-        
-        $(self.options.iframe_selector).contents().find("div,span,p,a,button").each(function() { 
-          if (this.id || this.className ) {
+
+        console.log("IFRAME LOADED", this.contentWindow.Backbone);
+
+        this.contentWindow.Backbone.on("PageLoad:Complete", function() {
+
+          window.console.log("In Page-Load Callback");
+
+          // Once the iframe is loaded...
+          self.usableElements = [];
+          $(self.options.iframe_selector).contents().find("[id]").each(function() {
             self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
-          };
+          });
+
+          self.usableElements.sort(function(a,b) {
+            // Put all elements w/ id's first
+            if (a.idName && !b.idName) { return -1 }
+            if (!a.idName && b.idName) { return 1  }
+
+            // If they both have id's, sort by tag first
+            if ( a.tagName < b.tagName ) {
+              return -1
+            }
+            if ( a.tagName > b.tagName ) {
+              return 1
+            } 
+
+            // Then by ID name
+            if ( a.idName < b.idName ) {
+              return -1
+            }
+            if ( a.idName > b.idName ) {
+              return 1
+            }
+
+            // If we've gotten here, both id's were ""
+            // if ( a.className < b.className ) {
+            //   return -1
+            // }
+            // if ( a.className > b.className ) {
+            //   return 1
+            // }
+
+            return 0;
+          });// sort
+
         });
 
-        self.usableElements.sort(function(a,b) {
-          //put all elements w/ id's first
-          if (a.idName && !b.idName) { return -1 }
-          if (!a.idName && b.idName) { return 1  }
-
-          //if they both have id's, sort by tag first
-          if ( a.tagName < b.tagName ) {
-            return -1
-          }
-          if ( a.tagName > b.tagName ) {
-            return 1
-          } 
-
-          // Then by ID name
-          if ( a.idName < b.idName ) {
-            return -1
-          }
-          if ( a.idName > b.idName ) {
-            return 1
-          }
-
-          //If we've gotten here, both id's were ""
-          if ( a.className < b.className ) {
-            return -1
-          }
-          if ( a.className > b.className ) {
-            return 1
-          }
-
-          return 0;
-        }); //sort
-
-        console.log("Available Elements in Guided Page", self.usableElements);
-        $("#iframe-container").show();  
-        self.trigger("guided_page:loaded");        
-        alert("Loading page...");        
+        console.log("Usable Elements in Guided Page", self.usableElements);
+        $("#iframe-container").show();
+        self.trigger("guided_page:loaded");
 
       }); //load
+
 
     }; // if
     this._initializedIframeLoadFn = true;
   },
 
   loadGuidedPage: function() {
-    var self = this,
-        src = $('input#guided_page_url').val();
-    self.model.set_field_value("guided_page_url", src);
-    self.usableElements = [];
-    $(self.options.iframe_selector).prop("src", src);
+    $(this.options.iframe_selector).prop("src", this.model.guided_page_url);
     this.initializeOnIframeLoadFn();
+  },
+
+  saveGuide: function() {
+    var self = this;
+    this.model.save();
   },
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = templates.edit_guide;
+        this.template = this.options.template || DIT["dynamo/guides/edit"];
       };
       this.compiled_template = _.template(this.template)
     };
 
     return this.compiled_template(data, settings);
   },
-
-  updateDocURLAndImport: function() {
-    var gdoc_url = $('input#private_gdoc_url').val();
-    this.model.set_field_value("private_gdoc_url", gdoc_url);
-    this.importFromGDoc();
-    this.render();
-  },
-
 
   updateTitle: function(clickEvent) {
     var self = this;
@@ -191,57 +299,22 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   initialRender: function (argument) {
     //more of a 'state-based' render when it comes to guides...
-    
-    if (!this.guidedPageSM.is('blank') && !this.gDocSM.is('blank') && this.slideEditing.is("allowed")) {
-      var self = this;
-
-      //refresh direct attributes (i.e., non-slides) with model values:
-      _.each({ 
-        title: 'input#guide_title',
-        guided_page_url: "input#guided_page_url",
-        private_gdoc_url: "input#private_gdoc_url"
-      }, function(value, key) {
-        self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
-      });  
-      
-      return;
-    };
 
     var atts;
 
     atts = { 
       guide: this.model.get_fields_as_object(),
-      guidedPageState: this.guidedPageSM.current,
-      gDocState: this.gDocSM.current
+      guidedPageState: this.guidedPageSM.current
     };
+    atts.guide.guided_page_url = this.model.guided_page_url;
 
     this.$el.html( this._template(atts) );
-
-    if (this.guidedPageSM.is('blank') && this.model.get_field_value("guided_page_url")) {
-      this.loadGuidedPage();
-      this.guidedPageSM.load();
-    };
-
-    if ( !this.guidedPageSM.is('blank') && this.model.get_field_value("private_gdoc_url")) {
-      this.gDocSM.load();
-    };
-
-    atts = { 
-      guide: this.model.get_fields_as_object(),
-      guidedPageState: this.guidedPageSM.current,
-      gDocState: this.gDocSM.current
-    };
-    this.$el.html( this._template(atts) );
-    
-    if (!this.guidedPageSM.is('blank') && !this.gDocSM.is('blank')) {
-      this.renderSlides();
-    }
 
   },
 
   renderSlides: function() {
-    var self = this;
-
+    var self = this,
+        $slides_container = this.$el.find('div#slides');
     
     this.slidesView = new Dynamo.ChooseOneXelementFromCollectionView({
       collection: self.model.slides,
@@ -249,43 +322,72 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       xelement_type: 'static_html'
     });
 
+    this.model.slides.on("add", this.slidesView.render);
+    this.model.slides.on("remove", this.slidesView.render);
+
     this.slidesView.on("element:chosen", function() {
       
       //Update Current Slide
+      self.current_slide = null;
       self.current_slide = self.slidesView.chosen_element;
 
       //Add to collection once saved;
       if (  self.current_slide.isNew() && 
             !_.contains(self.model.slides, self.current_slide) ) {
         
-        self.current_slide.once("sync", function() {
-          self.model.slides.add(self.current_slide);
-        });
+        self.model.slides.add(self.current_slide);
+        self.slidesView.render();
         
       };
 
+      self.current_slide.on('change:title', self.slidesView.render);
       // Trigger Current Slide Change
       self.trigger("slide:chosen");
 
     });
 
-    this.$el.find('div#slides').append(this.slidesView.render().$el);
+    $slides_container.empty();
+    $slides_container.append(this.slidesView.render().$el);
     this.slideEditing.allow();
+
   },
 
   render: function (argument) {
 
-    this.initialRender();
+    if (!this.initiallyRendered()) { 
 
-    // this.renderSaveStatus();
+      this.initialRender(); 
+      this.setInitialRender(); 
+    };
+
+    if ( this.guidedPageSM.is('blank') && this.model.guided_page_url ) {
+      this.loadGuidedPage();
+      this.guidedPageSM.load();
+    };
+
+    if (!this.guidedPageSM.is('blank') && this.slideEditing.is("allowed")) {
+      var self = this;
+
+      //refresh direct attributes (i.e., non-slides) with model values:
+      _.each({ 
+        title: 'input#guide_title',
+        guided_page_url: "input#guided_page_url"
+      }, function(value, key) {
+        self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
+      });  
+    };
+
+    this.renderSlides();
+    this.renderSaveStatus();
 
     return this;
   }
 
 });
 
-ShowSlideEditActionsView = Dynamo.ShowSlideEditActionsView = Dynamo.BaseUnitaryXelementView.extend({
+editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function (options) {
+    var self = this;
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
@@ -300,195 +402,48 @@ ShowSlideEditActionsView = Dynamo.ShowSlideEditActionsView = Dynamo.BaseUnitaryX
       id: "slide-"+this.model.cid,
       class: "slide"
     }
+  },
+
+  destroySlide: function() {
+    delete this.editor;
+    this.actionsView.remove();
+    this.actionsView = null;
+    this.model.destroy();
+    this.clearInitialRender();
+    this.$el.remove();   
   },
 
   events: function() {
-    return {
-      'click button.save': "saveSaveableModel"
-    };
+    var e = {};
+    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
+    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
+    e[change_title_key] = "updateTitle";
+    e[change_content_key] = "updateContent";
+    e["click button.delete-slide"] = "destroySlide";
+    return e;
   },
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = templates.show_slide_edit_actions;
+        this.template = this.options.template || DIT["dynamo/guides/slides/edit"];
       };
       this.compiled_template = _.template(this.template)
     };
 
     return this.compiled_template(data, settings);
-  },
-
-  initialRender: function (argument) {
-    var atts;
-    
-    atts = { 
-      slide: this.model.get_fields_as_object() 
-    };
-
-    self.$el.html( self._template( atts ) );
-
-    // actionsView = new Dynamo.ChooseOneXelementFromCollectionView({
-    //   collection: self.model.slides,
-    //   xelement_type: 'slide',
-    //   canCreateNew: true
-    // });
-
-    // actionsView.on("element:chosen", function() {
-      
-    //   //Update Current Slide
-    //   self.current_slide = actionsView.chosen_element;
-
-    //   //Add to collection once saved;
-    //   if (  self.current_slide.isNew() && 
-    //         !_.contains(self.model.slides, self.current_slide) ) {
-        
-    //     self.current_slide.once("sync", function() {
-    //       self.model.slides.add(self.current_slide);
-    //     });
-        
-    //   };
-
-    //   // Trigger Current Slide Change
-    //   self.trigger("action:chosen");
-
-    // });
-
-    // this.$el.find('div#slides').append(actionsView.$el);
-    // actionsView.render();
-
-  },
-
-  render: function (argument) {
-    this.renderSaveStatus();
-    if (!this.initiallyRendered()) {
-      
-      console.log('INITIAL SLIDE RENDER');
-      this.initialRender();
-      this.setInitialRender();
-
-    } else {
-      
-      var self = this;
-
-      console.log('SLIDE RE-RENDER');
-      _.each({ 
-        title: 'input#slide-title'
-      }, function(value, key) {
-        self.$el.children('div#slide-attributes').find(value).val( self.model.get_field_value(key) );  
-      });
-
-    };
-    return this;
-  }
-
-});
-
-editActionView = Backbone.View.extend({
-  initialize: function() {
-    _.bindAll(this);
-    this.allActions = _.keys(ActionDictionary);
-  },
-
-  events: {
-    "change select[name='name']": "changeAction",
-    "change select[name='target']" : "updateAttributes",
-    "keydown input[name='action_attribute']" : "updateAttributes",
-  },
-
-  _template: function(data, settings) {
-    if (!this.compiled_template) {
-      if (!this.template) {
-        this.template = this.options.template || "NO EDIT-ACTION TEMPLATE";
-      };
-      this.compiled_template = _.template(this.template)
-    };
-
-    return this.compiled_template(data, settings);
-  },
-
-  changeAction: function(changeEvent) {
-    this.model.set({ name: $(changeEvent.currentTarget).val()})
-    console.log("Action changed to: ", this.model.get('name'));
-  },
-
-  updateAttributes: function(clickEvent) {
-    var new_values = {
-      name: this.$el.find("input[name='name']:first").val(),
-      target: this.$el.find("select[name='target']:first").val(),
-      duration: this.$el.find("input[name='duration']:first").val(),
-      actionOptionsValues: {}
-    };
-
-    this.$el.find("input[name='action_attribute']").each(function(index, value) {
-      new_values.actionOptionsValues( $(this).data('attribute-name') ) = $(this).val();
-    });
-
-    this.model.set(new_values);
-  },
-
-  render: function() {
-    var viewAtts = {};
-    viewAtts.actionsAvailable = this.allActions;
-    viewAtts.actionTargets = this.options.actionTargets;
-    viewAtts.action = this.model.toJSON();
-    this.$el.html(this._template(viewAtts));
-  }
-
-});
-
-EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
-  initialize: function (options) {
-
-    _.bindAll(this);
-    this.initializeAsUnitaryXelement();
-    this.model.on('change', this.render);
-    this.model.on('sync', this.completeRender);
-    this.initializeAsSaveable(this.model);
-
-    // Set the Guide as having unsaved changes when a slide's actions change.
-    // That is, if any slide action is altered, then it qualifies as a save-status change event
-    // on the whole Guide even though no data at the Guide level has changed.
-    
-    // Currently, this makes sense b/c the view provides 
-    // 1 save button to the user for saving the entire guide.
-    // Perhaps something to optimize later, or is this implementation better for the user?
-    // this.model.actions.on('change', this.setUnsavedChanges);
-
-  },
-
-  attributes: function() {
-    return {
-      id: "slide-"+this.model.cid,
-      class: "slide"
-    }
   },
 
   updateTitle: function(clickEvent) {
     this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
+    this.model.trigger('change');
+    this.model.trigger('change:title');
   },
 
   updateContent: function(newContent) {
     this.model.set_field_value('content', newContent );
-    return this;
-  },
-
-  events: function() {
-    return {
-      'keydown input#slide-title': "updateTitle",
-      'click button.test-actions': "testActions"
-    };
-  },
-
-  _template: function(data, settings) {
-    if (!this.compiled_template) {
-      if (!this.template) {
-        this.template = this.options.template || templates.edit_slide;
-      };
-      this.compiled_template = _.template(this.template)
-    };
-
-    return this.compiled_template(data, settings);
+    this.model.trigger('change');
+    this.model.trigger('change:content');
   },
 
   initialRender: function (argument) {
@@ -496,14 +451,16 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
         actionsView,
         self = this;
 
-    var atts = {
+    console.log('INITIAL SLIDE RENDER');
+
+    atts = {
       slide: self.model.get_fields_as_object()
-    }
+    };
     self.$el.html( self._template( atts ) );
 
     self.editor = new wysihtml5.Editor(self.model.cid+"-slide-content", { 
       toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
-      stylesheets: ["css/reset.css", "css/editor.css"],
+      stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
       parserRules:  wysihtml5ParserRules // defined in parser rules set 
     });
 
@@ -518,60 +475,94 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       enableAddExisting: false,
       editViewOpts: { 
         template: self.options.actionTemplate, 
-        actionTargets: self.options.actionTargets 
+        actionTargets: self.options.actionTargets,
+        guidedPageSelector: self.options.guidedPageSelector,        
       },
       editViewClass: editActionView
     });
+    
+    this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
-    this.$el.find('.slide-actions:first').append(self.actionsView.render().$el);
 
   },
 
-  testActions: function() {
-    var self = this;
-
-    self.model.actions.each(function(action) {
-      
-      var duration;
-
-      try { 
-        duration = parseInt(action.get("duration")) 
-      } 
-      catch (e) { 
-        console.warn("Duration is not a parse-able number!", action.get("duration"), "; instead, setting to 400ms");
-        action.set({"duration": 400});
-        duration = 400;
-      }; 
-
-      $(self.options.guidedPageSelector).contents().find(action.get("target")).each(function() {
-        $(this).effect(action.get("name"), action.effectOptions(), duration);
-      });
-
-    });
-
+  remove: function() {
+    this.$el.remove();
   },
 
   render: function (argument) {
     this.renderSaveStatus();
     if (!this.initiallyRendered()) {
-      
-      console.log('INITIAL SLIDE RENDER');
       this.initialRender();
       this.setInitialRender();
-
-    } else {
-      
-      var self = this;
-
-      console.log('SLIDE RE-RENDER');
-      _.each({ 
-        title: 'input#slide_title'
-      }, function(value, key) {
-        self.$el.children('div#slide_attributes').find(value).val( self.model.get_field_value(key) );  
-      });
-
-    };
+    } 
     return this;
+  }
+
+});
+
+
+editActionView = Backbone.View.extend({
+  initialize: function() {
+    _.bindAll(this);
+    this.allActions = _.keys(ActionDictionary);
+  },
+
+  events: {
+    "keyup input[name='label']" : "updateLabel",
+    "change select[name='effect']": "updateAction",
+    "change select[name='target']" : "updateAttributes",
+    "keydown input[name='action_attribute']" : "updateAttributes",
+    "click button.test-action": "testAction"
+  },
+
+  _template: function(data, settings) {
+    if (!this.compiled_template) {
+      if (!this.template) {
+        this.template = this.options.template || DIT["dynamo/guides/slides/actions/edit"];
+      };
+      this.compiled_template = _.template(this.template)
+    };
+
+    return this.compiled_template(data, settings);
+  },
+
+  updateAction: function(changeEvent) {
+    this.model.set({ effect: $(changeEvent.currentTarget).val() });
+    console.log("Action changed to: ", this.model.get('effect'));
+  },
+
+  updateAttributes: function(clickEvent) {
+    var new_values = {
+      label: this.$el.find("input[name='label']:first").val(), 
+      effect: this.$el.find("select[name='effect']:first").val(),
+      target: this.$el.find("select[name='target']:first").val(),
+      duration: this.$el.find("input[name='duration']:first").val(),
+      actionOptionsValues: {}
+    };
+
+    this.$el.find("input[name='action_attribute']").each(function(index, value) {
+      new_values.actionOptionsValues( $(this).data('attribute-name') ) = $(this).val();
+    });
+
+    this.model.set(new_values);
+  },
+
+  updateLabel: function(changeEvent) {
+    this.model.set({ label: $(changeEvent.currentTarget).val()})
+    this.$el.find("button.test-action").text(this.model.get("label"));
+  },
+
+  testAction: function() {
+    this.model.execute(this.options.guidedPageSelector);
+  },
+
+  render: function() {
+    var viewAtts = {};
+    viewAtts.actionsAvailable = this.allActions;
+    viewAtts.actionTargets = this.options.actionTargets;
+    viewAtts.action = this.model.toJSON();
+    this.$el.html(this._template(viewAtts));
   }
 
 });

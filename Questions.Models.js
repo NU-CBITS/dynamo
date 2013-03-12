@@ -93,7 +93,9 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
   },
 
   defaults: function() { 
-    return this.defaultsFor('question_group');
+    var d = this.defaultsFor('question_group');
+    d.xel_data_values.title = "Assessment";
+    return d;
   },
 
   // Should not have to call directly; 
@@ -252,7 +254,9 @@ ResponseModel = Dynamo.Model.extend({
   updateResponseValues: function() {
     this.set('responseValues', this.responseValues.toJSON() );
   },
-  viewClass: function() { return showResponseView },
+  viewClass: function() { 
+    return showResponseView
+  },
   editViewClass: function() { return editResponseView }
 });
 
@@ -276,6 +280,3 @@ ResponseValueModel = Dynamo.Model.extend({
   viewClass: function() { return showResponseValueView; },
   editViewClass: function() { return editResponseValueView; }
 });
-
-//Declares that Question Models have been defined.
-Dynamo.mantleDefinitions.QuestionModels = true;
