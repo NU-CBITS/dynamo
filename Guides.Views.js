@@ -125,8 +125,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.guidedPageSM = StateMachine.create({
       initial: 'blank',
       events: [
-        { name: 'load', from: ['blank', 'loaded'], to: 'loaded' },
-        { name: 'clear', from: ['blank', 'loaded'], to: 'blank' }
+        { name: 'skip',   from: ['blank', 'none', 'loaded'], to: 'none'   },
+        { name: 'load',   from: ['blank', 'loaded'], to: 'loaded' },
+        { name: 'clear',  from: ['blank', 'loaded'], to: 'blank'  }
       ]
     });
 
@@ -150,7 +151,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('sync', function(model, response, options) {
       console.log("GUIDE SAVED:", model, response, options);
       self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
-      self.model.clearUnsavedChanges;
+      // self.model.clearUnsavedChanges;
     })
 
     this.model.on('error', function(model, xhr, options) {
@@ -177,7 +178,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   events: function() {
     return {
       'keyup input#guide_title'         : "updateTitle",
-      'click button.load-guided-page'   : "updateURLAndRender",
+      'keyup input#guide_description'   : "updateDescription",
+      'click button.skip-guided-page'   : "skipGuidedPage",
+      'click button.load-guided-page'   : "updateGuidedPage",
       'click button.clear-guided-page'  : "clearGuidedPage",  
       'click button.save'               : "saveGuide",
       'click button.delete'             : "destroyGuide"
@@ -199,7 +202,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
-  updateURLAndRender: function() {
+  updateGuidedPage: function() {
     this.model.guided_page_url = $('input#guided_page_url').val();
     this.loadGuidedPage();
     this.guidedPageSM.load();
@@ -207,56 +210,71 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
+  skipGuidedPage: function() {
+    this.model.guided_page_url = "[None]";
+    this.guidedPageSM.skip();
+    this.initialRender();
+    this.render();
+  },
+
   initializeOnIframeLoadFn: function() {
     var self = this;
     if (!this._initializedIframeLoadFn) {
+      
       $(this.options.iframe_selector).load(function() {
-        
-        // once the iframe is loaded...
-        self.usableElements = [];
-        $(self.options.iframe_selector).contents().find("div,span,p,a,button").each(function() { 
-          if (this.id || this.className ) {
+
+        console.log("IFRAME LOADED", this.contentWindow.Backbone);
+
+        this.contentWindow.Backbone.on("PageLoad:Complete", function() {
+
+          window.console.log("In Page-Load Callback");
+
+          // Once the iframe is loaded...
+          self.usableElements = [];
+          $(self.options.iframe_selector).contents().find("[id]").each(function() {
             self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
-          };
+          });
+
+          self.usableElements.sort(function(a,b) {
+            // Put all elements w/ id's first
+            if (a.idName && !b.idName) { return -1 }
+            if (!a.idName && b.idName) { return 1  }
+
+            // If they both have id's, sort by tag first
+            if ( a.tagName < b.tagName ) {
+              return -1
+            }
+            if ( a.tagName > b.tagName ) {
+              return 1
+            } 
+
+            // Then by ID name
+            if ( a.idName < b.idName ) {
+              return -1
+            }
+            if ( a.idName > b.idName ) {
+              return 1
+            }
+
+            // If we've gotten here, both id's were ""
+            // if ( a.className < b.className ) {
+            //   return -1
+            // }
+            // if ( a.className > b.className ) {
+            //   return 1
+            // }
+
+            return 0;
+          });// sort
+
         });
 
-        self.usableElements.sort(function(a,b) {
-          //put all elements w/ id's first
-          if (a.idName && !b.idName) { return -1 }
-          if (!a.idName && b.idName) { return 1  }
-
-          //if they both have id's, sort by tag first
-          if ( a.tagName < b.tagName ) {
-            return -1
-          }
-          if ( a.tagName > b.tagName ) {
-            return 1
-          } 
-
-          // Then by ID name
-          if ( a.idName < b.idName ) {
-            return -1
-          }
-          if ( a.idName > b.idName ) {
-            return 1
-          }
-
-          //If we've gotten here, both id's were ""
-          if ( a.className < b.className ) {
-            return -1
-          }
-          if ( a.className > b.className ) {
-            return 1
-          }
-
-          return 0;
-        }); //sort
-
         console.log("Usable Elements in Guided Page", self.usableElements);
-        $("#iframe-container").show();  
-        self.trigger("guided_page:loaded");         
+        $("#iframe-container").show();
+        self.trigger("guided_page:loaded");
 
       }); //load
+
 
     }; // if
     this._initializedIframeLoadFn = true;
@@ -275,7 +293,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = templates.edit_guide;
+        this.template = this.options.template || DIT["dynamo/guides/edit"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -290,10 +308,21 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     self.model.set_field_value('title', val );
   },
 
+  updateDescription: function(clickEvent) {
+    var self = this;
+    var val = $(clickEvent.currentTarget).val();
+    self.model.set_field_value('content_description', val );
+  },  
+
   initialRender: function (argument) {
     //more of a 'state-based' render when it comes to guides...
 
     var atts;
+
+    if (this.model.guided_page_url === "[None]") {
+      this.guidedPageSM.skip();
+    };
+
 
     atts = { 
       guide: this.model.get_fields_as_object(),
@@ -348,7 +377,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   render: function (argument) {
 
     if (!this.initiallyRendered()) { 
-
       this.initialRender(); 
       this.setInitialRender(); 
     };
@@ -419,7 +447,7 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || templates.edit_slide;
+        this.template = this.options.template || DIT["dynamo/guides/slides/edit"];
       };
       this.compiled_template = _.template(this.template)
     };
@@ -473,9 +501,9 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       },
       editViewClass: editActionView
     });
+    
+    this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
-
-    this.$el.find('.slide-actions:first').append(self.actionsView.render().$el);
 
   },
 
@@ -512,7 +540,7 @@ editActionView = Backbone.View.extend({
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || "NO EDIT-ACTION TEMPLATE";
+        this.template = this.options.template || DIT["dynamo/guides/slides/actions/edit"];
       };
       this.compiled_template = _.template(this.template)
     };

@@ -51,37 +51,54 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     };
   },
 
-  startPeriodicSaving: function(interval_in_seconds) {
-    console.log('started Periodic saving at the model level every '+interval_in_seconds+' seconds');
-    var self = this, saveIntervalID;
-    if (!this.currentSaveIntervalID) {
-      this.currentSaveIntervalID = setInterval(self.suggestSaveIfChanged, interval_in_seconds*1000);
+  debouncedSave: _.debounce(function() { 
+    console.log("Debounced Save Called!");
+    if ( this.hasUnsavedChanges() ) { 
+      console.log("Model ", this, " had unsaved changes");
+      this.save({silent:true}) 
     } else {
-      console.warn("Attempted to initiate interval-initiated-save of Model<cid: "+this.cid+">"+
-        " but it is already being saved at an interval.  Command Ignored. Current Interval ID is: "+ this.currentSaveIntervalID);
-    };
-    this.on('change', this.setUnsavedChanges); 
-    this.on('sync', this.clearUnsavedChanges);
-    this.on('destroy', this.stopPeriodicSaving);
-  },
+      console.log("debouncedSave: Model", this, "did not have any unsaved changes");
+    }
+  }, 
+  3000),
 
-  stopPeriodicSaving: function() {
-    console.log('stopping scheduled saving at the model level');
-    clearInterval(this.currentSaveIntervalID);
-    this.currentSaveIntervalID = null;
-    this.off('change', this.setUnsavedChanges); 
-    this.off('sync', this.clearUnsavedChanges);
-  },
+  // startPeriodicSaving: function(interval_in_seconds) {
+  //   console.log('started Periodic saving at the model level every '+interval_in_seconds+' seconds');
+  //   var self = this, saveIntervalID;
+  //   if (!this.currentSaveIntervalID) {
+  //     this.currentSaveIntervalID = setInterval(self.suggestSaveIfChanged, interval_in_seconds*1000);
+  //   } else {
+  //     console.warn("Attempted to initiate interval-initiated-save of Model<cid: "+this.cid+">"+
+  //       " but it is already being saved at an interval.  Command Ignored. Current Interval ID is: "+ this.currentSaveIntervalID);
+  //   };
+  //   this.on('change', this.setUnsavedChanges); 
+  //   this.on('sync', this.clearUnsavedChanges);
+  //   this.on('destroy', this.stopPeriodicSaving);
+  // },
+
+  // stopPeriodicSaving: function() {
+  //   console.log('stopping scheduled saving at the model level');
+  //   clearInterval(this.currentSaveIntervalID);
+  //   this.currentSaveIntervalID = null;
+  //   this.off('change', this.setUnsavedChanges); 
+  //   this.off('sync', this.clearUnsavedChanges);
+  // },
 
   hasUnsavedChanges: function() {
     return !!this._unsavedChanges;
   },
 
+  saveOnChange: function() {
+    this.on('save:suggested', this.debouncedSave);
+  },
+
   setUnsavedChanges: function() {
     var previous = this._unsavedChanges; 
     this._unsavedChanges = true;
-    if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
-    
+    if (this._unsavedChanges !== previous) { 
+      this.trigger('save_status_change');
+      this.trigger('save:suggested');
+    };
   },
 
   clearUnsavedChanges: function() {
@@ -175,6 +192,26 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
   addUser: function(user, index) {
     return (index) ? this.users.add(user, {at: index}) : this.users.add(user);
+  },
+
+  formVal: function(attribute) {
+    switch(attribute) {
+      case "start_date":
+        if (this.get('start_date')) {
+          var sd = new Date(this.get('start_date'));
+          return (sd.toString("yyyy-MM-dd"));
+        } else {
+          return ""
+        };
+      default:
+        return this.get(attribute);
+    }
+  },
+
+  toFormValues: function() {
+    var g = this.toJSON();
+    g.start_date = this.formVal("start_date");
+    return g
   },
 
   get_field_value: function(attribute) {

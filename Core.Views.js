@@ -147,7 +147,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   showArrayView.prototype.render = function() {
     var self = this, fields;
     this.$el.empty();
-    if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
+    // if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
 
     _.each(this.getArrayFn(), function(event) {
       fields = event.get_fields_as_object();
@@ -845,6 +845,10 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
     this.initializeAsSaveable(this.model);
   },
 
+  deleteModel: function() {
+    this.model.destroy();
+  },
+
   // initial_render convenience tracker functions
   initiallyRendered: function() { return (!!this._initialRender); },
   setInitialRender: function() { this._initialRender = true; },
@@ -1176,7 +1180,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
           position: (index+1)
         });
         view = new view_class(view_options);
-        view.setElement( root_element.find("div.edit_container:first") );
+        view.setElement( root_element.find("form.edit_container:first") );
         view.render();
       };
 
@@ -1270,12 +1274,30 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function() {
 
     _.bindAll(this);
-    this.cid = _.uniqueId('ShowGroupView-');
+    this.cid = _.uniqueId('EditGroupView-');
     this.subViews = [];
     this.position = this.options.position
     this.model.on("change",   this.render);
     this.model.on("destroy",  this.remove);
 
+  },
+
+  events: function() {
+    var e = {}
+    e["click button.delete"] = "deleteModel";
+    e["change input"] = "updateGroup";
+    return e;
+  },
+
+  updateGroup: function() {
+    var setObj = {};
+    this.$el.find('input').each(function() {
+      if ( $(this).attr('name') ) {
+        setObj[ $(this).attr('name') ] = $(this).val();
+      };
+    });
+    this.model.set(setObj);
+    this.model.save();
   },
 
   addSubView: function(view) {
@@ -1285,7 +1307,8 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   attributes: function() {
     return {
       id: "group-"+this.model.cid,
-      class: "group"
+      class: "group",
+      "data-id": this.model.id
     }
   },
 
@@ -1318,25 +1341,25 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
     //render template
     var self, view_class, view;
 
-    console.log('-> ShowGroupView render');
-
     self = this;
-    self.$el.html( self.template({
-        position: this.position,
-        group: this.model.toJSON()
+    
+    self.$el.html( self._template({
+        group: this.model.toFormValues(),
+        position: this.position
       })
     );
 
-    // if (!self.usersView) {
-      $users = this.$el.find('div.users:first');
+    $users = this.$el.find('div.users:first');
+    if ( $users.length !== 0 ) {
+
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
-        display:{ show: true, edit: true, del: false }
       });
-      $users.append(self.usersView.$el)
-    // };
 
-    self.usersView.render();
+      $users.append(self.usersView.$el)
+
+      self.usersView.render();
+    };
 
     return this;
   }

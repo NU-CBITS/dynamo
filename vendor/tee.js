@@ -124,6 +124,20 @@ t.input = function(attributes) {
   return t.tag('input', attributes);
 };
 
+// tr
+// convenience method 
+// Internally, hands off to the tag method.
+t.tr = function(attributes, content) {
+  return t.tag('tr', attributes, content);
+};
+
+// td
+// convenience method 
+// Internally, hands off to the tag method.
+t.td = function(attributes, content) {
+  return t.tag('td', attributes, content);
+};
+
 
 // span
 // convenience method which returns the html for a span tag;

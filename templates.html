@@ -61,9 +61,9 @@
   </div>
 
   <div id="dynamo/core/input_group" class="template underscore">
-    <div id="(%=id%)" name="(%= name %)_field" class="(%=type%)_group">
+    <div id="(%= id %)" name="(%= name %)_field" class="(%= type %)_group">
       (% if (type == 'select') { %)
-        (%= t.span(label) %)
+        (%= t.label(label) %)
         <select name="(%= name %)"> 
           (% _.each(options, function(o, index) {
               html_atts = { value: o.value };
@@ -110,20 +110,20 @@
   <div id="dynamo/core/manage_collection/element" class="template underscore">      
     <div class="(%= element_code_name %) element" data-collection_index="(%= index %)">
       (% if (display.del)   { %)
-        <div class="delete_container">
+        <div class="delete_container btn-toolbar" style="margin-top: 0px;">
           <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)" >
             <!-- <i class="icon-trash"></i> -->
             Delete (%= element_pretty_name %)
           </button>
         </div>
       (% } %)
-      (% if (display.edit)  { print(t.div('', { class: 'edit_container' })); } %)
-      (% if (display.show)  { print(t.div('', { class: 'show_container' })); } %)
+      (% if (display.edit)  { print(t.form('', { class: 'edit_container widget' })); } %)
+      (% if (display.show)  { print(t.div('', { class: 'show_container widget' })); } %)
     </div>
     (% if (display.edit) { %)
       <div class="btn-toolbar">
         <div class="btn-group">
-          <button class='btn add-new-(%=element_code_name%)' data-collection-index="0">Add New (%= element_pretty_name %)</button>
+          <button class='btn add-new-(%=element_code_name%)' data-collection-index="0">Create (%= element_pretty_name %)</button>
         (% if (canAddExisting) { %)
           <button class='btn add-existing-(%=element_code_name%)' data-collection-index="0">Add Existing (%= element_pretty_name %)</button>
         (% }; %)
@@ -147,6 +147,193 @@
         <span class='attribute (%= label %)'>(%= value %)</span>
       </div>
     (% }); %)
+  </div>
+
+<div id="dynamo/guides/edit" class="template underscore">
+  <fieldset>
+    <div id="guide_attributes">
+      <label class="text" for="guide_title">Title 
+        <input type="text" placeholder="Guide Title" id="guide_title" value="(%= guide.title %)" class="span6">
+      </label>
+      <label class="text" for="guide_description">Description 
+        <input id="guide_description" class="span6" type="text" placeholder="Description" value="(%= guide.content_description %)">
+      </label>
+      (%; console.log("guidedPageState: ", guidedPageState); %)
+      (% if (!guide.guided_page_url) { %)
+        <h3> Guided Page </h3>
+        <div><p>
+          Specify the current version of the page for which this guide is being developed.
+          If you are only developing content and do not have a page that this guide is guiding, click 'skip'.  
+          If you <strong>do not know</strong> what page you are developing this guide for, 
+          you may have <strong>larger problems than I am able to help you with.</strong>
+        </p></div>
+        <label class="text" for="guided_page_url">URL 
+          <input id="guided_page_url"
+                type="text"
+                class="span12" 
+                placeholder="URL of the page this guide is for" value="(%= guide.guided_page_url %)">
+        </label>
+        <div class="btn-toolbar">
+          <button class="load-guided-page btn btn-primary"><i class="icon-upload-alt"></i> Load Guided Page</button>
+          <button class="skip-guided-page btn btn-primary"><i class="icon-upload-alt"></i> Skip </button>
+        </div>        
+      (% } else if (guidedPageState !== 'skip') { %) 
+        <label class="text" for="guided_page_url">URL 
+          <input id="guided_page_url"
+                type="text"
+                class="span12" 
+                placeholder="URL of the page this guide is for" 
+                value="(%= guide.guided_page_url %)"
+                disabled="disabled">
+        </label>
+        <div class="btn-toolbar">
+          <button class="load-guided-page btn"><i class="icon-upload-alt"></i> Reload</button>
+          <button 
+            class="clear-guided-page btn btn-danger"
+            title="Changing the page to which this guide refers to has a chance of screwing up any actions you've configured.  Make sure you <strong>know what you are doing.</strong>"
+          ><i class="icon-upload-alt"></i> Clear Guided Page</button>
+        </div>
+
+      (% }; %)
+
+      <div class="on-slide-edit" style="(% if (guidedPageState === 'blank') { %) display:none; (%} else { %) display:block; (% }; %)">
+        <hr>
+        <div id="slides"></div>
+      </div>
+
+      <hr>
+      <div id="last-save"></div>
+      <div class="save_status"></div>
+      <div class="btn-toolbar">
+        <button class="save btn btn-primary">Save Guide</button>
+        <button class="delete btn btn-danger "><i class="icon-trash"></i> Delete</button>
+      </div>
+    </div>
+  </fieldset>
+</div>  
+
+<div id="dynamo/guides/slides/edit" class="template underscore">
+  <div style="display:block;clear:auto;">
+    <span class="pull-right"><button class="btn btn-danger delete-slide">Delete Slide</button></span>
+  </div>
+  <form>
+    <div id="slide_attributes">
+      <div>
+        <label for="(%= slide.cid %)-slide-title">Title</label>
+        <input  id="(%= slide.cid %)-slide-title"
+                class="title input-large"
+                type="text"
+                placeholder="Slide Title" 
+                value="(%= slide.title %)"/>
+      </div>
+      <div>
+        <div id="(%= slide.cid %)-wysihtml5-toolbar" class="toolbar" style="display: none;">
+          <a data-wysihtml5-command="bold" title="CTRL+B">bold</a> |
+          <a data-wysihtml5-command="italic" title="CTRL+I">italic</a> |
+          <a data-wysihtml5-command="createLink">insert link</a> |
+          <a data-wysihtml5-command="insertImage">insert image</a> |
+          <a data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h1">h1</a> |
+          <a data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h2">h2</a> |
+          <a data-wysihtml5-command="insertUnorderedList">insertUnorderedList</a> |
+          <a data-wysihtml5-command="insertOrderedList">insertOrderedList</a> |
+          <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="red">red</a> |
+          <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="green">green</a> |
+          <a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="blue">blue</a> |
+          <a data-wysihtml5-command="undo">undo</a> |
+          <a data-wysihtml5-command="redo">redo</a> |
+          <a data-wysihtml5-command="insertSpeech">speech</a>
+          <a data-wysihtml5-action="change_view">switch to html view</a>
+          
+          <div data-wysihtml5-dialog="createLink" style="display: none;">
+            <label>
+              Link:
+              <input data-wysihtml5-dialog-field="href" value="http://">
+            </label>
+            <a data-wysihtml5-dialog-action="save">OK</a>&nbsp;<a data-wysihtml5-dialog-action="cancel">Cancel</a>
+          </div>
+          
+          <div data-wysihtml5-dialog="insertImage" style="display: none;">
+            <label>
+              Image:
+              <input data-wysihtml5-dialog-field="src" value="http://">
+            </label>
+            <label>
+              Align:
+              <select data-wysihtml5-dialog-field="className">
+                <option value="">default</option>
+                <option value="wysiwyg-float-left">left</option>
+                <option value="wysiwyg-float-right">right</option>
+              </select>
+            </label>
+            <a data-wysihtml5-dialog-action="save">OK</a>&nbsp;<a data-wysihtml5-dialog-action="cancel">Cancel</a>
+          </div>
+        </div>
+        
+        <textarea id="(%= slide.cid %)-slide-content"
+                  class="slide-content" 
+                  style="width:95%;height:400px"
+                  placeholder="Enter content">(%= slide.content %)</textarea>
+        <br />
+        <input type="reset" value="Reset form!">
+      </div>
+    </div>
+  </form>
+
+  <div class="actions-container">
+    <div class="table" style="display:table; width:100%">
+      <div style="display:table-row;">
+          <span style="display:table-cell;"> Label </span>
+          <span style="display:table-cell;"> Action </span>
+          <span style="display:table-cell;"> Target </span>
+          <span style="display:table-cell;"> Duration </span>
+          <span style="display:table-cell;"> Additional </span>
+          <span style="display:table-cell;"> Test </span>
+      </div>
+    </div>
+    <div id="(%= slide.cid %)-slide-actions" class="slide-actions" style="width:100%">
+    </div>
+  </div>
+
+  </div>  
+</div>
+
+  <div id="dynamo/guides/slides/actions/edit" class="template underscore">
+    <div class="action">
+      <span class="cell attribute">
+        <input class="input-medium" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
+      </span>
+      <span class="cell attribute effect">
+        <select name="effect" class="input-small">
+          (%
+            var selected_clause;
+            _.each(actionsAvailable, function(effect_name) {
+              (action.effect == effect_name) ? (selected_clause = "selected='selected'") : (selected_clause = "");
+              %)<option value="(%= effect_name %)" (%= selected_clause %)>(%= effect_name %)</option>(%
+            });
+          %)
+        </select>
+      </span>
+      <span class="cell attribute target">
+        <select name="target">
+          (%
+            var selected_clause;
+            _.each(actionTargets, function(selector) {
+              (action.target == selector) ? (selected_clause = " selected='selected'") : (selected_clause = "");
+              %)<option value="(%= selector %)" (%= selected_clause %)>(%= selector %)</option>(%
+            });
+          %)
+        </select>
+      </span>
+      <span class="cell attribute duration">
+        <input class="input-small" 
+                type="text" 
+                name="duration" 
+                data-attribute-name="duration" 
+                value="(%= action.duration %)" /> ms
+      </span>
+      <span class="cell attribute action_attributes"></span>
+      <span><button class="cell test-action">(%= action.label %)</button></span>
+    </div>
   </div>
 
   <div id="dynamo/question_groups/show" class="template underscore">
@@ -175,17 +362,19 @@
   </div>
 
   <div id="dynamo/questions/show" class="template underscore">
-    (% if (position) { print( t.div(position+")", {class: 'position'}) ); }; %)
-    <div class='instructions'></div>
-    <div class='content'></div>
-    <div class="responseGroup"></div>
+    <div class="widget-header">
+      (% if (position) { print( t.h3(position+".", {class: 'position'}) ); }; %)
+    </div>
+    <div class="widget-content">
+      <div class='instructions'></div>
+      <div class='content'></div>
+      <div class="responseGroup"></div>
+    </div>
   </div>
 
   <div id="dynamo/questions/edit" class="template underscore">
     <div class="widget-header">
       <h3 class="pull-left">(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
-      <!-- <input class="title editable" style="width:90%;" type="text" value="(%=title%)"/> -->
-
       <h3 class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</h3>
     </div>
     <div class="widget-content">
@@ -198,7 +387,9 @@
   </div>
 
   <div id="dynamo/questions/responses/edit" class="template underscore" >
-    <div class='name attribute edit'><span class="name_value"></span></div>
+    <div class='name attribute edit'>
+      <label class="name_value"></label>
+    </div>
     <div class="responseType attribute edit"></div>
     <div class="typeSpecificAttributesContainer"></div>
     <div class='responseValuesContainer'></div>
@@ -210,15 +401,13 @@
   </div>
 
   <div id="dynamo/activity_tracker/edit_event" class="template underscore">
-    <div id="edit-event-toggle-bar" class="navbar" style="margin-bottom: 0px;">
-      <div class="navbar-inner" style="border-bottom-width:0px;">
-        <a class="brand">Event Editor</a>
-        <ul class="nav pull-right accordion-header">
-          <li class="caret-icons">
-            <a><i class="icon-caret-right"></i></a>
-          </li>
-        <ul>
-      </div>
+    <div id="edit-event-toggle-bar" class="widget-header orange navbar">
+      <h3>Event Editor</h3>
+      <ul class="nav pull-right accordion-header">
+        <li class="caret-icons">
+          <a><i class="icon-caret-right"></i></a>
+        </li>
+      <ul>
     </div>
 
     <form id="edit-event" class="form-horizontal widget-content form-condensed accordion-body">
@@ -522,36 +711,52 @@
 
 
   <div id="dynamo/activity_tracker/show_event" class="template underscore">
-    <div class="patient-health-record-header list-item" data-cid="(%= item.cid %)">
-      <h4 id="show-event-title">(%= item.title %)</h4>
-      <div id="show-start-end-times-container">
-        <strong>From: </strong><span id="show-event-start-time">(%= item.start.toString() %)</span>
-        <div class="clearfix"></div>
-        <strong>Until: </strong><span id="show-event-end-time">(%= item.end.toString() %)</span>
+    <div class="item" data-cid="<%= item.cid %>">
+
+      <div class="stream-icon orange">
+        <i class="icon-calendar"></i>
       </div>
+      <p class="date">(%= item.start.toString().replace("GMT-0600 (CST)", "") %)</p>
+
+      <!-- <h4 id="show-event-title">(%= item.title %)</h4> -->
+      <h4>(%= item.title %)</h4>
       <div class="row-fluid">
-        <div class="span6">
-          <strong>Pleasure</strong>
-          <ul> 
-            <li id="show-predicted-pleasure">Predicted: (%= item.predicted_pleasure %)</li>
-            <li id="show-predicted-pleasure">Actual: (%= item.actual_pleasure %)</li>
-          </ul>
-        </div>
-        <div class="span6">
-          <strong>Accomplishment</strong>
-          <ul>
-            <li id="show-predicted-accomplishment">Predicted: (%= item.predicted_accomplishment %)</li>
-            <li id="show-predicted-accomplishment">Actual: (%= item.actual_accomplishment %)</li>
-          </ul>
-        </div>
+        <p style="color:black;">
+          <div id="show-start-end-times-container">
+            From: <span id="show-event-start-time">(%= item.start.toString() %)</span>
+            <div class="clearfix"></div>
+            Until: <span id="show-event-end-time">(%= item.end.toString() %)</span>
+          </div>
+        </p>
+        <p style="color:black;">
+          <div class="row-fluid">
+            <div class="span6">
+              Pleasure:
+              <ul> 
+                <li id="show-predicted-pleasure">Predicted: (%= item.predicted_pleasure %)</li>
+                <li id="show-predicted-pleasure">Actual: (%= item.actual_pleasure %)</li>
+              </ul>
+            </div>
+            <div class="span6">
+              Accomplishment:
+              <ul>
+                <li id="show-predicted-accomplishment">Predicted: (%= item.predicted_accomplishment %)</li>
+                <li id="show-predicted-accomplishment">Actual: (%= item.actual_accomplishment %)</li>
+              </ul>
+            </div>
+          </div>
+          Emotional Intensity:
+          <span id="show-emotion">(%= item.emotion %)</span>
+          <span id="show-emotion-intensity"> (%= item.emotion_intensity %)</span>
+        </p>
       </div>
-      <strong>Emotional Intensity</strong>
-      <span id="show-emotion">(%= item.emotion %)</span><span id="show-emotion-intensity">((%= item.emotion_intensity %))</span>
+
     </div>
+
   </div>
 
   <div id="dynamo/guides/index" class="template underscore">
-    <a class="brand">Guides</a>
+    <h3>Guides</h3>
     <ul id="guide-select" class="accordion-header nav pull-right">
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
@@ -568,8 +773,8 @@
   </div>
 
   <div id="dynamo/guides/show" class="template underscore">    
-    <div id="guides-selector-title-bar" class="navbar" style="margin-bottom: 0px;">
-      <div id="guide-select-nav" class="navbar-inner"  style="border-bottom-width:0px;">
+    <div id="guides-selector-title-bar" class="widget-header orange navbar">
+      <div id="guide-select-nav">
       </div>
     </div> 
     <div id="current-guide-slide-container" class="accordion-body widget-content">
@@ -579,7 +784,7 @@
         </div>
       </div>
       <div id="current-guide-slide-actions" class="well-white well well-small" style="margin:10px 0;">
-      </div>    
+      </div>
       <ul id="current-guide-navigation-buttons" class="pager">
         <li><a href="#" class="previous">&larr; Previous</a></li>
         <li><a href="#" class="next">Next &rarr;</a></li>
