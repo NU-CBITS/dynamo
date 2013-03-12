@@ -104,7 +104,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       
       //We have reached the end of the guide.
       $slide_content.html(""+
-        '<p>You have reached the end of this guide, "'+this.currentGuide.get_field_value("title")+'"</p>'
+        '<p><h3>You have reached the end of this guide, <br />"'+this.currentGuide.get_field_value("title")+'"</h3></p>'
       );
     
     } else {
