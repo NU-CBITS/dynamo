@@ -845,6 +845,10 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
     this.initializeAsSaveable(this.model);
   },
 
+  deleteModel: function() {
+    this.model.destroy();
+  },
+
   // initial_render convenience tracker functions
   initiallyRendered: function() { return (!!this._initialRender); },
   setInitialRender: function() { this._initialRender = true; },
@@ -1278,6 +1282,24 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
+  events: function() {
+    var e = {}
+    e["click button.delete"] = "deleteModel";
+    e["change input"] = "updateGroup";
+    return e;
+  },
+
+  updateGroup: function() {
+    var setObj = {};
+    this.$el.find('input').each(function() {
+      if ( $(this).attr('name') ) {
+        setObj[ $(this).attr('name') ] = $(this).val();
+      };
+    });
+    this.model.set(setObj);
+    this.model.save();
+  },
+
   addSubView: function(view) {
     this.subViews.push(view);
   },
@@ -1320,8 +1342,9 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
     var self, view_class, view;
 
     self = this;
+    
     self.$el.html( self._template({
-        group: this.model.toJSON(),
+        group: this.model.toFormValues(),
         position: this.position
       })
     );
