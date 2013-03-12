@@ -49,8 +49,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   moveForward: function() {
     try {
       this._currentSlideIndex = this._currentSlideIndex + 1;
-      if (this._currentSlideIndex >= this.currentGuide.slides.length) { 
-        this._currentSlideIndex = this.currentGuide.slides.length - 1;
+      if (this._currentSlideIndex > this.currentGuide.slides.length) { 
+        this._currentSlideIndex = this.currentGuide.slides.length;
       };
       this.renderSlide();
     }
@@ -97,22 +97,32 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     var $slide_content = this.$el.find("div#current-guide-slide-content"),
         $actions = $("div#current-slide-actions");
 
-    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );
-
     $slide_content.empty();
-    $slide_content.html( this.currentSlide.get_field_value("content") );
-    $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
-    
     $actions.empty();
-    this.currentSlide.actions.each(function(action) {
-
-      $actions.append( 
-        t.span({ style:"margin-right:10px;"},
-          t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
-        ) 
+    
+    if (this.currentSlideIndex() === this.currentGuide.slides.length) {
+      
+      //We have reached the end of the guide.
+      $slide_content.html(""+
+        '<p>You have reached the end of this guide, "'+this.currentGuide.get_field_value("title")+'"</p>'
       );
+    
+    } else {
+      //render the current slide normally
 
-    });
+      this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
+      $slide_content.html( this.currentSlide.get_field_value("content") );
+      this.currentSlide.actions.each(function(action) {
+        $actions.append( 
+          t.span({ style:"margin-right:10px;"},
+            t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
+          ) 
+        );
+      });
+    
+    }
+  
+    // $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
     return this;
   }
 
