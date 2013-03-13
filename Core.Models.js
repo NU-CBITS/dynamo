@@ -194,6 +194,26 @@ Group = Dynamo.Group = Dynamo.Model.extend({
     return (index) ? this.users.add(user, {at: index}) : this.users.add(user);
   },
 
+  formVal: function(attribute) {
+    switch(attribute) {
+      case "start_date":
+        if (this.get('start_date')) {
+          var sd = new Date(this.get('start_date'));
+          return (sd.toString("yyyy-MM-dd"));
+        } else {
+          return ""
+        };
+      default:
+        return this.get(attribute);
+    }
+  },
+
+  toFormValues: function() {
+    var g = this.toJSON();
+    g.start_date = this.formVal("start_date");
+    return g
+  },
+
   get_field_value: function(attribute) {
     return this.get(attribute);
   },  

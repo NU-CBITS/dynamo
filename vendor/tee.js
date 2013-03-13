@@ -99,16 +99,6 @@ t.div = function(content, attributes) {
   return t.tag('div', attributes, content);
 };
 
-// form
-t.form = function(content, attributes) {
-  return t.tag('form', attributes, content);
-};
-
-// form
-t.h3 = function(content, attributes) {
-  return t.tag('h3', attributes, content);
-};
-
 //link
 t.link = function(label, href, attributes) {
   attributes = attributes || {};
@@ -132,6 +122,20 @@ t.label = function(l, _for) {
 // Internally, hands off to the tag method.
 t.input = function(attributes) {
   return t.tag('input', attributes);
+};
+
+// tr
+// convenience method 
+// Internally, hands off to the tag method.
+t.tr = function(attributes, content) {
+  return t.tag('tr', attributes, content);
+};
+
+// td
+// convenience method 
+// Internally, hands off to the tag method.
+t.td = function(attributes, content) {
+  return t.tag('td', attributes, content);
 };
 
 

@@ -156,7 +156,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
       self.$el.append( self._elementTemplate({item: fields}) );
     });
 
-    $('div.list-item', this.$el).on('click', this.onElementClick);
+    $('div.item', this.$el).on('click', this.onElementClick);
   
   };
   
@@ -845,6 +845,10 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
     this.initializeAsSaveable(this.model);
   },
 
+  deleteModel: function() {
+    this.model.destroy();
+  },
+
   // initial_render convenience tracker functions
   initiallyRendered: function() { return (!!this._initialRender); },
   setInitialRender: function() { this._initialRender = true; },
@@ -1270,12 +1274,30 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function() {
 
     _.bindAll(this);
-    this.cid = _.uniqueId('ShowGroupView-');
+    this.cid = _.uniqueId('EditGroupView-');
     this.subViews = [];
     this.position = this.options.position
     this.model.on("change",   this.render);
     this.model.on("destroy",  this.remove);
 
+  },
+
+  events: function() {
+    var e = {}
+    e["click button.delete"] = "deleteModel";
+    e["change input"] = "updateGroup";
+    return e;
+  },
+
+  updateGroup: function() {
+    var setObj = {};
+    this.$el.find('input').each(function() {
+      if ( $(this).attr('name') ) {
+        setObj[ $(this).attr('name') ] = $(this).val();
+      };
+    });
+    this.model.set(setObj);
+    this.model.save();
   },
 
   addSubView: function(view) {
@@ -1285,7 +1307,8 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   attributes: function() {
     return {
       id: "group-"+this.model.cid,
-      class: "group"
+      class: "group",
+      "data-id": this.model.id
     }
   },
 
@@ -1318,24 +1341,25 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
     //render template
     var self, view_class, view;
 
-    console.log('-> ShowGroupView render');
-
     self = this;
-    self.$el.html( self.template({
-        position: this.position,
-        group: this.model.toJSON()
+    
+    self.$el.html( self._template({
+        group: this.model.toFormValues(),
+        position: this.position
       })
     );
 
-    // if (!self.usersView) {
-      $users = this.$el.find('div.users:first');
+    $users = this.$el.find('div.users:first');
+    if ( $users.length !== 0 ) {
+
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
       });
-      $users.append(self.usersView.$el)
-    // };
 
-    self.usersView.render();
+      $users.append(self.usersView.$el)
+
+      self.usersView.render();
+    };
 
     return this;
   }
@@ -1966,5 +1990,46 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
     })
 
   }
+
+  // Setup Thought Goals  
+
+  // ThoughtsToolGoals = new XelementCollection(XELEMENTS.filter(function(xel) {
+  //   return (xel.get_field_value("title") == "Thought  Goal")
+  // })); 
+
+  // ThoughtsToolGoalData = new DataCollection(null);
+
+  // ThoughtsToolGoals.each(function(goal_xel) {
+  //   var data;
+
+  //   //Fetch any existing data on the server for this user and goal.
+  //   var dc = new DataCollection(null, {
+  //     xelement_id: goal_xel.id,
+  //     user_id: Dynamo.CURRENT_USER_ID,
+  //     group_id: Dynamo.CURRENT_GROUP_ID      
+  //   });
+  //   dc.fetch({async: false});
+
+  //   if (dc.length > 0) {
+  //     data = dc.first();
+  //   }
+  //   else {
+  //     //if length is 0, then no data exists, create new object.
+  //     data = new Dynamo.Data({
+  //       server_url: Dynamo.TriremeURL,
+  //       xelement_id: goal_xel.id,
+  //       user_id: Dynamo.CURRENT_USER_ID,
+  //       group_id: Dynamo.CURRENT_GROUP_ID       
+  //     });
+  //   };
+    
+  //   ThoughtsToolGoalData.add(data); 
+  //   //either way, it gets added to the collection of user data about calendar goals.
+  // });
+
+  // goalsView = new GoalsView({
+  //   goals:  ThoughtsToolGoals,
+  //   goalData: ThoughtsToolGoalData
+  // });
 
 });

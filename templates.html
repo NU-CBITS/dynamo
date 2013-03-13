@@ -155,11 +155,15 @@
       <label class="text" for="guide_title">Title 
         <input type="text" placeholder="Guide Title" id="guide_title" value="(%= guide.title %)" class="span6">
       </label>
+      <label class="text" for="guide_description">Description 
+        <input id="guide_description" class="span6" type="text" placeholder="Description" value="(%= guide.content_description %)">
+      </label>
       (%; console.log("guidedPageState: ", guidedPageState); %)
       (% if (!guide.guided_page_url) { %)
         <h3> Guided Page </h3>
         <div><p>
-          Specify the current version of the page for which this guide is being developed.   
+          Specify the current version of the page for which this guide is being developed.
+          If you are only developing content and do not have a page that this guide is guiding, click 'skip'.  
           If you <strong>do not know</strong> what page you are developing this guide for, 
           you may have <strong>larger problems than I am able to help you with.</strong>
         </p></div>
@@ -171,8 +175,9 @@
         </label>
         <div class="btn-toolbar">
           <button class="load-guided-page btn btn-primary"><i class="icon-upload-alt"></i> Load Guided Page</button>
+          <button class="skip-guided-page btn btn-primary"><i class="icon-upload-alt"></i> Skip </button>
         </div>        
-      (% } else { %) 
+      (% } else if (guidedPageState !== 'skip') { %) 
         <label class="text" for="guided_page_url">URL 
           <input id="guided_page_url"
                 type="text"
@@ -191,7 +196,7 @@
 
       (% }; %)
 
-      <div class="on-slide-edit" style="(% if (!guide.guided_page_url) { %) display:none; (%} else { %) display:block; (% }; %)">
+      <div class="on-slide-edit" style="(% if (guidedPageState === 'blank') { %) display:none; (%} else { %) display:block; (% }; %)">
         <hr>
         <div id="slides"></div>
       </div>

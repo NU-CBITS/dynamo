@@ -28,11 +28,29 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
-    "click .do-action" : "performAction"
+    "click .do-action" : "performAction",
+    "click .accordion-header li.caret-icons": "displayWidgetContent",
+    "click li.dropdown a.dropdown-toggle": "displayGoalsAndWidgetContent"
   },
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
+  },
+
+  displayGoalsAndWidgetContent: function() {
+    this.$el.find(".accordion-body").show();
+    this.rotateArrowDown();
+  },
+
+  displayWidgetContent: function() {
+    var body = this.$el.find(".accordion-body");
+    if (body.is(":visible")) {
+      body.hide();
+      this.rotateArrowRight();
+    } else {
+      body.show();
+      this.toggleChevronArrow();
+    }
   },
 
   moveBack: function() {
@@ -49,8 +67,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   moveForward: function() {
     try {
       this._currentSlideIndex = this._currentSlideIndex + 1;
-      if (this._currentSlideIndex >= this.currentGuide.slides.length) { 
-        this._currentSlideIndex = this.currentGuide.slides.length - 1;
+      if (this._currentSlideIndex > this.currentGuide.slides.length) { 
+        this._currentSlideIndex = this.currentGuide.slides.length;
       };
       this.renderSlide();
     }
@@ -97,23 +115,51 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     var $slide_content = this.$el.find("div#current-guide-slide-content"),
         $actions = $("div#current-slide-actions");
 
-    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );
-
-    $slide_content.html( this.currentSlide.get_field_value("content") );
-    $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
-    
+    $slide_content.empty();
     $actions.empty();
-    this.currentSlide.actions.each(function(action) {
-
-      $actions.append( 
-        t.span({ style:"margin-right:10px;"},
-          t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
-        ) 
+    
+    if (this.currentSlideIndex() === this.currentGuide.slides.length) {
+      
+      //We have reached the end of the guide.
+      $slide_content.html(""+
+        '<p><h3>You have reached the end of this guide, <br />"'+this.currentGuide.get_field_value("title")+'"</h3></p>'
       );
+    
+    } else {
+      //render the current slide normally
 
-    });
+      this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
+      $slide_content.html( this.currentSlide.get_field_value("content") );
+      this.currentSlide.actions.each(function(action) {
+        $actions.append( 
+          t.span({ style:"margin-right:10px;"},
+            t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
+          ) 
+        );
+      });
+    
+    }
+  
+    // $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
     return this;
+  },
+
+  rotateArrowRight: function() {
+    this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
+  },
+
+  rotateArrowDown: function() {
+    this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
+  },
+
+  toggleChevronArrow: function() {
+    if (this.$el.find('i.icon-caret-right').length === 1) {
+      this.rotateArrowDown();
+    } else {
+      this.rotateArrowRight();
+    }
   }
+
 
 });
 
@@ -124,8 +170,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.guidedPageSM = StateMachine.create({
       initial: 'blank',
       events: [
-        { name: 'load', from: ['blank', 'loaded'], to: 'loaded' },
-        { name: 'clear', from: ['blank', 'loaded'], to: 'blank' }
+        { name: 'skip',   from: ['blank', 'none', 'loaded'], to: 'none'   },
+        { name: 'load',   from: ['blank', 'loaded'], to: 'loaded' },
+        { name: 'clear',  from: ['blank', 'loaded'], to: 'blank'  }
       ]
     });
 
@@ -176,7 +223,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   events: function() {
     return {
       'keyup input#guide_title'         : "updateTitle",
-      'click button.load-guided-page'   : "updateURLAndRender",
+      'keyup input#guide_description'   : "updateDescription",
+      'click button.skip-guided-page'   : "skipGuidedPage",
+      'click button.load-guided-page'   : "updateGuidedPage",
       'click button.clear-guided-page'  : "clearGuidedPage",  
       'click button.save'               : "saveGuide",
       'click button.delete'             : "destroyGuide"
@@ -198,11 +247,18 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
-  updateURLAndRender: function() {
+  updateGuidedPage: function() {
     this.model.guided_page_url = $('input#guided_page_url').val();
     this.loadGuidedPage();
     this.guidedPageSM.load();
     this.initialRender(); 
+    this.render();
+  },
+
+  skipGuidedPage: function() {
+    this.model.guided_page_url = "[None]";
+    this.guidedPageSM.skip();
+    this.initialRender();
     this.render();
   },
 
@@ -297,10 +353,21 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     self.model.set_field_value('title', val );
   },
 
+  updateDescription: function(clickEvent) {
+    var self = this;
+    var val = $(clickEvent.currentTarget).val();
+    self.model.set_field_value('content_description', val );
+  },  
+
   initialRender: function (argument) {
     //more of a 'state-based' render when it comes to guides...
 
     var atts;
+
+    if (this.model.guided_page_url === "[None]") {
+      this.guidedPageSM.skip();
+    };
+
 
     atts = { 
       guide: this.model.get_fields_as_object(),
@@ -355,7 +422,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   render: function (argument) {
 
     if (!this.initiallyRendered()) { 
-
       this.initialRender(); 
       this.setInitialRender(); 
     };
