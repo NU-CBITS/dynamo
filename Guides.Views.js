@@ -28,11 +28,29 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
-    "click .do-action" : "performAction"
+    "click .do-action" : "performAction",
+    "click .accordion-header li.caret-icons": "displayWidgetContent",
+    "click li.dropdown a.dropdown-toggle": "displayGoalsAndWidgetContent"
   },
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
+  },
+
+  displayGoalsAndWidgetContent: function() {
+    this.$el.find(".accordion-body").show();
+    this.rotateArrowDown();
+  },
+
+  displayWidgetContent: function() {
+    var body = this.$el.find(".accordion-body");
+    if (body.is(":visible")) {
+      body.hide();
+      this.rotateArrowRight();
+    } else {
+      body.show();
+      this.toggleChevronArrow();
+    }
   },
 
   moveBack: function() {
@@ -114,7 +132,24 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
     });
     return this;
+  },
+
+  rotateArrowRight: function() {
+    this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
+  },
+
+  rotateArrowDown: function() {
+    this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
+  },
+
+  toggleChevronArrow: function() {
+    if (this.$el.find('i.icon-caret-right').length === 1) {
+      this.rotateArrowDown();
+    } else {
+      this.rotateArrowRight();
+    }
   }
+
 
 });
 
