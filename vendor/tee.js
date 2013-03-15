@@ -124,6 +124,11 @@ t.input = function(attributes) {
   return t.tag('input', attributes);
 };
 
+// p
+t.p = function(content, attributes) {
+  return t.tag('p', attributes, content);
+};
+
 // tr
 // convenience method 
 // Internally, hands off to the tag method.
