@@ -147,13 +147,9 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   showArrayView.prototype.render = function() {
     var self = this, fields;
     this.$el.empty();
-    // if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
 
-    _.each(this.getArrayFn(), function(event) {
-      fields = event.get_fields_as_object();
-      fields.cid = event.cid;
-      fields.id = event.id;
-      self.$el.append( self._elementTemplate({item: fields}) );
+    _.each(this.getArrayFn(), function(element) {
+      self.$el.append( self._elementTemplate({item: element}) );
     });
 
     $('div.item', this.$el).on('click', this.onElementClick);
@@ -2005,8 +2001,8 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   //   //Fetch any existing data on the server for this user and goal.
   //   var dc = new DataCollection(null, {
   //     xelement_id: goal_xel.id,
-  //     user_id: Dynamo.CURRENT_USER_ID,
-  //     group_id: Dynamo.CURRENT_GROUP_ID      
+  //     user_id: Dynamo.CurrentUser().id,
+  //     group_id: Dynamo.CurrentUser().get("group_id")      
   //   });
   //   dc.fetch({async: false});
 
@@ -2018,8 +2014,8 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   //     data = new Dynamo.Data({
   //       server_url: Dynamo.TriremeURL,
   //       xelement_id: goal_xel.id,
-  //       user_id: Dynamo.CURRENT_USER_ID,
-  //       group_id: Dynamo.CURRENT_GROUP_ID       
+  //       user_id: Dynamo.CurrentUser().id,
+  //       group_id: Dynamo.CurrentUser().get("group_id")       
   //     });
   //   };
     

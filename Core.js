@@ -74,37 +74,48 @@ Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
 
 // CurrentUser
-//  A placeholder function.
-//  Must be overridden by the application
-//  in order to return the current user object
+// A placeholder function.
+// Must be overridden by the application
+// in order to return the current user object
 Dynamo.CurrentUser = function() {
   
+  // If already defined.
   if (Dynamo._CurrentUser) {
     return Dynamo._CurrentUser;
   }
 
+  // For testing, let some Dynamo params define the current user:
+  if (Dynamo.CURRENT_USER_ID && Dynamo.CURRENT_GROUP_ID) {
+    Dynamo._CurrentUser =  new User({
+      guid: Dynamo.CURRENT_USER_ID,
+      group_id: Dynamo.CURRENT_GROUP_ID
+    });
+    return Dynamo._CurrentUser;
+  };
+
+  // If there's a param in local storage
   if ( localStorage.getItem("CurrentUser") ) {
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
     Dynamo._CurrentUser = new User(user_atts);
-  }
-  else {
-    Dynamo._CurrentUser = new Dynamo.User({
-      phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
-      username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
-      group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
-    });
-    Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
-    localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
-    localStorage.setItem("CurrentUserSaved", "false");
-    Dynamo._CurrentUser.save({
-      success: function() {
-        console.log("SUCCESS CB of Dynamo._CurrentUser.save!")
-        localStorage.setItem("CurrentUserSaved", "true");
-        localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
-      }
-    });
-    
-  }
+    return Dynamo._CurrentUser;
+  };
+
+  // If all else fails, create a default user.
+  Dynamo._CurrentUser = new Dynamo.User({
+    phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
+    username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
+    group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
+  });
+  Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
+  localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
+  localStorage.setItem("CurrentUserSaved", "false");
+  Dynamo._CurrentUser.save({
+    success: function() {
+      console.log("SUCCESS CB of Dynamo._CurrentUser.save!")
+      localStorage.setItem("CurrentUserSaved", "true");
+      localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
+    }
+  });
   
   return Dynamo._CurrentUser;
 

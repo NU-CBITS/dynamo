@@ -518,6 +518,17 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
 }));
 
 
+Dynamo.getDataFieldsAsObject = function(dataModel) {
+  var fields = {
+    id: dataModel.id,
+    cid: dataModel.cid,
+    user_id: dataModel.get("user_id"),
+    xelement_id: dataModel.get("xelement_id"),
+    group_id: dataModel.get("group_id")
+  };
+  return _.extend(fields, _.object(dataModel.get('names'), _.map(dataModel.get('names'), dataModel.get_field_value )));
+};
+
 //Data
 //modified from Data class in Backhand.js
 //expects: 
@@ -586,7 +597,12 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   get_fields_as_object: function() {
     var self = this;
-    return _.object(self.get('names'), _.map(self.get('names'), function(n) { return self.get_field_value(n) }) )
+    var fields = {
+      user_id: self.get("user_id"),
+      xelement_id: self.get("xelement_id"),
+      group_id: self.get("group_id")
+    };
+    return _.extend(fields, _.object(self.get('names'), _.map(self.get('names'), function(n) { return self.get_field_value(n) }) ) )
   },
 
   // get_field
@@ -723,10 +739,22 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 });
 
 //GroupWide Data
-//expects: 
-//- a trireme_root_url 
-//- an xelement
-//- a group object
+// 
+// expects: 
+//  - a trireme_root_url 
+//  - an xelement
+//  - a group object
+//
+// Although data is stored in collections by user, 
+// at the site level, some data may be important to display based upon all contributions
+// from the group.
+// 
+// e.g. a comment thread is data submitted across all the users in the group.
+// it matters not as much the set of comments that a user submitted, but rather the 
+// set of comments that belong to a particular object.
+// 
+// so, the GroupWideData model was created to house data that belongs to a particular object
+// across all the users in a particular group.
 GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   initialize: function() {
@@ -783,7 +811,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     });
   },
 
-  perUser: function(perUserCollectionFn) {
+  perUser: function(perUserCollectionFn, classProps) {
     var result = _.chain(this.collections)
                   .map(function(collection) { 
                     var val = perUserCollectionFn(collection) 
@@ -795,7 +823,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
                   .flatten()
                   .compact()
                   .value();
-    return new Backbone.Collection( result );
+    return new Backbone.Collection( result, classProps );
   },
 
   where: function(filterFn) {
