@@ -34,7 +34,7 @@ t.SELF_CLOSING_TAGS = [
 // one for closing tags.
 // used internally by 't'.
 t.sc_template = 
-  "<(%= tag %)(% _.each(atts, function(value, key) { %) (%= key %)='(%= value %)'(% }); %)/>";
+  "<(%= tag %)(% _.each(atts, function(value, key) { %) (%= key %)='(%= value %)'(% }); %) />";
 t.ct_template = 
   "<(%= tag %)(% _.each(atts, function(value, key) { %) (%= key %)='(%= value %)'(% }); %)>" +
     "(%= content %)" + 
@@ -74,7 +74,7 @@ t.tag = function(_tag) { //, atts, content
 
   } else {
   
-    return ''
+    return '';
   
   };
 
