@@ -80,76 +80,88 @@ t.tag = function(_tag) { //, atts, content
 
 };
 
+defineConvenienceMethod = function(_tag) {
+
+  window.t[_tag] = function(atts, content) {
+    return t.tag(_tag, atts, content)
+  } 
+
+};
+
+
 // *************************
 // 
-// HTML tag functions
-// these are all convenience
-// functions that delegate to t.tag
+// Tag Convenience methods
+// delegate to t.tag
 // 
 // *************************
-
-// button
-t.button = function(content, attributes) {
-  return t.tag('button', attributes, content);
-};
-
-
-// div
-t.div = function(content, attributes) {
-  return t.tag('div', attributes, content);
-};
-
-//link
-t.link = function(label, href, attributes) {
-  attributes = attributes || {};
-  attributes.href = href;
-  t.tag('a', attributes, label);
-}
-
-// label
-// l (string): content of the label
-// _for  (string): id or name of the DOM element for which this is the label. 
-// returns the html for a label tag;
-t.label = function(l, _for) {
-  return t.tag('label', l, { for: _for });
-};
-
-// input
-// convenience method which returns the html for an input tag;
-// The first parameter being the label 
-// for the input tag and the second parameter 
-// being the complete set of html attributes for the input tag.
-// Internally, hands off to the tag method.
-t.input = function(attributes) {
-  return t.tag('input', attributes);
-};
-
-// p
-t.p = function(content, attributes) {
-  return t.tag('p', attributes, content);
-};
-
-// tr
-// convenience method 
-// Internally, hands off to the tag method.
-t.tr = function(attributes, content) {
-  return t.tag('tr', attributes, content);
-};
-
-// td
-// convenience method 
-// Internally, hands off to the tag method.
-t.td = function(attributes, content) {
-  return t.tag('td', attributes, content);
-};
+_.each(
+  ["html","head","title","base","link","meta","style","script","noscript","body","section","nav","article","aside","h1","h2","h3","h4","h5","h6","hgroup","header","footer","address","main","p","hr","pre","blockquote","ol","ul","li","dl","dt","dd","figure","figcaption","div","a","em","strong","small","s","cite","q","dfn","abbr","data","time","code","var","samp","kbd","sub","sup","i","b","u","mark","ruby","rt","rp","bdi","bdo","span","br","wbr","ins","del","img","iframe","embed","object","param","video","audio","source","track","canvas","map","area","svg","math","table","caption","colgroup","col","tbody","thead","tfoot","tr","td","th","form","fieldset","legend","label","input","button","select","datalist","optgroup","option","textarea","keygen","output","progress","meter","details","summary","command","menu"],
+  function(html_tag) {
+    defineConvenienceMethod(html_tag)
+  }
+);
 
 
-// span
-// convenience method which returns the html for a span tag;
-// Internally, hands off to the tag method.
-t.span = function(content, attributes) {
-  return t.tag('span', content, attributes);
-};
+
+
+
+// // button
+// t.button = function(content, attributes) {
+//   return t.tag('button', attributes, content);
+// };
+
+// // div
+// t.div = function(content, attributes) {
+//   return t.tag('div', attributes, content);
+// };
+
+// //link
+// t.link = function(label, href, attributes) {
+//   attributes = attributes || {};
+//   attributes.href = href;
+//   t.tag('a', attributes, label);
+// }
+
+// // label
+// // l (string): content of the label
+// // _for  (string): id or name of the DOM element for which this is the label. 
+// // returns the html for a label tag;
+// t.label = function(l, _for) {
+//   return t.tag('label', l, { for: _for });
+// };
+
+// // input
+// // convenience method which returns the html for an input tag;
+// // The first parameter being the label 
+// // for the input tag and the second parameter 
+// // being the complete set of html attributes for the input tag.
+// // Internally, hands off to the tag method.
+// t.input = function(attributes) {
+//   return t.tag('input', attributes);
+// };
+
+// // tr
+// // convenience method 
+// // Internally, hands off to the tag method.
+// t.tr = function(attributes, content) {
+//   return t.tag('tr', attributes, content);
+// };
+
+// // td
+// // convenience method 
+// // Internally, hands off to the tag method.
+// t.td = function(attributes, content) {
+//   return t.tag('td', attributes, content);
+// };
+
+
+// // span
+// // convenience method which returns the html for a span tag;
+// // Internally, hands off to the tag method.
+// t.span = function(content, attributes) {
+//   return t.tag('span', content, attributes);
+// };
 
 
 // *************************
