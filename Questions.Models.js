@@ -257,7 +257,11 @@ ResponseModel = Dynamo.Model.extend({
   viewClass: function() { 
     return showResponseView
   },
-  editViewClass: function() { return editResponseView }
+  editViewClass: function() { 
+    // creates div with name, label, and ResponseType!
+    // This is a backboneView
+    return editResponseView
+  }
 });
 
 ResponseValueModel = Dynamo.Model.extend({

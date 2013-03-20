@@ -371,6 +371,7 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     });
     self.$el.find('div.responseGroup:first').append(view.$el);
     view.render();
+
     // this.startPeriodicModelSaving(10);
 
     return this;
@@ -403,12 +404,14 @@ editResponseView = Backbone.View.extend({
   initialRender: function() {
     var self = this, view_class, view;
     this.$el.html( this._template(this.model.toJSON()) );
+
+    // Set Label & Input View
     view = new Dynamo.TextInputView({
       el: (this.$el.find('div.name.attribute label.name_value:first')),
       form_id: self.form_id,
       responseType: 'line',
       updateOn: 'keypress',
-      label: 'Name',
+      label: 'Response Name',
       getValue: function() {
         return self.model.get('name');
       },
@@ -432,7 +435,7 @@ editResponseView = Backbone.View.extend({
       responseValues: [
                       {label: 'text field',     value: 'text'     },
                       {label: 'text area',      value: 'textarea' },
-                      {label: 'radio',          value: 'radio'    },
+                      {label: 'radio buttons',  value: 'radio'    },
                       {label: 'dropdown box',   value: 'select'   },
                       {label: 'checkboxes',     value: 'checkbox' },
                       {label: 'range',          value: 'range' }]
@@ -447,7 +450,7 @@ editResponseView = Backbone.View.extend({
           tagName: 'div',
           className: 'attribute edit',
           form_id: self.cid,
-          label: attr.capitalize(),
+          label: ("Respone "+attr.capitalize()),
           getValue: function() {
             return self.model.get(attr);
           },
@@ -542,8 +545,9 @@ editResponseView = Backbone.View.extend({
 
     // Create a collection of responseValues, if appropriate.
     if (view_class.canHaveResponseValues) {
-
-      $responseValuesContainer.append('<h3>Response Values</h3>');
+      var h3Content = this.model.get('responseType')
+      h3Content = h3Content.charAt(0).toUpperCase() + h3Content.slice(1);
+      $responseValuesContainer.append('<h3>'+h3Content+' Values</h3>');
 
       view = new Dynamo.ManageCollectionView({
         collection: this.model.responseValues,
@@ -581,7 +585,7 @@ editResponseValueView = Backbone.View.extend({
     this.$el.html(this._template(this.model.toJSON()));
 
     view = new Dynamo.TextInputView({
-      el: (this.$el.children('span.label:first')),
+      el: (this.$el.children('span.response-label:first')),
       form_id: self.options.form_id,
       responseType: 'line',
       updateOn: 'keypress',
@@ -596,7 +600,7 @@ editResponseValueView = Backbone.View.extend({
     view.render();
 
     view = new Dynamo.TextInputView({
-      el: (this.$el.children('span.value:first')),
+      el: (this.$el.children('span.response-value:first')),
       form_id: self.options.form_id,
       responseType: 'line',
       updateOn: 'keypress',
@@ -1124,7 +1128,47 @@ showQuestionView = protoQuestionView.extend({
 //   the-attribute-of-that-model-with-the-name-of-
 //   the-name-of-this-response-object.
 //   (if not passed, it throws an error).
-showResponseView = Backbone.View.extend({
+
+var opensAndClosesWithChevron = {
+
+  events: {
+    "click .accordion-header li.caret-icons": "displayWidgetContent"
+  },
+
+  displayWidgetContent: function() {
+    debugger
+    var body = this.$el.find(".accordion-body");
+    if (body.is(":visible")) {
+      body.hide();
+      this.rotateArrowRight();
+    } else {
+      body.show();
+      this.toggleChevronArrow();
+    }
+  },
+
+  rotateArrowRight: function() {
+    this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
+  },
+
+  rotateArrowDown: function() {
+    this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
+  },
+
+  toggleChevronArrow: function() {
+    if (this.$el.find('i.icon-caret-right').length === 1) {
+      this.rotateArrowDown();
+    } else {
+      this.rotateArrowRight();
+    }
+  }
+
+};
+
+var srvWithChevrons = Backbone.View.extend(opensAndClosesWithChevron);
+
+// showResponseView = Backbone.View.extend({
+showResponseView = srvWithChevrons.extend({
 
   initialize: function() {
     _.bindAll(this);
@@ -1183,7 +1227,7 @@ showResponseView = Backbone.View.extend({
   }
 
 });
-
+debugger
 
 protoKnockoutView = Backbone.View.extend({
 
