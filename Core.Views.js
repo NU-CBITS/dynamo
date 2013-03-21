@@ -293,6 +293,7 @@ Dynamo.TextInputView = Backbone.View.extend(
             tagAtts['size'] = this.getValue().length + 2;
           };
       if (this.options.borderless) { tagAtts['style'] = 'border:0;'; };
+
       html = t.formInput(this.formType(), self.options.label, tagAtts);
       this.$el.html( html );
       return this;
@@ -328,6 +329,7 @@ Dynamo.InputGroupView = Backbone.View.extend(
     },
     events: {
       "click div.label_and_input" : "setInput",
+      "click input": "setInput",
       "change select"             : "setAttribute",
       "change input"              : "setAttribute"
     },

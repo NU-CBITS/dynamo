@@ -16,7 +16,7 @@ Dynamo.Model = Backbone.Model.extend({
 
 
 // Dynamo.SaveableModel
-// Adds a Bevy of Methods and Functionality related to Saving.
+// Adds Methods and Functionality related to Saving.
 SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   // Attributes
   saveStates: ['new', 'unsaved_changes', 'current'],
@@ -62,6 +62,29 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   }, 
   3000),
 
+  hasUnsavedChanges: function() {
+    return !!this._unsavedChanges;
+  },
+
+  saveOnChange: function() {
+    this.on('save:suggested', this.debouncedSave);
+  },
+
+  setUnsavedChanges: function() {
+    var previous = this._unsavedChanges; 
+    this._unsavedChanges = true;
+    if (this._unsavedChanges !== previous) { 
+      this.trigger('save_status_change');
+      this.trigger('save:suggested');
+    };
+  },
+
+  clearUnsavedChanges: function() {
+    var previous = this._unsavedChanges; 
+    this._unsavedChanges = false;
+    if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
+  }
+
   // startPeriodicSaving: function(interval_in_seconds) {
   //   console.log('started Periodic saving at the model level every '+interval_in_seconds+' seconds');
   //   var self = this, saveIntervalID;
@@ -84,39 +107,18 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   //   this.off('sync', this.clearUnsavedChanges);
   // },
 
-  hasUnsavedChanges: function() {
-    return !!this._unsavedChanges;
-  },
-
-  saveOnChange: function() {
-    this.on('save:suggested', this.debouncedSave);
-  },
-
-  setUnsavedChanges: function() {
-    var previous = this._unsavedChanges; 
-    this._unsavedChanges = true;
-    if (this._unsavedChanges !== previous) { 
-      this.trigger('save_status_change');
-      this.trigger('save:suggested');
-    };
-  },
-
-  clearUnsavedChanges: function() {
-    var previous = this._unsavedChanges; 
-    this._unsavedChanges = false;
-    if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
-  },
-
-  suggestSaveIfChanged: function() {
-    console.log("in suggestSaveIfChanged; this._unsavedChanges= "+ this._unsavedChanges);
-    if (this.hasUnsavedChanges()) {
-      console.log("Suggesting Xelements Save on:");
-      console.log(this);
-      this.trigger('periodic_save:suggested');
-    };
-  }
+  // ,
+  // suggestSaveIfChanged: function() {
+  //   console.log("in suggestSaveIfChanged; this._unsavedChanges= "+ this._unsavedChanges);
+  //   if (this.hasUnsavedChanges()) {
+  //     console.log("Suggesting Xelements Save on:");
+  //     console.log(this);
+  //     this.trigger('save:suggested');
+  //   };
+  // }
 
 });
+
 
 ReadOnlyModel = Dynamo.ReadOnlyModel = Dynamo.Model.extend({
   codeName: 'read_only',
@@ -248,7 +250,6 @@ XelementRoot = Dynamo.XelementRoot = {
   prettyName: 'Xelement',
   idAttribute: 'guid',
 
-
   defaultsFor: function(xelement_type) {
     var defaults = {},
     types = XELEMENT_BASE.get(xelement_type)["1"].content_types,
@@ -274,9 +275,41 @@ XelementRoot = Dynamo.XelementRoot = {
   },  
 
   metacontent: function() {
-
     return this.get_field_value('metacontent_external');
+  },
 
+  setMCKey: function(fieldName, value) {
+    var mc = this.metacontent();
+    mc[fieldName] = value;
+    this.set_field_value("metacontent_external", mc);
+  },
+
+  recalculateXelementIds: function() {
+    this.set_field_value("required_xelement_ids", this.required_xelements().pluck("guid") );
+    this.setUnsavedChanges();
+  },
+
+  //function which returns the required_xelement_ids field as a backbone collection of Xelement objects
+  required_xelements: function() {
+    if (typeof(this._required_xelements) !== "undefined") {
+      return this._required_xelements
+    };
+    
+    // Create a collection of assets based on the array of guids in 'required_xelement_ids'
+    var required_xelement_ids, raw_json_models; 
+    try {
+      required_xelement_ids =  JSON.parse( this.get_field_value("required_xelement_ids") )
+    }
+    catch (e) {
+      required_xelement_ids = this.get_field_value("required_xelement_ids") || [];
+    };
+    raw_json_models = _.chain(required_xelement_ids)
+                      .map(function(id) { return XELEMENTS.get(id) })
+                      .compact()
+                      .value();
+    this._required_xelements = new XelementCollection(raw_json_models);
+    
+    return this._required_xelements;
   },
   
   // url: function() { return Dynamo.TriremeURL+'/xelements' },
@@ -284,7 +317,9 @@ XelementRoot = Dynamo.XelementRoot = {
     return Dynamo.TriremeURL+'/xelements' 
   },
 
-  viewClass: function() { return Dynamo.ShowXelementSimpleView; }
+  viewClass: function() { 
+    return Dynamo.ShowXelementSimpleView; 
+  }
 
 };
 
@@ -297,6 +332,7 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   initAsXelement: function() {
     this.stringifyAllValues();
     this.initializeAsSaveable();
+    console.log(this.get_field_value("title"));
   },
 
   get_field_type: function(attribute) {

@@ -73,11 +73,12 @@
         </select>
       (% }; %)
       (% if (type == 'radio' || type == 'checkbox') { %)
-        (%= t.div(label) %)
+        (% var numberOfOptions = 1 %)
         (% _.each(options, function(o, index) { 
-            html_atts = { name: name, value: o.value};
+            var html_atts = { name: name, value: o.value, numberOfOptions: numberOfOptions};
             if (selected_value == o.value) { html_atts.checked = 'checked' };
-            print( t.div(t.formInput(type, o.label, html_atts), { class: 'label_and_input' } ) );
+            print( t.formInput(type, o.label, html_atts) );
+            numberOfOptions++
           }); %)
       (% }; %)
     </div>
@@ -113,11 +114,11 @@
         <div class="delete_container btn-toolbar" style="margin-top: 0px;">
           <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)" >
             <!-- <i class="icon-trash"></i> -->
-            Delete (%= element_pretty_name %)
+            <i class='icon-trash'></i> Delete (%= element_pretty_name %)
           </button>
         </div>
       (% } %)
-      (% if (display.edit)  { print(t.form('', { class: 'edit_container widget' })); } %)
+      (% if (display.edit)  { print(t.form('', { class: 'edit_container widget', style: 'margin-bottom:10px;' })); } %)
       (% if (display.show)  { print(t.div('', { class: 'show_container widget' })); } %)
     </div>
     (% if (display.edit) { %)
@@ -352,13 +353,13 @@
     <div class="clearfix"></div>
     <h1>
       <label>Title</label>
-      <input class="title editable" style="width:90%;" type="text" value="(%=title%)"/></h1>
+      <input class="title editable" style="width:90%;" type="text" value="(%=title%)" placeholder="Type title of Assessment" />
+    </h1>
     <div class="metadata"></div>
     <h1>Questions</h1>
     <div id="questions"></div>
-    <div class="form-actions">
-      <button class='btn save btn-primary'>Save Now</button>
-    </div>
+    <hr>
+    <button class='btn save btn-primary'>Save Now</button>
   </div>
 
   <div id="dynamo/questions/show" class="template underscore">
@@ -373,12 +374,21 @@
   </div>
 
   <div id="dynamo/questions/edit" class="template underscore">
-    <div class="widget-header">
-      <h3 class="pull-left">(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
-      <h3 class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</h3>
+    <div class="widget-header navbar" style="margin-bottom: 0px;">
+      <h3>(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
+      <ul class="nav pull-right accordion-header">
+        <li>
+          <h3 class='pull-right save_status (%= current_save_state %)'>(%= current_save_text %)</h3>
+        </li>
+        <li class="caret-icons">
+          <!-- <a><i class="icon-caret-right"></i></a> -->
+        </li>
+      </ul>
     </div>
     <div class="widget-content">
-      <label>Name</label><input class="title editable" type="text" placeholder="Type question name here..."/>  
+      <label>Name</label>
+        <!-- upper most level of question name -->
+      <input class="title editable" style="width:90%;" type="text" placeholder="Type how you will refer to this question here..."/>
       <div class="instructions"></div>
       <div class="content"></div>
       <h3>Responses:</h3>
@@ -387,17 +397,21 @@
   </div>
 
   <div id="dynamo/questions/responses/edit" class="template underscore" >
+    <!-- type of question select -->
+    <div class="responseType attribute edit"></div>    
+    <!-- Name -->
     <div class='name attribute edit'>
       <label class="name_value"></label>
     </div>
-    <div class="responseType attribute edit"></div>
+    <!-- Label -->
     <div class="typeSpecificAttributesContainer"></div>
+    <!-- future fields based on what type of specific attr container -->
     <div class='responseValuesContainer'></div>
   </div>
 
   <div id="dynamo/questions/responses/response_values/edit" class="template underscore">
-    <span class='responseValue label'></span>
-    <span class='responseValue value'></span>
+    <span class='responseValue response-label'></span>
+    <span class='responseValue response-value'></span>
   </div>
 
   <div id="dynamo/activity_tracker/edit_event" class="template underscore">
