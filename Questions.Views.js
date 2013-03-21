@@ -1265,7 +1265,11 @@ PollResponseView = protoKnockoutView.extend({
         '<div class="row-fluid person-rating">'+
           '<div class="span4">'+
             '<strong class="response_option">(%= rv.value %)</strong> - '+
-            '<span class="response_percentage">(%= rv.percentage %)%</span>'+
+            '<span class="response_percentage">'+
+              '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
+                '(%= rv.percentage %)%'+
+              '(% } %)'+
+            '</span>'+
           '</div>'+
           '<div class="response_choosers span8">'+
             '(% _.each(rv.choosers, function(user) { %)'+
@@ -1276,8 +1280,8 @@ PollResponseView = protoKnockoutView.extend({
             '(% }); %)'+
           '</div>'+
         '</div>'+
-      '<hr>'+
-    '(% }); %)'+
+        '<hr>'+
+      '(% }); %)'+
    ' (% }); %)',
 
 
@@ -1340,21 +1344,29 @@ PollResponseView = protoKnockoutView.extend({
 /*
   showQuestionPerDatumInCollectionView
 
-  This view model allows you to construct a question with 
-  multiple responses in which the options of responses that 
-  are input groups can be attributes of the UserData object models
-  that make up the the collection passed into the view on instantiation.
+  Purpose:
+  This view model allows you to construct a Question Xelement object (on the client) for the user to respond to.
+  The Question can have multiple Response Xelement Objects.
+  The Response objects have can have the type of 'radio', or 'textResponse'.
+  If Response Values are required, as they are in 'radio', then these Response Values are expected to be 
+  attributes of UserData objects.
+
+  Thus, this view allows you to ask users questions about user data, 
+  whether that data is their own data, or other user's data.
   
-  These are specified in an array composed of objects
-  named 'responseAttributeDefinitions', passed in on instantiation.
-  The format of this object is:
+  Implementation:
+
+  - The view expects a collection on instantiation, & it is expected to be a collection of UserData objects.
+  - In addition, an array of objects is passed into the view option key, 'responseAttributeDefinitions'.
+  - 'responseAttributeDefinitions' must hold to the following specific format:
+
   responseAttributeDefinitions: [{
-    name: 'NameForAttributeWhichHasTheUserChooseFromSomeCollectedData',
-    label: "Best User Answer"
+    name: '[NameForTheAttribute-WhichHasTheUserChooseFromSomeCollectedData]',
+    label: "Which of the following is three choices is the user lying about?"
     type: 'radio',
     options: ["UserDataAttribute1", "UserDataAttribute2", "UserDataAttribute3", ...]
   },{
-    name: 'SomeOtherNameForAnAttributeWhichIsAResponseFromTheUserAboutSomeCollectedData',
+    name: 'SomeOtherNameForADifferentAttribute-WhichIsATextResponseFromTheUserAboutSomeCollectedData',
     label: "Opinion on Favorite Drink"
     type: 'textResponse',
     dataToShow: ["UserDataAttribute4"],
@@ -1362,12 +1374,9 @@ PollResponseView = protoKnockoutView.extend({
     // promptAfterData: "What do you think of their choice?"
   }]
 
-  If you're a little confused, I don't blame you.  
-  Feel free to ask me.
+  If you're a little confused, I don't blame you.  Feel free to ask me questions.
   -Gabe
 */   
-
-
 showQuestionPerDatumInCollectionView = protoQuestionView.extend({
 
   initialize: function() {
@@ -1446,7 +1455,12 @@ showQuestionPerDatumInCollectionView = protoQuestionView.extend({
   },
 
   render: function() {
-    this.$el.html(  this._template(  this.viewModel() )  );
+    if (this.viewModel().userDataPoints.length == 0) {
+      this.$el.html(this.options.noDataTemplate);
+    }
+    else {
+      this.$el.html(  this._template(  this.viewModel() )  );
+    };
   },
 
   viewModel: function() {

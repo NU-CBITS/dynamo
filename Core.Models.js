@@ -210,6 +210,8 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
   toFormValues: function() {
     var g = this.toJSON();
+    g.id = this.id;
+    g.cid = this.cid;
     g.start_date = this.formVal("start_date");
     return g
   },
@@ -778,7 +780,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     this.collections = [];
     this.group.users.each(function(user) {
       var UserData = new Dynamo.DataCollection(null, {
-        server_url: self.get('server_url'),
+        // server_url: self.get('server_url'),
         xelement_id: self.get('xelement_id'),
         user_id: user.id,
         group_id: self.get('group_id')
@@ -800,15 +802,15 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   forUser: function(user_id) {
     return _.find(this.collections, function(ud_collection) {
-      
-      if (ud_collection.first()) {
-        return (ud_collection.first().get('user_id') == user_id) 
-      }
-      else {
-        return false;
-      };
-      
+      return (ud_collection.user_id() == user_id)       
     });
+
+    // if (existingCollection) {
+    //   return existingCollection
+    // } else {
+    //   return ( new Backbone.Collection([]) )
+    // };
+
   },
 
   perUser: function(perUserCollectionFn, classProps) {
