@@ -1136,7 +1136,6 @@ var opensAndClosesWithChevron = {
   },
 
   displayWidgetContent: function() {
-    debugger
     var body = this.$el.find(".accordion-body");
     if (body.is(":visible")) {
       body.hide();
