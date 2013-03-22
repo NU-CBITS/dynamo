@@ -22,7 +22,19 @@
 GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
 
   initialize: function() {
+    var self = this;
+    
     this.guideData = this.options.guideData;
+    
+    this.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
+      template: DIT["dynamo/guides/index"],
+      collection: this.collection
+    });
+    this.guideSelect.on("element:chosen", function() {
+      self.setAsCurrentGuide(self.guideSelect.chosen_element);
+    });
+    
+    this.collection.on("all", this.render);
   },
 
   events: {
@@ -87,28 +99,20 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     action.execute();
   },
 
+  setAsCurrentGuide: function(guide) {
+    this.currentGuide = guide;
+    this.currentGuideData = this.guideData.filter(function(g) { return g.xelement_id == guide.id });
+    this.resetCurrentSlide();
+    this.renderSlide();
+    this.trigger("guide:selected");    
+  },
+
   render: function() {
 
-    var self = this;
-
-    this.$el.html( self._template({}) );
-
-    self.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
-      template: DIT["dynamo/guides/index"],
-      collection: self.collection
-    });
-
-    self.guideSelect.on("element:chosen", function() {
-      
-      self.currentGuide = self.guideSelect.chosen_element;
-      self.currentGuideData = self.guideData.filter(function(guide) { return guide.xelement_id == self.currentGuide.id });
-      self.resetCurrentSlide();
-      self.renderSlide();
-    });
-    self.$el.find("div#guide-select-nav").prepend(self.guideSelect.render().$el);
+    this.$el.html( this._template({}) );
+    this.$el.find("div#guide-select-nav").prepend(this.guideSelect.render().$el);
 
     return this;
-
   },
 
   renderSlide: function() {

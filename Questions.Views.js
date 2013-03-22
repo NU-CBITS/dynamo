@@ -1227,7 +1227,6 @@ showResponseView = srvWithChevrons.extend({
   }
 
 });
-debugger
 
 protoKnockoutView = Backbone.View.extend({
 
