@@ -42,14 +42,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     "click .previous" : "moveBack",
     "click .do-action" : "performAction",
     "click .accordion-header li.caret-icons": "displayWidgetContent",
-    "click li.dropdown a.dropdown-toggle": "displayGoalsAndWidgetContent"
+    "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
   },
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
   },
 
-  displayGoalsAndWidgetContent: function() {
+  displayDropdownAndWidgetContent: function() {
     this.$el.find(".accordion-body").show();
     this.rotateArrowDown();
   },
@@ -62,7 +62,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     } else {
       body.show();
       this.toggleChevronArrow();
-    }
+    } 
   },
 
   moveBack: function() {
@@ -163,7 +163,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       this.rotateArrowRight();
     }
   }
-
 
 });
 
