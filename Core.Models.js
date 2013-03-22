@@ -142,7 +142,7 @@ User = Dynamo.User = Dynamo.Model.extend({
 
   defaults: {
     username: "guest_user",
-    created_at: new Date(),
+    created_at: (new Date()).toString(),
     group_id: "DEFAULT_GROUP_GUID"
   },
 
@@ -562,7 +562,8 @@ Dynamo.getDataFieldsAsObject = function(dataModel) {
     cid: dataModel.cid,
     user_id: dataModel.get("user_id"),
     xelement_id: dataModel.get("xelement_id"),
-    group_id: dataModel.get("group_id")
+    group_id: dataModel.get("group_id"),
+    created_at: dataModel.get("created_at")
   };
   return _.extend(fields, _.object(dataModel.get('names'), _.map(dataModel.get('names'), dataModel.get_field_value )));
 };
