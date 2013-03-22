@@ -776,7 +776,7 @@
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
         <ul id="guides-list" class="dropdown-menu">
           (% _.each(elements, function(e) { %)
-            <li><a><span class="choose_element" data-cid="(%= e.id %)">(%= e.html %)</span></a></li>
+            <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
           (% }) %)
         </ul>
       </li>
