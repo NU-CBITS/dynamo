@@ -1305,27 +1305,25 @@ PollResponseView = protoKnockoutView.extend({
     '(% _.each(responses, function(r) { %)'+
       '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
       '(% _.each(r.responseValues, function(rv) { %)'+
-        '<div class="row-fluid person-rating">'+
-          '<div class="span4">'+
-            '<strong class="response_option">(%= rv.value %)</strong> - '+
-            '<span class="response_percentage">'+
-              '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
-                '(%= rv.percentage %)%'+
-              '(% } %)'+
-            '</span>'+
-          '</div>'+
-          '<div class="response_choosers span8">'+
+        '<li>'+
+          '<p class="title pull-left">(%= rv.value %)</p>'+
+          '<p class="info response_percentage pull-right label label-info">'+
+            '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
+              '(%= rv.percentage %)%'+
+            '(% } %)'+
+          '</p>'+
+          '<div class="clearfix"></div>'+
+          '<p class="response_choosers">'+
             '(% _.each(rv.choosers, function(user) { %)'+
-              '<div class="user person">'+
-                '<img src="../img/big-person-icon.png" style="width:90px;"><br />'+
+              '<div>'+
+                '<img src="(%=user.image_url%)" style="width:40px;"><br />'+
                 '<span class="name">(%= user.username %)</span>'+
               '</div>'+
             '(% }); %)'+
-          '</div>'+
-        '</div>'+
-        '<hr>'+
+          '</p>'+
+        '</li>'+
       '(% }); %)'+
-   ' (% }); %)',
+    '(% }); %)',
 
 
   initialize: function() {
