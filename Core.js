@@ -51,9 +51,9 @@
 // - an evaluate regex to match expressions that should be evaluated without insertion into the resulting string.
 
 _.templateSettings = {
-  interpolate : /\(\%\=(.+?)\%\)/g,
-  evaluate    : /\(\%(.+?)\%\)/g,
-  escape      : /\(\%\-(.+?)\%\)/g //interpolate with first escaping HTML
+  evaluate    : /\(%([\s\S]+?)%\)/g,
+  interpolate : /\(%=([\s\S]+?)%\)/g,
+  escape      : /\(%-([\s\S]+?)%\)/g
 };
 
 
