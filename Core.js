@@ -65,6 +65,28 @@ Dynamo.initialize = function() {
   Dynamo.loadTemplates();
 }
 
+// A page using dynamo can require that a 
+// user be logged in.
+Dynamo._loginRequired = false
+// require a log in by the user
+Dynamo.requireLogin = function() {
+  Dynamo._loginRequired = true;
+};
+
+//Check if Dynamo is currently requiring a log in by the user
+Dynamo.loginRequired = function() {
+  return Dynamo._loginRequired;
+};
+
+Dynamo.redirectTo = function(fileName, options) {
+  var path = location.pathname.split("/")
+  path[path.length - 1] = fileName;
+  if (options && options.as && options.as == "link") {
+    window.location.href = path.join("/")
+  } else {
+    window.location.replace(path.join("/"))  
+  };
+};
 
 // Authenticating User
 // In most circumstances, the Authenticating User will be the current user,
@@ -74,9 +96,8 @@ Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
 
 // CurrentUser
-// A placeholder function.
-// Must be overridden by the application
-// in order to return the current user object
+// Function which returns the currently authenticated user,
+// or redirects to the login page.
 Dynamo.CurrentUser = function() {
   
   // If already defined.
@@ -100,27 +121,31 @@ Dynamo.CurrentUser = function() {
     return Dynamo._CurrentUser;
   };
 
-  // If all else fails, create a default user.
-  Dynamo._CurrentUser = new Dynamo.User({
-    phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
-    username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
-    group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
-  });
-  Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
-  localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
-  localStorage.setItem("CurrentUserSaved", "false");
-  Dynamo._CurrentUser.save({
-    success: function() {
-      console.log("SUCCESS CB of Dynamo._CurrentUser.save!")
-      localStorage.setItem("CurrentUserSaved", "true");
-      localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
-    }
-  });
-  
-  return Dynamo._CurrentUser;
+  if (Dynamo.loginRequired()) {
+    Dynamo.redirectTo("login.html");
+  }
+  else {
+    Dynamo._CurrentUser = new Dynamo.User({
+      phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
+      username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
+      group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
+    });
+    Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
+    localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
+    localStorage.setItem("CurrentUserSaved", "false");
+    Dynamo._CurrentUser.save({
+      success: function() {
+        console.log("SUCCESS CB of Dynamo._CurrentUser.save!")
+        localStorage.setItem("CurrentUserSaved", "true");
+        localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
+      }
+    });
+    
+    return Dynamo._CurrentUser;
+  }
+
 
 };
-
 
 // For interaction with phonegap; will return the phone's ID if it has one.
 Dynamo.deviceID = function() {
