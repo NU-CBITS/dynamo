@@ -147,6 +147,13 @@ Dynamo.CurrentUser = function() {
 
 };
 
+Dynamo.CurrentGroupMembers = function() {
+  if (typeof (USER_GROUPS) == "undefined") {
+    new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
+  };
+  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) ).users
+};
+
 // For interaction with phonegap; will return the phone's ID if it has one.
 Dynamo.deviceID = function() {
 

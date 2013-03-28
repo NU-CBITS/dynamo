@@ -186,17 +186,7 @@ t.formInput = function(type, label, atts) {
     case "radio":
     case "checkbox":
       // return t.input(atts) + t.label(label, atts.id);
-      var name, id, value, checked;
-      name = atts.name || "";
-      id = atts.id || atts.name || "";
-      value = atts.value || "";
-      checked = atts.checked || "";
-      numberOfOptions = atts.numberOfOptions;
-      // 'for' attribute in lable is actually unnecessary!
-      // 'name' needs to be the same for the group
-      return '<label class="'+type+'" for="'+id+'_'+numberOfOptions+'">'+
-        '<input type="'+type+'" name="'+name+'" id="'+id+'_'+numberOfOptions+'" value="'+value+'" '+checked+'>'+label+
-      '</label>'
+      return t.label(label + t.input(atts), atts.id)
       break;
     case "option":
       return t.tag('option', atts, label);
@@ -210,3 +200,20 @@ t.formInput = function(type, label, atts) {
       return t.span("UNIMPLEMENTED FORM INPUT TYPE '" + type + "'", atts);
   };
 };
+
+
+// arguments = ???
+t.formInputGroup = function() {
+  var name, id, value, checked;
+  name = atts.name || "";
+  id = atts.id || atts.name || "";
+  value = atts.value || "";
+  checked = atts.checked || "";
+  numberOfOptions = atts.numberOfOptions;
+  // 'for' attribute in lable is actually unnecessary!
+  // 'name' needs to be the same for the group
+  return '<label class="'+type+'" for="'+id+'_'+numberOfOptions+'">'+
+    '<input type="'+type+'" name="'+name+'" id="'+id+'_'+numberOfOptions+'" value="'+value+'" '+checked+'>'+label+
+  '</label>'
+///
+}
