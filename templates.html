@@ -730,16 +730,16 @@
       <div class="stream-icon orange">
         <i class="icon-calendar"></i>
       </div>
-      <p class="date">(%= item.start.toString().replace("GMT-0600 (CST)", "") %)</p>
+      <p class="date">(%= (new Date(item.get_field_value('start'))).toString('h:mm tt on MMM d, yyyy') %)</p>
 
       <!-- <h4 id="show-event-title">(%= item.title %)</h4> -->
       <h4>(%= item.title %)</h4>
       <div class="row-fluid">
         <p style="color:black;">
           <div id="show-start-end-times-container">
-            From: <span id="show-event-start-time">(%= item.start.toString() %)</span>
+            From: <span id="show-event-start-time">(%= (new Date(item.get_field_value('start'))).toString('h:mm tt on MMM d, yyyy') %)</span>
             <div class="clearfix"></div>
-            Until: <span id="show-event-end-time">(%= item.end.toString() %)</span>
+            Until: <span id="show-event-end-time">(%= (new Date(item.get_field_value('end'))).toString('h:mm tt on MMM d, yyyy') %)</span>
           </div>
         </p>
         <p style="color:black;">
