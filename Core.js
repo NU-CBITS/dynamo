@@ -61,8 +61,8 @@ Dynamo = {};
 _.bindAll(Dynamo);
 
 
-Dynamo.initialize = function() {
-  Dynamo.loadTemplates();
+Dynamo.initialize = function(options) {
+  Dynamo.loadTemplates(options);
 }
 
 // A page using dynamo can require that a 
@@ -179,32 +179,73 @@ Dynamo.isCoreStable = function() {
 // loadTemplates
 // -------------
 //
-// If no templates exist, change to to templates.html
+// Allowing for completely-client-side templating independent of
+// the page on which they live proved a challenging problem to find a solution for,
+// This solution works as follows:
+// - If no templates exist, change to to templates.html
 // in order to load them into local storage.
-// upon completion, templates.html will return to this page, 
-// and this method will again be called from the beginning
-Dynamo.loadTemplates = function() {
+// if it is specified in the options to also load application-specific templates,
+// then load those as well.
+// upon completion, it is expected that we will return to the URL from which this
+// method was called.
+// This method will again be called from the beginning,
+// but, having found templates, the page will continue to load as normal.
+//
+// If we are currently on:
+//   http://www.somedomain.com/index.html
+// dynamo's templates.html are expected to be at:
+//   http://www.somedomain.com/dynamo/templates.html      
+// an application's templates are expected to be at:
+//   http://www.somedomain.com/app_templates.html
+Dynamo.loadTemplates = function(options) {
   DIT = localStorage.getItem("DYNAMO_TEMPLATES");
   if (!DIT) {
 
-    // If we are currently on:
-    //   http://www.somedomain.com/index.html
-    // templates.html is assumed to be at:
-    //   http://www.somedomain.com/dynamo/templates.html
-    var currentLocation = window.location.href;
-    localStorage.setItem("DIT_AFTER_LOAD_URL", currentLocation);
-    var pathComponents = window.location.href.split("/");
-    pathComponents[pathComponents.length - 1] = "dynamo/templates.html";
-    templatesLocation = pathComponents.join("/");
+    var path = window.location.href.split("/");
+        
+    if (options && options.load_app_templates) {
+
+      path[path.length - 1] = "app_templates.html";
+      localStorage.setItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL", path.join("/"));
+      localStorage.setItem("AFTER_APPLICATION_TEMPLATE_LOAD_URL", window.location.href);
+
+    }
+    else {
+      
+      localStorage.setItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL", window.location.href);
+
+    };
+
+    path[path.length - 1] = "dynamo/templates.html";
+    window.location.href = path.join("/");
+
+  } else {
+
+    $(window).on("unload", function() {
+      localStorage.removeItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL");
+      localStorage.removeItem("DYNAMO_TEMPLATES");
+      localStorage.removeItem("APPLICATION_TEMPLATES");
+    });
+    
+    DIT = Dynamo.DIT = JSON.parse(DIT);
+  };
+
+};
+
+Dynamo.loadAppTemplates = function() {
+  DAT = localStorage.getItem("APPLICATION_TEMPLATES");
+  if (!DAT) {
+
+
     window.location.href = templatesLocation;
   } else {
-    $(window).unload(function() {
-      localStorage.removeItem("DIT_AFTER_LOAD_URL");
-      localStorage.removeItem("DYNAMO_TEMPLATES");
+    $(window).on("unload", function() {
+      
     });
-    DIT = JSON.parse(DIT);
+    DAT = JSON.parse(DAT);
   };
-};
+
+}
 
 
 // Underscore methods that we want to implement on a Model.

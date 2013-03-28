@@ -181,12 +181,12 @@ t.formInput = function(type, label, atts) {
   switch (type) {
     case "text":
     case "password":
-      return t.label(label, atts.name) + t.input(atts);
+      return t.label(label+" "+t.input(atts), atts.name) ;
       break;
     case "radio":
     case "checkbox":
       // return t.input(atts) + t.label(label, atts.id);
-      return t.label(label + t.input(atts), atts.id)
+      return t.label(t.input(atts)+" "+label, atts.id);
       break;
     case "option":
       return t.tag('option', atts, label);

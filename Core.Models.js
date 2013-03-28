@@ -812,6 +812,11 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return true;
   },
 
+  add: function(modelToAdd) {
+    var user_id = modelToAdd.get("user_id");
+    this.userCollectionFor(user_id).add(modelToAdd)
+  },
+
   buildUserCollections: function() {
     var self = this;
     this.collections = [];
@@ -850,6 +855,15 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   },
 
+  length: function() {
+
+    return _.chain(this.collections)
+            .map( function(c) { return c.length })
+            .reduce( function(memo, num) { return memo + num; }, 0)
+            .value();
+
+  },
+
   perUser: function(perUserCollectionFn, classProps) {
     var result = _.chain(this.collections)
                   .map(function(collection) { 
@@ -865,6 +879,10 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return new Backbone.Collection( result, classProps );
   },
 
+  userCollectionFor: function(user_id) {
+    return _.find(this.collections, function(c) { return c.user_id() == user_id });
+  },
+
   where: function(filterFn) {
     var result = _.chain(this.collections)
                   .map(function(c) { return c.filter(filterFn) })
@@ -873,16 +891,8 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
                   .value();
 
     return new Backbone.Collection( result );
-  },
-
-  length: function() {
-
-    return _.chain(this.collections)
-            .map( function(c) { return c.length })
-            .reduce( function(memo, num) { return memo + num; }, 0)
-            .value();
-
   }
+
 
 });
 

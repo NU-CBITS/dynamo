@@ -16,7 +16,7 @@
   $(function() { 
     
     // "Dynamo Instant Templates";
-    window.DIT = {};
+    var DIT = {};
 
     var $t;
     $("div.template").each(function() {
@@ -27,7 +27,7 @@
     });
 
     localStorage.setItem("DYNAMO_TEMPLATES", JSON.stringify(DIT));
-    window.location.href = localStorage.getItem("DIT_AFTER_LOAD_URL");
+    window.location.href = localStorage.getItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL");
 
   });
 

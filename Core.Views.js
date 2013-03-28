@@ -127,6 +127,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     this.$container.prepend(this.el);
     this.$el = $(this.container).find('div.array-view:first');
     this.getArrayFn = options.getArrayFn;
+    this.contentWhenEmpty = options.contentWhenEmpty;
     this.elementTemplate = options.elementTemplate;
     this.onElementClick = options.onElementClick;
     this.title = options.title; 
@@ -148,9 +149,16 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     var self = this, fields;
     this.$el.empty();
 
-    _.each(this.getArrayFn(), function(element) {
-      self.$el.append( self._elementTemplate({item: element}) );
-    });
+    var elements = this.getArrayFn()
+
+    if (elements.length > 0) {
+      _.each(elements, function(element) {
+        self.$el.append( self._elementTemplate({item: element}) );
+      });      
+    } else {
+      self.$el.html((self.contentWhenEmpty || "<div>None</div>"));
+    }
+
 
     $('div.item', this.$el).on('click', this.onElementClick);
   
