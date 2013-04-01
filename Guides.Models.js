@@ -96,7 +96,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   defaultSelectNext: function(guide, visited_slide_ids, responseData) {
     console.log("In defaultSelectNext. (guide, visited_slide_ids, responseData):", guide, visited_slide_ids, responseData);
     if (guide.slides.length == 0) {
-      alert("It seems that guide '"+guide.id+"' has no slides.");
+      // alert("It seems that guide '"+guide.id+"' has no slides.");
       return 0;
     };
     var next_q = guide.slides.at(visited_slide_ids.length);

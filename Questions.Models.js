@@ -81,7 +81,7 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
     console.log(answered_question_ids);
     console.log(responseData);
     if (qg.questions.length == 0) {
-      alert("it seems to be the case that assessment '"+qg.id+"' has no questions.");
+      // alert("it seems to be the case that assessment '"+qg.id+"' has no questions.");
       return 0;
     };
     var next_q = qg.questions.at(answered_question_ids.length);

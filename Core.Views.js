@@ -1593,7 +1593,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
       console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
-      alert('Saved.');
+      // alert('Saved.');
     });
 
   },
