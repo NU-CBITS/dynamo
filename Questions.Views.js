@@ -1315,7 +1315,7 @@ PollResponseView = protoKnockoutView.extend({
           '<p class="response_choosers">'+
             '(% _.each(rv.choosers, function(user) { %)'+
               '<div>'+
-                '<img src="(%=user.image_url%)" style="width:40px;"><br />'+
+                '<img src="(%= user.image_url %)" style="width:40px;"><br />'+
                 '<span class="name">(%= user.username %)</span>'+
               '</div>'+
             '(% }); %)'+
@@ -1328,29 +1328,32 @@ PollResponseView = protoKnockoutView.extend({
   initialize: function() {
     _.bindAll(this);
     this.question = QUESTIONS.get(this.model.get('xelement_id'));
-    this.model.on('change', this.render);
+    this.responses = this.question.getResponses();
+    _.each(this.model.collections, function(c) {
+      c.on('all', this.render);
+    });
   },
 
   buildViewModel: function() {
     var self = this,
         responses = [];
 
-    _.each(this.question.getResponses(), function(r) {
+    _.each(this.responses, function(response) {
 
       var response = {
-        label: r.label,
+        label: response.label,
         responseValues: []
       };
 
-      _.each(r.responseValues, function(rv) {
+      _.each(response.responseValues, function(rv) {
       
         var responseVal = {
           value: rv.value
         };
         
-        // Fetch user_data that matches this response value.  
+        // Fetch user_data that matches this response value.
         var userDataForResponseVal = self.model.where(function(ud) { 
-          return (ud.get_field_value(r.name) == rv.value) 
+          return (ud.get_field_value(response.name) == rv.value) 
         });
 
         // Pull the user_id out of the user_data and use it to get the
