@@ -780,10 +780,10 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 //GroupWide Data
 // 
 // expects: 
-//  - a trireme_root_url 
+//  - a  trireme_root_url 
 //  - an xelement
-//  - a group object
-//
+//  - a  group object
+// 
 // Although data is stored in collections by user, 
 // at the site level, some data may be important to display based upon all contributions
 // from the group.
@@ -837,7 +837,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   },
 
   fetchUserCollections: function(fetch_options) {
-    var options = _.extend({async:false, silent: true}, fetch_options);
+    var options = _.extend({async:false}, fetch_options);
     _.each(this.collections, function(c) { c.fetch(options); });
     this.trigger('change');
   },
@@ -846,13 +846,6 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return _.find(this.collections, function(ud_collection) {
       return (ud_collection.user_id() == user_id)       
     });
-
-    // if (existingCollection) {
-    //   return existingCollection
-    // } else {
-    //   return ( new Backbone.Collection([]) )
-    // };
-
   },
 
   length: function() {

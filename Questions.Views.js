@@ -1329,18 +1329,19 @@ PollResponseView = protoKnockoutView.extend({
     _.bindAll(this);
     this.question = QUESTIONS.get(this.model.get('xelement_id'));
     this.responses = this.question.getResponses();
-    _.each(this.model.collections, function(c) {
-      c.on('all', this.render);
-    });
+    // _.each(this.model.collections, function(c) {
+    //   c.on('all', this.render);
+    // });
+    // this.model.on('change', this.render);
   },
 
   buildViewModel: function() {
     var self = this,
-        responses = [];
+        pollResponsesModel = [];
 
     _.each(this.responses, function(response) {
 
-      var response = {
+      var pollResponseData = {
         label: response.label,
         responseValues: []
       };
@@ -1367,15 +1368,15 @@ PollResponseView = protoKnockoutView.extend({
         // option out of all of the users in the group.
         responseVal.percentage = responseVal.choosers.length / self.model.collections.length;
 
-        response.responseValues.push(responseVal);
+        pollResponseData.responseValues.push(responseVal);
 
       });
 
-      responses.push(response);
+      pollResponsesModel.push(pollResponseData);
 
     });
 
-    return responses;
+    return pollResponsesModel;
   },
 
   render: function() {
