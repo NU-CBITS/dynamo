@@ -189,7 +189,7 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
   defaults: {
     name: "Default Group",
-    created_at: new Date(),
+    created_at: (new Date()).toString(),
   },
 
   addUser: function(user, index) {
@@ -639,7 +639,8 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
     var fields = {
       user_id: self.get("user_id"),
       xelement_id: self.get("xelement_id"),
-      group_id: self.get("group_id")
+      group_id: self.get("group_id"),
+      created_at: ( new Date( self.get("created_at") ) )
     };
     return _.extend(fields, _.object(self.get('names'), _.map(self.get('names'), function(n) { return self.get_field_value(n) }) ) )
   },
