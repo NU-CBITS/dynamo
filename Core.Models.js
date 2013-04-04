@@ -637,6 +637,8 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
   get_fields_as_object: function() {
     var self = this;
     var fields = {
+      id: self.id,
+      cid: self.cid,
       user_id: self.get("user_id"),
       xelement_id: self.get("xelement_id"),
       group_id: self.get("group_id"),
@@ -877,14 +879,14 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return _.find(this.collections, function(c) { return c.user_id() == user_id });
   },
 
-  where: function(filterFn) {
+  where: function(filterFn, collectionOptions) {
     var result = _.chain(this.collections)
                   .map(function(c) { return c.filter(filterFn) })
                   .flatten()
                   .compact()
                   .value();
 
-    return new Backbone.Collection( result );
+    return ( new Backbone.Collection( result, collectionOptions ) );
   }
 
 

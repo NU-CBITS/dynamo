@@ -118,7 +118,6 @@ Dynamo.CurrentUser = function() {
   if ( localStorage.getItem("CurrentUser") ) {
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
     Dynamo._CurrentUser = USERS.get(user_atts.guid);
-    debugger;
     return Dynamo._CurrentUser;
   };
 
