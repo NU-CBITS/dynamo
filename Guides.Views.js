@@ -108,16 +108,22 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-
     this.$el.html( this._template({}) );
-    this.$el.find("div#guide-select-nav").prepend(this.guideSelect.render().$el);
+    this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
 
     return this;
-  },
+  },    
 
   renderSlide: function() {
     var $slide_content = this.$el.find("div#current-guide-slide-content"),
         $actions = $("div#current-slide-actions");
+
+    //  Place current Guide title into correct spot in the title bar.
+    this.$el.find("#current-guide-title").html(
+      t.strong(t.em( 
+           this.currentGuide.get_field_value("title")
+      ))
+    );
 
     $slide_content.empty();
     $actions.empty();
@@ -126,7 +132,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       
       //We have reached the end of the guide.
       $slide_content.html(""+
-        '<p><h3>You have reached the end of this guide, <br />"'+this.currentGuide.get_field_value("title")+'"</h3></p>'
+        '<p><h4>You have reached the end of this guide</h4></p>'
       );
     
     } else {
