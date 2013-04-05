@@ -226,6 +226,10 @@ Group = Dynamo.Group = Dynamo.Model.extend({
     return this.set(attributes, options);
   },
 
+  startDate: function() {
+    return (new Date(this.get('start_date')));
+  },
+
   updateUsers: function () {
     var users_array = this.users.map(function(model) { return model.id });
     this.set({'users': users_array});

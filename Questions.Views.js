@@ -1304,11 +1304,12 @@ PollResponseView = protoKnockoutView.extend({
     '(% _.each(responses, function(r) { %)'+
       '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
       '(% _.each(r.responseValues, function(rv) { %)'+
-        '<li>'+
+        '<div>'+
           '<p class="title pull-left">(%= rv.value %)</p>'+
           '<p class="info response_percentage pull-right label label-info">'+
+            '(%= rv.proportion %)'+
             '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
-              '(%= rv.percentage %)%'+
+              ' ( (%= rv.percentage %)% )'+
             '(% } %)'+
           '</p>'+
           '<div class="clearfix"></div>'+
@@ -1320,7 +1321,8 @@ PollResponseView = protoKnockoutView.extend({
               '</div>'+
             '(% }); %)'+
           '</p>'+
-        '</li>'+
+        '</div>'+
+        '<hr />'+
       '(% }); %)'+
     '(% }); %)',
 
@@ -1366,7 +1368,8 @@ PollResponseView = protoKnockoutView.extend({
 
         // Calculate the percentage of users that have chosen this
         // option out of all of the users in the group.
-        responseVal.percentage = responseVal.choosers.length / self.model.collections.length;
+        responseVal.proportion = ""+responseVal.choosers.length+" of "+self.model.collections.length;
+        responseVal.percentage = (Math.floor( (responseVal.choosers.length/self.model.collections.length) * 100) / 100);
 
         pollResponseData.responseValues.push(responseVal);
 

@@ -147,6 +147,13 @@ Dynamo.CurrentUser = function() {
 
 };
 
+Dynamo.CurrentGroup = function() {
+  if (typeof (USER_GROUPS) == "undefined") {
+    new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
+  };
+  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) )  
+}
+
 Dynamo.CurrentGroupMembers = function() {
   if (typeof (USER_GROUPS) == "undefined") {
     new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
