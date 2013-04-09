@@ -52,9 +52,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   },
 
   debouncedSave: _.debounce(function() { 
-    console.log("Debounced Save Called!");
     if ( this.hasUnsavedChanges() ) { 
-      console.log("Model ", this, " had unsaved changes");
+      console.log("debouncedSave: Model ", this, " had unsaved changes");
       this.save({silent:true}) 
     } else {
       console.log("debouncedSave: Model", this, "did not have any unsaved changes");
@@ -84,38 +83,6 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     this._unsavedChanges = false;
     if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
   }
-
-  // startPeriodicSaving: function(interval_in_seconds) {
-  //   console.log('started Periodic saving at the model level every '+interval_in_seconds+' seconds');
-  //   var self = this, saveIntervalID;
-  //   if (!this.currentSaveIntervalID) {
-  //     this.currentSaveIntervalID = setInterval(self.suggestSaveIfChanged, interval_in_seconds*1000);
-  //   } else {
-  //     console.warn("Attempted to initiate interval-initiated-save of Model<cid: "+this.cid+">"+
-  //       " but it is already being saved at an interval.  Command Ignored. Current Interval ID is: "+ this.currentSaveIntervalID);
-  //   };
-  //   this.on('change', this.setUnsavedChanges); 
-  //   this.on('sync', this.clearUnsavedChanges);
-  //   this.on('destroy', this.stopPeriodicSaving);
-  // },
-
-  // stopPeriodicSaving: function() {
-  //   console.log('stopping scheduled saving at the model level');
-  //   clearInterval(this.currentSaveIntervalID);
-  //   this.currentSaveIntervalID = null;
-  //   this.off('change', this.setUnsavedChanges); 
-  //   this.off('sync', this.clearUnsavedChanges);
-  // },
-
-  // ,
-  // suggestSaveIfChanged: function() {
-  //   console.log("in suggestSaveIfChanged; this._unsavedChanges= "+ this._unsavedChanges);
-  //   if (this.hasUnsavedChanges()) {
-  //     console.log("Suggesting Xelements Save on:");
-  //     console.log(this);
-  //     this.trigger('save:suggested');
-  //   };
-  // }
 
 });
 
@@ -527,7 +494,6 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
 
   parse: function(resp) {
     var self = this;
-    console.log("In ValuesOnlyXelement.parse", resp);
     if ( !_.isObject(resp) ) {
       throw new Error("ValuesOnlyXelement.parse: Unexpected response from server.");
     };
@@ -548,11 +514,9 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
         };
       });
 
-      console.log("returning atts: ", atts);
       return atts;
     }
     else {
-      console.log("returning original response");
       return resp; 
     };
   }
@@ -694,7 +658,6 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
         value = values[i];
     };    
 
-    console.log("Value: ", value);
     return value;
 
   },
