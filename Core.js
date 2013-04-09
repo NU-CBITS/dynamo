@@ -117,7 +117,11 @@ Dynamo.CurrentUser = function() {
   // If there's a param in local storage
   if ( localStorage.getItem("CurrentUser") ) {
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
-    Dynamo._CurrentUser = USERS.get(user_atts.guid);
+    if (typeof(USERS) !== "undefined") {
+      Dynamo._CurrentUser = USERS.get(user_atts.guid);
+    } else {
+      Dynamo._CurrentUser = new Dynamo.User(user_atts)
+    };
     return Dynamo._CurrentUser;
   };
 

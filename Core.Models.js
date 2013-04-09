@@ -770,7 +770,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     _.bindAll(this);
     var self = this;
 
-    if ( !this.get('server_url')    ) { throw new Error("no server_url");   };
+    // if ( !this.get('server_url')    ) { throw new Error("no server_url");   };
     if ( !this.get('xelement_id')   ) { throw new Error("no xelement_id");  };
     if ( !this.get('group_id')      ) { throw new Error("no group_id");     }; 
 
@@ -791,14 +791,16 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     var self = this;
     this.collections = [];
     this.group.users.each(function(user) {
-      var UserData = new Dynamo.DataCollection(null, {
-        // server_url: self.get('server_url'),
-        xelement_id: self.get('xelement_id'),
-        user_id: user.id,
-        group_id: self.get('group_id')
-      });
 
-      UserData.fetch({async:false});
+      var classProps = _.extend({ 
+          xelement_id: self.get('xelement_id'),
+          user_id: user.id,
+          group_id: self.get('group_id')
+        }, (self.get("collectionProperties") || {}) );
+
+      var UserData = new Dynamo.DataCollection(null, classProps);
+
+      UserData.fetch({ async:false });
       UserData.on('add',    function() { self.trigger('change') });
       UserData.on('remove', function() { self.trigger('change') });
       UserData.on('reset',  function() { self.trigger('change') });
@@ -855,7 +857,6 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
     return ( new Backbone.Collection( result, collectionOptions ) );
   }
-
 
 });
 
