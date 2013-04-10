@@ -128,7 +128,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       
       //We have reached the end of the guide.
       $slide_content.html(""+
-        '<p><h4>You have reached the end of this guide</h4></p>'
+        // lead is currently being overwritten
+        '<p class="lead" style="font-size: 21px;font-weight: 200;line-height: 30px;">You have reached the end of this guide</p>'
       );
     
     } else {
