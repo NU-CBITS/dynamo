@@ -119,11 +119,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
         $actions = $("div#current-slide-actions");
 
     //  Place current Guide title into correct spot in the title bar.
-    this.$el.find("#current-guide-title").html(
-      t.strong(t.em( 
-           this.currentGuide.get_field_value("title")
-      ))
-    );
+    this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
     $actions.empty();
@@ -132,7 +128,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       
       //We have reached the end of the guide.
       $slide_content.html(""+
-        '<p><h4>You have reached the end of this guide</h4></p>'
+        // lead is currently being overwritten
+        '<p class="lead" style="font-size: 21px;font-weight: 200;line-height: 30px;">You have reached the end of this guide</p>'
       );
     
     } else {
