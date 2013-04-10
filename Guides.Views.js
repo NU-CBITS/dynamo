@@ -119,11 +119,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
         $actions = $("div#current-slide-actions");
 
     //  Place current Guide title into correct spot in the title bar.
-    this.$el.find("#current-guide-title").html(
-      t.strong(t.em( 
-           this.currentGuide.get_field_value("title")
-      ))
-    );
+    this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
     $actions.empty();
