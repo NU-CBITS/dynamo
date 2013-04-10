@@ -1309,14 +1309,15 @@ PollResponseView = protoKnockoutView.extend({
           '<p class="info response_percentage pull-right label label-info">'+
             '(%= rv.proportion %)'+
             '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
-              ' ( (%= rv.percentage %)% )'+
+              ' ( (%= rv.percentage * 100 %)% )'+
             '(% } %)'+
           '</p>'+
           '<div class="clearfix"></div>'+
           '<p class="response_choosers">'+
             '(% _.each(rv.choosers, function(user) { %)'+
               '<div>'+
-                '<img src="(%= user.image_url %)" style="width:40px;"><br />'+
+                // Currently , no image_url exists -W
+                // '<img src="(%= user.image_url %)" style="width:40px;"><br />'+
                 '<span class="name">(%= user.username %)</span>'+
               '</div>'+
             '(% }); %)'+
