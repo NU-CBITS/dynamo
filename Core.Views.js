@@ -127,6 +127,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     this.$container.prepend(this.el);
     this.$el = $(this.container).find('div.array-view:first');
     this.getArrayFn = options.getArrayFn;
+    this.contentWhenEmpty = options.contentWhenEmpty;
     this.elementTemplate = options.elementTemplate;
     this.onElementClick = options.onElementClick;
     this.title = options.title; 
@@ -147,16 +148,19 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   showArrayView.prototype.render = function() {
     var self = this, fields;
     this.$el.empty();
-    // if (this.title) { this.$el.append("<h2>"+this.title+"</h2>")}
 
-    _.each(this.getArrayFn(), function(event) {
-      fields = event.get_fields_as_object();
-      fields.cid = event.cid;
-      fields.id = event.id;
-      self.$el.append( self._elementTemplate({item: fields}) );
-    });
+    var elements = this.getArrayFn()
 
-    $('div.list-item', this.$el).on('click', this.onElementClick);
+    if (elements.length > 0) {
+      _.each(elements, function(element) {
+        self.$el.append( self._elementTemplate({item: element}) );
+      });      
+    } else {
+      self.$el.html((self.contentWhenEmpty || "<div>None</div>"));
+    }
+
+
+    $('div.item', this.$el).on('click', this.onElementClick);
   
   };
   
@@ -297,6 +301,7 @@ Dynamo.TextInputView = Backbone.View.extend(
             tagAtts['size'] = this.getValue().length + 2;
           };
       if (this.options.borderless) { tagAtts['style'] = 'border:0;'; };
+
       html = t.formInput(this.formType(), self.options.label, tagAtts);
       this.$el.html( html );
       return this;
@@ -332,6 +337,7 @@ Dynamo.InputGroupView = Backbone.View.extend(
     },
     events: {
       "click div.label_and_input" : "setInput",
+      "click input"               : "setInput",
       "change select"             : "setAttribute",
       "change input"              : "setAttribute"
     },
@@ -340,11 +346,21 @@ Dynamo.InputGroupView = Backbone.View.extend(
       this.setValue($(event.currentTarget).val());
     },
     setInput: function(event) {
-      var $i = $('input', event.currentTarget);
-      $i.attr( 'checked', !$i.is(':checked') );
-      this.setValue( $i.val() );
-      this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
-      this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
+      // This method sets the value by determing what type of input was clicked.
+      // In the case of an input with the class 'radio' or 'checkbox' (from Twitter Bootstrapp) - which doesn't have the classes 'label_and_input' or 'hasSelectedInput'
+      // then we just grab the val() of the event and set.
+      // Otherwise, we stick to the 'original' functionality.
+      if ($(event.currentTarget).hasClass('radio') || $(event.currentTarget).hasClass('checkbox') ) {
+        // if input.radio or input.checkbox from TwitterBootstrap
+        this.setValue( $(event.currentTarget).val() );
+      } else {
+        // Original functionality
+        var $i = $('input', event.currentTarget);
+        $i.attr( 'checked', !$i.is(':checked') );
+        this.setValue( $i.val() );
+        this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
+        this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
+      };
     },
     _template: function(data, settings) {
       if (!this.compiled_template) {
@@ -702,7 +718,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   },
   events: {
     "click button.create_new" : "createNewXelement",
-    "click span.choose_element" : "chooseXelement"
+    "click li.choose_element" : "chooseXelement"
   },
   createNewXelement: function(clickEvent) {
     var klass = Dynamo.typeToModelClass(clickEvent.currentTarget.dataset.xelement_type);
@@ -1587,7 +1603,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
       console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
-      alert('Saved.');
+      // alert('Saved.');
     });
 
   },
@@ -1990,5 +2006,46 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
     })
 
   }
+
+  // Setup Thought Goals  
+
+  // ThoughtsToolGoals = new XelementCollection(XELEMENTS.filter(function(xel) {
+  //   return (xel.get_field_value("title") == "Thought  Goal")
+  // })); 
+
+  // ThoughtsToolGoalData = new DataCollection(null);
+
+  // ThoughtsToolGoals.each(function(goal_xel) {
+  //   var data;
+
+  //   //Fetch any existing data on the server for this user and goal.
+  //   var dc = new DataCollection(null, {
+  //     xelement_id: goal_xel.id,
+  //     user_id: Dynamo.CurrentUser().id,
+  //     group_id: Dynamo.CurrentUser().get("group_id")      
+  //   });
+  //   dc.fetch({async: false});
+
+  //   if (dc.length > 0) {
+  //     data = dc.first();
+  //   }
+  //   else {
+  //     //if length is 0, then no data exists, create new object.
+  //     data = new Dynamo.Data({
+  //       server_url: Dynamo.TriremeURL,
+  //       xelement_id: goal_xel.id,
+  //       user_id: Dynamo.CurrentUser().id,
+  //       group_id: Dynamo.CurrentUser().get("group_id")       
+  //     });
+  //   };
+    
+  //   ThoughtsToolGoalData.add(data); 
+  //   //either way, it gets added to the collection of user data about calendar goals.
+  // });
+
+  // goalsView = new GoalsView({
+  //   goals:  ThoughtsToolGoals,
+  //   goalData: ThoughtsToolGoalData
+  // });
 
 });

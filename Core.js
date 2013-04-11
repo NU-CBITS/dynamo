@@ -51,9 +51,9 @@
 // - an evaluate regex to match expressions that should be evaluated without insertion into the resulting string.
 
 _.templateSettings = {
-  interpolate : /\(\%\=(.+?)\%\)/g,
-  evaluate    : /\(\%(.+?)\%\)/g,
-  escape      : /\(\%\-(.+?)\%\)/g //interpolate with first escaping HTML
+  evaluate    : /\(%([\s\S]+?)%\)/g,
+  interpolate : /\(%=([\s\S]+?)%\)/g,
+  escape      : /\(%-([\s\S]+?)%\)/g
 };
 
 
@@ -61,10 +61,32 @@ Dynamo = {};
 _.bindAll(Dynamo);
 
 
-Dynamo.initialize = function() {
-  Dynamo.loadTemplates();
+Dynamo.initialize = function(options) {
+  Dynamo.loadTemplates(options);
 }
 
+// A page using dynamo can require that a 
+// user be logged in.
+Dynamo._loginRequired = false
+// require a log in by the user
+Dynamo.requireLogin = function() {
+  Dynamo._loginRequired = true;
+};
+
+//Check if Dynamo is currently requiring a log in by the user
+Dynamo.loginRequired = function() {
+  return Dynamo._loginRequired;
+};
+
+Dynamo.redirectTo = function(fileName, options) {
+  var path = location.pathname.split("/")
+  path[path.length - 1] = fileName;
+  if (options && options.as && options.as == "link") {
+    window.location.href = path.join("/")
+  } else {
+    window.location.replace(path.join("/"))  
+  };
+};
 
 // Authenticating User
 // In most circumstances, the Authenticating User will be the current user,
@@ -74,18 +96,37 @@ Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
 
 // CurrentUser
-//  A placeholder function.
-//  Must be overridden by the application
-//  in order to return the current user object
+// Function which returns the currently authenticated user,
+// or redirects to the login page.
 Dynamo.CurrentUser = function() {
   
+  // If already defined.
   if (Dynamo._CurrentUser) {
     return Dynamo._CurrentUser;
   }
 
+  // For testing, let some Dynamo params define the current user:
+  if (Dynamo.CURRENT_USER_ID && Dynamo.CURRENT_GROUP_ID) {
+    Dynamo._CurrentUser =  new User({
+      guid: Dynamo.CURRENT_USER_ID,
+      group_id: Dynamo.CURRENT_GROUP_ID
+    });
+    return Dynamo._CurrentUser;
+  };
+
+  // If there's a param in local storage
   if ( localStorage.getItem("CurrentUser") ) {
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
-    Dynamo._CurrentUser = new User(user_atts);
+    if (typeof(USERS) !== "undefined") {
+      Dynamo._CurrentUser = USERS.get(user_atts.guid);
+    } else {
+      Dynamo._CurrentUser = new Dynamo.User(user_atts)
+    };
+    return Dynamo._CurrentUser;
+  };
+
+  if (Dynamo.loginRequired()) {
+    Dynamo.redirectTo("login.html");
   }
   else {
     Dynamo._CurrentUser = new Dynamo.User({
@@ -104,12 +145,25 @@ Dynamo.CurrentUser = function() {
       }
     });
     
+    return Dynamo._CurrentUser;
   }
-  
-  return Dynamo._CurrentUser;
+
 
 };
 
+Dynamo.CurrentGroup = function() {
+  if (typeof (USER_GROUPS) == "undefined") {
+    new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
+  };
+  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) )  
+}
+
+Dynamo.CurrentGroupMembers = function() {
+  if (typeof (USER_GROUPS) == "undefined") {
+    new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
+  };
+  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) ).users
+};
 
 // For interaction with phonegap; will return the phone's ID if it has one.
 Dynamo.deviceID = function() {
@@ -136,32 +190,73 @@ Dynamo.isCoreStable = function() {
 // loadTemplates
 // -------------
 //
-// If no templates exist, change to to templates.html
+// Allowing for completely-client-side templating independent of
+// the page on which they live proved a challenging problem to find a solution for,
+// This solution works as follows:
+// - If no templates exist, change to to templates.html
 // in order to load them into local storage.
-// upon completion, templates.html will return to this page, 
-// and this method will again be called from the beginning
-Dynamo.loadTemplates = function() {
+// if it is specified in the options to also load application-specific templates,
+// then load those as well.
+// upon completion, it is expected that we will return to the URL from which this
+// method was called.
+// This method will again be called from the beginning,
+// but, having found templates, the page will continue to load as normal.
+//
+// If we are currently on:
+//   http://www.somedomain.com/index.html
+// dynamo's templates.html are expected to be at:
+//   http://www.somedomain.com/dynamo/templates.html      
+// an application's templates are expected to be at:
+//   http://www.somedomain.com/app_templates.html
+Dynamo.loadTemplates = function(options) {
   DIT = localStorage.getItem("DYNAMO_TEMPLATES");
   if (!DIT) {
 
-    // If we are currently on:
-    //   http://www.somedomain.com/index.html
-    // templates.html is assumed to be at:
-    //   http://www.somedomain.com/dynamo/templates.html
-    var currentLocation = window.location.href;
-    localStorage.setItem("DIT_AFTER_LOAD_URL", currentLocation);
-    var pathComponents = window.location.href.split("/");
-    pathComponents[pathComponents.length - 1] = "dynamo/templates.html";
-    templatesLocation = pathComponents.join("/");
+    var path = window.location.href.split("/");
+        
+    if (options && options.load_app_templates) {
+
+      path[path.length - 1] = "app_templates.html";
+      localStorage.setItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL", path.join("/"));
+      localStorage.setItem("AFTER_APPLICATION_TEMPLATE_LOAD_URL", window.location.href);
+
+    }
+    else {
+      
+      localStorage.setItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL", window.location.href);
+
+    };
+
+    path[path.length - 1] = "dynamo/templates.html";
+    window.location.href = path.join("/");
+
+  } else {
+
+    $(window).on("unload", function() {
+      localStorage.removeItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL");
+      localStorage.removeItem("DYNAMO_TEMPLATES");
+      localStorage.removeItem("APPLICATION_TEMPLATES");
+    });
+    
+    DIT = Dynamo.DIT = JSON.parse(DIT);
+  };
+
+};
+
+Dynamo.loadAppTemplates = function() {
+  DAT = localStorage.getItem("APPLICATION_TEMPLATES");
+  if (!DAT) {
+
+
     window.location.href = templatesLocation;
   } else {
-    $(window).unload(function() {
-      localStorage.removeItem("DIT_AFTER_LOAD_URL");
-      localStorage.removeItem("DYNAMO_TEMPLATES");
+    $(window).on("unload", function() {
+      
     });
-    DIT = JSON.parse(DIT);
+    DAT = JSON.parse(DAT);
   };
-};
+
+}
 
 
 // Underscore methods that we want to implement on a Model.

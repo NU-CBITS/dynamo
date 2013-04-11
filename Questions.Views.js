@@ -371,6 +371,7 @@ editQuestionView = Dynamo.BaseUnitaryXelementView.extend({
     });
     self.$el.find('div.responseGroup:first').append(view.$el);
     view.render();
+
     // this.startPeriodicModelSaving(10);
 
     return this;
@@ -403,12 +404,14 @@ editResponseView = Backbone.View.extend({
   initialRender: function() {
     var self = this, view_class, view;
     this.$el.html( this._template(this.model.toJSON()) );
+
+    // Set Label & Input View
     view = new Dynamo.TextInputView({
       el: (this.$el.find('div.name.attribute label.name_value:first')),
       form_id: self.form_id,
       responseType: 'line',
       updateOn: 'keypress',
-      label: 'Name',
+      label: 'Response Name',
       getValue: function() {
         return self.model.get('name');
       },
@@ -432,7 +435,7 @@ editResponseView = Backbone.View.extend({
       responseValues: [
                       {label: 'text field',     value: 'text'     },
                       {label: 'text area',      value: 'textarea' },
-                      {label: 'radio',          value: 'radio'    },
+                      {label: 'radio buttons',  value: 'radio'    },
                       {label: 'dropdown box',   value: 'select'   },
                       {label: 'checkboxes',     value: 'checkbox' },
                       {label: 'range',          value: 'range' }]
@@ -447,7 +450,7 @@ editResponseView = Backbone.View.extend({
           tagName: 'div',
           className: 'attribute edit',
           form_id: self.cid,
-          label: attr.capitalize(),
+          label: ("Respone "+attr.capitalize()),
           getValue: function() {
             return self.model.get(attr);
           },
@@ -542,8 +545,9 @@ editResponseView = Backbone.View.extend({
 
     // Create a collection of responseValues, if appropriate.
     if (view_class.canHaveResponseValues) {
-
-      $responseValuesContainer.append('<h3>Response Values</h3>');
+      var h3Content = this.model.get('responseType')
+      h3Content = h3Content.charAt(0).toUpperCase() + h3Content.slice(1);
+      $responseValuesContainer.append('<h3>'+h3Content+' Values</h3>');
 
       view = new Dynamo.ManageCollectionView({
         collection: this.model.responseValues,
@@ -581,7 +585,7 @@ editResponseValueView = Backbone.View.extend({
     this.$el.html(this._template(this.model.toJSON()));
 
     view = new Dynamo.TextInputView({
-      el: (this.$el.children('span.label:first')),
+      el: (this.$el.children('span.response-label:first')),
       form_id: self.options.form_id,
       responseType: 'line',
       updateOn: 'keypress',
@@ -596,7 +600,7 @@ editResponseValueView = Backbone.View.extend({
     view.render();
 
     view = new Dynamo.TextInputView({
-      el: (this.$el.children('span.value:first')),
+      el: (this.$el.children('span.response-value:first')),
       form_id: self.options.form_id,
       responseType: 'line',
       updateOn: 'keypress',
@@ -1124,7 +1128,46 @@ showQuestionView = protoQuestionView.extend({
 //   the-attribute-of-that-model-with-the-name-of-
 //   the-name-of-this-response-object.
 //   (if not passed, it throws an error).
-showResponseView = Backbone.View.extend({
+
+var opensAndClosesWithChevron = {
+
+  events: {
+    "click .accordion-header li.caret-icons": "displayWidgetContent"
+  },
+
+  displayWidgetContent: function() {
+    var body = this.$el.find(".accordion-body");
+    if (body.is(":visible")) {
+      body.hide();
+      this.rotateArrowRight();
+    } else {
+      body.show();
+      this.toggleChevronArrow();
+    }
+  },
+
+  rotateArrowRight: function() {
+    this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
+  },
+
+  rotateArrowDown: function() {
+    this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
+  },
+
+  toggleChevronArrow: function() {
+    if (this.$el.find('i.icon-caret-right').length === 1) {
+      this.rotateArrowDown();
+    } else {
+      this.rotateArrowRight();
+    }
+  }
+
+};
+
+var srvWithChevrons = Backbone.View.extend(opensAndClosesWithChevron);
+
+// showResponseView = Backbone.View.extend({
+showResponseView = srvWithChevrons.extend({
 
   initialize: function() {
     _.bindAll(this);
@@ -1183,7 +1226,6 @@ showResponseView = Backbone.View.extend({
   }
 
 });
-
 
 protoKnockoutView = Backbone.View.extend({
 
@@ -1262,51 +1304,60 @@ PollResponseView = protoKnockoutView.extend({
     '(% _.each(responses, function(r) { %)'+
       '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
       '(% _.each(r.responseValues, function(rv) { %)'+
-        '<div class="row-fluid person-rating">'+
-          '<div class="span4">'+
-            '<strong class="response_option">(%= rv.value %)</strong> - '+
-            '<span class="response_percentage">(%= rv.percentage %)%</span>'+
-          '</div>'+
-          '<div class="response_choosers span8">'+
+        '<div>'+
+          '<p class="title pull-left">(%= rv.value %)</p>'+
+          '<p class="info response_percentage pull-right label label-info">'+
+            '(%= rv.proportion %)'+
+            '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
+              ' ( (%= rv.percentage * 100 %)% )'+
+            '(% } %)'+
+          '</p>'+
+          '<div class="clearfix"></div>'+
+          '<p class="response_choosers">'+
             '(% _.each(rv.choosers, function(user) { %)'+
-              '<div class="user person">'+
-                '<img src="../img/big-person-icon.png" style="width:90px;"><br />'+
+              '<div>'+
+                // Currently , no image_url exists -W
+                // '<img src="(%= user.image_url %)" style="width:40px;"><br />'+
                 '<span class="name">(%= user.username %)</span>'+
               '</div>'+
             '(% }); %)'+
-          '</div>'+
+          '</p>'+
         '</div>'+
-      '<hr>'+
-    '(% }); %)'+
-   ' (% }); %)',
+        '<hr />'+
+      '(% }); %)'+
+    '(% }); %)',
 
 
   initialize: function() {
     _.bindAll(this);
     this.question = QUESTIONS.get(this.model.get('xelement_id'));
-    this.model.on('change', this.render);
+    this.responses = this.question.getResponses();
+    // _.each(this.model.collections, function(c) {
+    //   c.on('all', this.render);
+    // });
+    // this.model.on('change', this.render);
   },
 
   buildViewModel: function() {
     var self = this,
-        responses = [];
+        pollResponsesModel = [];
 
-    _.each(this.question.getResponses(), function(r) {
+    _.each(this.responses, function(response) {
 
-      var response = {
-        label: r.label,
+      var pollResponseData = {
+        label: response.label,
         responseValues: []
       };
 
-      _.each(r.responseValues, function(rv) {
+      _.each(response.responseValues, function(rv) {
       
         var responseVal = {
           value: rv.value
         };
         
-        // Fetch user_data that matches this response value.  
+        // Fetch user_data that matches this response value.
         var userDataForResponseVal = self.model.where(function(ud) { 
-          return (ud.get_field_value(r.name) == rv.value) 
+          return (ud.get_field_value(response.name) == rv.value) 
         });
 
         // Pull the user_id out of the user_data and use it to get the
@@ -1318,17 +1369,18 @@ PollResponseView = protoKnockoutView.extend({
 
         // Calculate the percentage of users that have chosen this
         // option out of all of the users in the group.
-        responseVal.percentage = responseVal.choosers.length / self.model.collections.length;
+        responseVal.proportion = ""+responseVal.choosers.length+" of "+self.model.collections.length;
+        responseVal.percentage = (Math.floor( (responseVal.choosers.length/self.model.collections.length) * 100) / 100);
 
-        response.responseValues.push(responseVal);
+        pollResponseData.responseValues.push(responseVal);
 
       });
 
-      responses.push(response);
+      pollResponsesModel.push(pollResponseData);
 
     });
 
-    return responses;
+    return pollResponsesModel;
   },
 
   render: function() {
@@ -1340,21 +1392,29 @@ PollResponseView = protoKnockoutView.extend({
 /*
   showQuestionPerDatumInCollectionView
 
-  This view model allows you to construct a question with 
-  multiple responses in which the options of responses that 
-  are input groups can be attributes of the UserData object models
-  that make up the the collection passed into the view on instantiation.
+  Purpose:
+  This view model allows you to construct a Question Xelement object (on the client) for the user to respond to.
+  The Question can have multiple Response Xelement Objects.
+  The Response objects have can have the type of 'radio', or 'textResponse'.
+  If Response Values are required, as they are in 'radio', then these Response Values are expected to be 
+  attributes of UserData objects.
+
+  Thus, this view allows you to ask users questions about user data, 
+  whether that data is their own data, or other user's data.
   
-  These are specified in an array composed of objects
-  named 'responseAttributeDefinitions', passed in on instantiation.
-  The format of this object is:
+  Implementation:
+
+  - The view expects a collection on instantiation, & it is expected to be a collection of UserData objects.
+  - In addition, an array of objects is passed into the view option key, 'responseAttributeDefinitions'.
+  - 'responseAttributeDefinitions' must hold to the following specific format:
+
   responseAttributeDefinitions: [{
-    name: 'NameForAttributeWhichHasTheUserChooseFromSomeCollectedData',
-    label: "Best User Answer"
+    name: '[NameForTheAttribute-WhichHasTheUserChooseFromSomeCollectedData]',
+    label: "Which of the following is three choices is the user lying about?"
     type: 'radio',
     options: ["UserDataAttribute1", "UserDataAttribute2", "UserDataAttribute3", ...]
   },{
-    name: 'SomeOtherNameForAnAttributeWhichIsAResponseFromTheUserAboutSomeCollectedData',
+    name: 'SomeOtherNameForADifferentAttribute-WhichIsATextResponseFromTheUserAboutSomeCollectedData',
     label: "Opinion on Favorite Drink"
     type: 'textResponse',
     dataToShow: ["UserDataAttribute4"],
@@ -1362,12 +1422,9 @@ PollResponseView = protoKnockoutView.extend({
     // promptAfterData: "What do you think of their choice?"
   }]
 
-  If you're a little confused, I don't blame you.  
-  Feel free to ask me.
+  If you're a little confused, I don't blame you.  Feel free to ask me questions.
   -Gabe
 */   
-
-
 showQuestionPerDatumInCollectionView = protoQuestionView.extend({
 
   initialize: function() {
@@ -1446,7 +1503,12 @@ showQuestionPerDatumInCollectionView = protoQuestionView.extend({
   },
 
   render: function() {
-    this.$el.html(  this._template(  this.viewModel() )  );
+    if (this.viewModel().userDataPoints.length == 0) {
+      this.$el.html(this.options.noDataTemplate);
+    }
+    else {
+      this.$el.html(  this._template(  this.viewModel() )  );
+    };
   },
 
   viewModel: function() {
