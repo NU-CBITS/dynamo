@@ -457,29 +457,28 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
 });
 
-editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function (options) {
-    var self = this;
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
     this.model.on('change', this.render);
     this.model.on('sync', this.completeRender);
     this.initializeAsSaveable(this.model);
-    this.instantiateEditorFn = this.options.instantiateEditorFn || function(options) {
+    this.instantiateEditorFn = this.options.instantiateEditorFn || function(options, thisView) {
       var e = new wysihtml5.Editor(options.selector, { 
         toolbar: options.toolbar, 
         stylesheets: options.stylesheets,
         parserRules:  options.parserRules
       });
       e.on("change", function() {
-        self.updateContent( self.$el.find('textarea.slide-content:first').val() )
+        self.updateContent( thisView.$el.find('textarea.slide-content:first').val() )
       });
       return e;
     };
     this.instantiateEditorOptions = _.extend({ 
-        selector: self.model.cid+"-slide-content",
-        toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
+        selector: this.model.cid+"-slide-content",
+        toolbar: this.model.cid+"-wysihtml5-toolbar", // id of toolbar element
         stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
         parserRules:  wysihtml5ParserRules // defined in parser rules set 
     }, ( _.result(this.options, 'instantiateEditorOptions') || {}) );
@@ -545,7 +544,7 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     };
     self.$el.html( self._template( atts ) );
 
-    self.editor = self.instantiateEditorFn(this.instantiateEditorOptions);
+    self.editor = self.instantiateEditorFn(self.instantiateEditorOptions, self);
 
     self.actionsView = new Dynamo.ManageCollectionView({
       collection: self.model.actions,
