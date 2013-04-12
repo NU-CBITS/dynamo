@@ -108,16 +108,18 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-
     this.$el.html( this._template({}) );
-    this.$el.find("div#guide-select-nav").prepend(this.guideSelect.render().$el);
+    this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
 
     return this;
-  },
+  },    
 
   renderSlide: function() {
     var $slide_content = this.$el.find("div#current-guide-slide-content"),
         $actions = $("div#current-slide-actions");
+
+    //  Place current Guide title into correct spot in the title bar.
+    this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
     $actions.empty();
@@ -126,7 +128,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       
       //We have reached the end of the guide.
       $slide_content.html(""+
-        '<p><h3>You have reached the end of this guide, <br />"'+this.currentGuide.get_field_value("title")+'"</h3></p>'
+        // lead is currently being overwritten
+        '<p class="lead" style="font-size: 21px;font-weight: 200;line-height: 30px;">You have reached the end of this guide</p>'
       );
     
     } else {
@@ -454,15 +457,31 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
 });
 
-editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   initialize: function (options) {
-    var self = this;
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
     this.model.on('change', this.render);
     this.model.on('sync', this.completeRender);
     this.initializeAsSaveable(this.model);
+    this.instantiateEditorFn = this.options.instantiateEditorFn || function(options, thisView) {
+      var e = new wysihtml5.Editor(options.selector, { 
+        toolbar: options.toolbar, 
+        stylesheets: options.stylesheets,
+        parserRules:  options.parserRules
+      });
+      e.on("change", function() {
+        self.updateContent( thisView.$el.find('textarea.slide-content:first').val() )
+      });
+      return e;
+    };
+    this.instantiateEditorOptions = _.extend({ 
+        selector: this.model.cid+"-slide-content",
+        toolbar: this.model.cid+"-wysihtml5-toolbar", // id of toolbar element
+        stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
+        parserRules:  wysihtml5ParserRules // defined in parser rules set 
+    }, ( _.result(this.options, 'instantiateEditorOptions') || {}) );
 
   },
 
@@ -509,6 +528,10 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.trigger('change:title');
   },
 
+  recordContent: function() {
+    this.updateContent(this.$el.find('textarea.slide-content:first').val());
+  },
+
   updateContent: function(newContent) {
     this.model.set_field_value('content', newContent );
     this.model.trigger('change');
@@ -520,22 +543,12 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
         actionsView,
         self = this;
 
-    console.log('INITIAL SLIDE RENDER');
-
     atts = {
       slide: self.model.get_fields_as_object()
     };
     self.$el.html( self._template( atts ) );
 
-    self.editor = new wysihtml5.Editor(self.model.cid+"-slide-content", { 
-      toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
-      stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
-      parserRules:  wysihtml5ParserRules // defined in parser rules set 
-    });
-
-    self.editor.on("change", function() {
-      self.updateContent( self.$el.find('textarea.slide-content:first').val() )
-    });
+    self.editor = self.instantiateEditorFn(self.instantiateEditorOptions, self);
 
     self.actionsView = new Dynamo.ManageCollectionView({
       collection: self.model.actions,

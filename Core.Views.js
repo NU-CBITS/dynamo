@@ -337,7 +337,7 @@ Dynamo.InputGroupView = Backbone.View.extend(
     },
     events: {
       "click div.label_and_input" : "setInput",
-      "click input": "setInput",
+      "click input"               : "setInput",
       "change select"             : "setAttribute",
       "change input"              : "setAttribute"
     },
@@ -346,11 +346,21 @@ Dynamo.InputGroupView = Backbone.View.extend(
       this.setValue($(event.currentTarget).val());
     },
     setInput: function(event) {
-      var $i = $('input', event.currentTarget);
-      $i.attr( 'checked', !$i.is(':checked') );
-      this.setValue( $i.val() );
-      this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
-      this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
+      // This method sets the value by determing what type of input was clicked.
+      // In the case of an input with the class 'radio' or 'checkbox' (from Twitter Bootstrapp) - which doesn't have the classes 'label_and_input' or 'hasSelectedInput'
+      // then we just grab the val() of the event and set.
+      // Otherwise, we stick to the 'original' functionality.
+      if ($(event.currentTarget).hasClass('radio') || $(event.currentTarget).hasClass('checkbox') ) {
+        // if input.radio or input.checkbox from TwitterBootstrap
+        this.setValue( $(event.currentTarget).val() );
+      } else {
+        // Original functionality
+        var $i = $('input', event.currentTarget);
+        $i.attr( 'checked', !$i.is(':checked') );
+        this.setValue( $i.val() );
+        this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
+        this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
+      };
     },
     _template: function(data, settings) {
       if (!this.compiled_template) {
@@ -708,7 +718,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   },
   events: {
     "click button.create_new" : "createNewXelement",
-    "click li.choose_element" : "chooseXelement"
+    "click .choose_element" : "chooseXelement"
   },
   createNewXelement: function(clickEvent) {
     var klass = Dynamo.typeToModelClass(clickEvent.currentTarget.dataset.xelement_type);
@@ -1593,7 +1603,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
       console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
-      alert('Saved.');
+      // alert('Saved.');
     });
 
   },

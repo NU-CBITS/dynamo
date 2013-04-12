@@ -1304,23 +1304,26 @@ PollResponseView = protoKnockoutView.extend({
     '(% _.each(responses, function(r) { %)'+
       '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
       '(% _.each(r.responseValues, function(rv) { %)'+
-        '<li>'+
+        '<div>'+
           '<p class="title pull-left">(%= rv.value %)</p>'+
           '<p class="info response_percentage pull-right label label-info">'+
+            '(%= rv.proportion %)'+
             '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
-              '(%= rv.percentage %)%'+
+              ' ( (%= rv.percentage * 100 %)% )'+
             '(% } %)'+
           '</p>'+
           '<div class="clearfix"></div>'+
           '<p class="response_choosers">'+
             '(% _.each(rv.choosers, function(user) { %)'+
               '<div>'+
-                '<img src="(%=user.image_url%)" style="width:40px;"><br />'+
+                // Currently , no image_url exists -W
+                // '<img src="(%= user.image_url %)" style="width:40px;"><br />'+
                 '<span class="name">(%= user.username %)</span>'+
               '</div>'+
             '(% }); %)'+
           '</p>'+
-        '</li>'+
+        '</div>'+
+        '<hr />'+
       '(% }); %)'+
     '(% }); %)',
 
@@ -1328,29 +1331,33 @@ PollResponseView = protoKnockoutView.extend({
   initialize: function() {
     _.bindAll(this);
     this.question = QUESTIONS.get(this.model.get('xelement_id'));
-    this.model.on('change', this.render);
+    this.responses = this.question.getResponses();
+    // _.each(this.model.collections, function(c) {
+    //   c.on('all', this.render);
+    // });
+    // this.model.on('change', this.render);
   },
 
   buildViewModel: function() {
     var self = this,
-        responses = [];
+        pollResponsesModel = [];
 
-    _.each(this.question.getResponses(), function(r) {
+    _.each(this.responses, function(response) {
 
-      var response = {
-        label: r.label,
+      var pollResponseData = {
+        label: response.label,
         responseValues: []
       };
 
-      _.each(r.responseValues, function(rv) {
+      _.each(response.responseValues, function(rv) {
       
         var responseVal = {
           value: rv.value
         };
         
-        // Fetch user_data that matches this response value.  
+        // Fetch user_data that matches this response value.
         var userDataForResponseVal = self.model.where(function(ud) { 
-          return (ud.get_field_value(r.name) == rv.value) 
+          return (ud.get_field_value(response.name) == rv.value) 
         });
 
         // Pull the user_id out of the user_data and use it to get the
@@ -1362,17 +1369,18 @@ PollResponseView = protoKnockoutView.extend({
 
         // Calculate the percentage of users that have chosen this
         // option out of all of the users in the group.
-        responseVal.percentage = responseVal.choosers.length / self.model.collections.length;
+        responseVal.proportion = ""+responseVal.choosers.length+" of "+self.model.collections.length;
+        responseVal.percentage = (Math.floor( (responseVal.choosers.length/self.model.collections.length) * 100) / 100);
 
-        response.responseValues.push(responseVal);
+        pollResponseData.responseValues.push(responseVal);
 
       });
 
-      responses.push(response);
+      pollResponsesModel.push(pollResponseData);
 
     });
 
-    return responses;
+    return pollResponsesModel;
   },
 
   render: function() {

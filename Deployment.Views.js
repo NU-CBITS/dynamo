@@ -40,10 +40,10 @@ Dynamo.showProjectView = Dynamo.BaseUnitaryXelementView.extend({
   saveProject: function() {
     this.model.save(null, {
       success: function(model, response, options) {
-        alert("Project Saved Successfully");
+        // alert("Project Saved Successfully");
       },
       error: function(model, xhr, options) {
-        alert("Error Saving Project, please look at console")
+        // alert("Error Saving Project, please look at console")
         console.warn("Project did not save: ", model, xhr, options);
       }
     });

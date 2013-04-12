@@ -109,28 +109,7 @@
   </div>
 
   <div id="dynamo/core/manage_collection/element" class="template underscore">      
-    <div class="(%= element_code_name %) element" data-collection_index="(%= index %)">
-      (% if (display.del)   { %)
-        <div class="delete_container btn-toolbar" style="margin-top: 0px;">
-          <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)" >
-            <!-- <i class="icon-trash"></i> -->
-            <i class='icon-trash'></i> Delete (%= element_pretty_name %)
-          </button>
-        </div>
-      (% } %)
-      (% if (display.edit)  { print(t.form('', { class: 'edit_container widget', style: 'margin-bottom:10px;' })); } %)
-      (% if (display.show)  { print(t.div('', { class: 'show_container widget' })); } %)
-    </div>
-    (% if (display.edit) { %)
-      <div class="btn-toolbar">
-        <div class="btn-group">
-          <button class='btn add-new-(%=element_code_name%)' data-collection-index="0">Create (%= element_pretty_name %)</button>
-        (% if (canAddExisting) { %)
-          <button class='btn add-existing-(%=element_code_name%)' data-collection-index="0">Add Existing (%= element_pretty_name %)</button>
-        (% }; %)
-        </div>
-      </div>
-    (% }; %)
+    <!-- now in Core.js loadTemplates() as a single string due to need of & character in js code -->
   </div>  
 
   <div id="dynamo/users/show" class="template underscore">
@@ -776,38 +755,41 @@
   </div>
 
   <div id="dynamo/guides/index" class="template underscore">
-    <h3>Guides</h3>
-    <ul id="guide-select" class="accordion-header nav pull-right">
-      <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
-        <ul id="guides-list" class="dropdown-menu">
-          (% _.each(elements, function(e) { %)
-            <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
-          (% }) %)
-        </ul>
-      </li>
-      <li class="caret-icons">
-        <a><i class="icon-caret-right"></i></a>
-      </li>
-    </ul>
+    <div class="row-fluid">
+      <h3>Guides <small id="current-guide-title"></small></h3>
+      <ul id="guide-select" class="accordion-header nav pull-right" style="margin: inherit 0">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
+          <ul id="guides-list" class="dropdown-menu">
+            (% _.each(elements, function(e) { %)
+              <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
+            (% }) %)
+          </ul>
+        </li>
+        <li class="caret-icons">
+          <a><i class="icon-caret-right"></i></a>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div id="dynamo/guides/show" class="template underscore">    
     <div id="guides-selector-title-bar" class="widget-header orange navbar">
-      <div id="guide-select-nav">
-      </div>
+      <div id="guide-select-nav"></div>
     </div> 
     <div id="current-guide-slide-container" class="accordion-body widget-content">
-      <div id="current-guide-slide-content" style="margin-bottom:0px;">
-        <div style="margin:0 auto; text-align:center;">
-          <h3> Choose a Guide using the dropdown menu above</h3>
+      <div style="padding: 20px 15px 15px;">
+        <div id="current-guide-slide-content">
+          <div style="margin:0 auto;" class="text-center">
+            <h3> Choose a Guide using the dropdown menu above</h3>
+          </div>
+        </div>
+        <div id="current-guide-slide-actions">
         </div>
       </div>
-      <div id="current-guide-slide-actions" style="margin:10px 0;">
-      </div>
       <ul id="current-guide-navigation-buttons" class="pager">
-        <li><a href="#" class="previous">&larr; Previous</a></li>
-        <li><a href="#" class="next">Next &rarr;</a></li>
+        <li><button class="previous">&larr; Previous</button></li>
+        <li><button class="next">Next &rarr;</button></li>
       </ul>
     </div>
   </div>  
