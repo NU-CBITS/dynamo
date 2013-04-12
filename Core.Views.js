@@ -921,7 +921,6 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
     this.collection.on("remove", this.render);
-    console.warn('cid', this.cid)
   },
 
   events: function() {
