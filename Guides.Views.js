@@ -528,6 +528,10 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.trigger('change:title');
   },
 
+  recordContent: function() {
+    this.updateContent(this.$el.find('textarea.slide-content:first').val());
+  },
+
   updateContent: function(newContent) {
     this.model.set_field_value('content', newContent );
     this.model.trigger('change');
