@@ -911,6 +911,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
     this.collection.on("remove", this.render);
+    console.warn('cid', this.cid)
   },
 
   events: function() {
@@ -1357,7 +1358,6 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     $users = this.$el.find('div.users:first');
     if ( $users.length !== 0 ) {
-
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
       });
