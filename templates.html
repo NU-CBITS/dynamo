@@ -326,6 +326,10 @@
       <span class='pull-right label save_status (%= current_save_state %)'>(%= current_save_text %)</span>
     </div>
     <div class="clearfix"></div>
+    <div class="btn-toolbar">
+      <button class='btn save btn-primary pull-right'>Save Now</button>
+    </div>
+    <div class="clearfix"></div>
     <h1>
       <label>Title</label>
       <input class="title editable" style="width:90%;" type="text" value="(%=title%)" placeholder="Type title of Assessment" />
@@ -333,8 +337,10 @@
     <div class="metadata"></div>
     <h1>Questions</h1>
     <div id="questions"></div>
-    <hr>
-    <button class='btn save btn-primary'>Save Now</button>
+    <hr />
+    <div class="btn-toolbar">
+      <button class='btn save btn-primary pull-right'>Save Now</button>
+    </div>
   </div>
 
   <div id="dynamo/questions/show" class="template underscore">
@@ -343,7 +349,7 @@
     </div>
     <div class="widget-content">
       <div class='instructions'></div>
-      <div class='content'></div>
+      <p class='content'></p>
       <div class="responseGroup"></div>
     </div>
   </div>

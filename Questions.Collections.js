@@ -18,7 +18,7 @@
 
   });
 
-  QuestionCollection= Dynamo.QuestionCollection = Dynamo.Collection.extend({
+  QuestionCollection = Dynamo.QuestionCollection = Dynamo.Collection.extend({
 
     model: QuestionModel,
     codeCollectionName: "questions",

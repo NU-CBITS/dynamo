@@ -35,107 +35,6 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     }
   },
 
-  // chooseQuestionPopup: function(element_index) {
-
-  //   var self = this, $popup;
-
-  //   // Initialize what is to be a popup.
-  //   if ( $('div#popup_container').length == 0 ) { $('body').append('<div id="popup_container"><div>') };
-  //   $popup = $('div#popup_container');
-
-  //   // Allow the user to choose a Question Group view
-  //   self.chooseQuestionGroupView = new Dynamo.ChooseOneXelementFromCollectionView({
-
-  //     canCreateNew: false,
-  //     xelement_type: null,
-  //     element_pretty_name: null,
-
-  //     collection_name: "Assessments",
-  //     collection: QUESTION_GROUPS
-
-  //   });
-
-  //   //Show the dialog
-  //   $popup.empty();
-
-  //   $popup.wijdialog({
-  //     autoOpen: true,
-  //     modal: true,
-  //     width: ($(window).width()*.8),
-  //     height: ($(window).height()*.8),
-
-  //     title: "Add a Question (in position " + (element_index+1)+")",
-
-  //     captionButtons: {
-  //             pin:      { visible: false },
-  //             refresh:  { visible: false },
-  //             toggle:   { visible: false },
-  //             minimize: { visible: false },
-  //             maximize: { visible: false },
-  //             close:    { visible: true }
-  //     },
-
-  //     close: function (beforeCloseEvent) {
-  //       //Attempt to cleanup / avoid mem leaks.
-  //       if (self.chooseQuestionView)      { self.chooseQuestionView.remove()      };
-  //       if (self.chooseQuestionGroupView) { self.chooseQuestionGroupView.remove() };
-  //       self.chooseQuestionView = null;
-  //       self.chooseQuestionGroupView = null;
-  //       $chooseQcontainer = null;
-  //       $popup = null;
-  //     }
-
-  //   });
-
-  //   $popup.append( self.chooseQuestionGroupView.$el );
-  //   self.chooseQuestionGroupView.render();
-
-  //   // Once the user picks a Question Group,
-  //   // show the questions in that Question Group,
-  //   // so that the user can pick a question.
-  //   var $chooseQcontainer;
-  //   self.chooseQuestionGroupView.on('element:chosen', function() {
-
-  //     self.chooseQuestionView = new Dynamo.ChooseOneXelementFromCollectionView({
-
-  //       canCreateNew: false,
-  //       xelement_type: null,
-  //       element_pretty_name: null,
-
-  //       collection_name: (self.chooseQuestionGroupView.chosen_element.get_field_value('title') + " Questions"),
-  //       collection: self.chooseQuestionGroupView.chosen_element.questions
-
-  //     });
-
-  //     if ( $popup.find('div#choose_question').length == 0 ) { //jQuery version of false
-
-  //       $popup.append('<div id="choose_question"><div>');
-
-  //     };
-
-  //     $chooseQcontainer = $popup.find('div#choose_question');
-
-  //     $chooseQcontainer.empty();
-  //     $chooseQcontainer.append( self.chooseQuestionView.$el );
-  //     self.chooseQuestionView.render();
-
-  //     self.chooseQuestionView.on('element:chosen', function() {
-
-  //       // Once the user picks a question, add it to this question group :)
-  //       console.log('Inserting Question at location: '+ element_index);
-  //       self.model.questions.add(self.chooseQuestionView.chosen_element, {at: element_index});
-  //       $popup.wijdialog('close');
-
-  //     });
-
-  //   });
-
-  // },
-
-  // editTitleInPopup: function(click_event) {
-  //   this.editTextFieldInPopup('title', click_event);
-  // },
-
   events: function() {
     switch(this.displayEdit) {
       case true:
@@ -1109,7 +1008,7 @@ showQuestionView = protoQuestionView.extend({
       console.log('RE-RENDERING QUESTION');
     };
     this.$el.find('div.instructions:first').html(this.model.metaContent.get('instructions'));
-    this.$el.find('div.content:first').html(this.model.get_field_value('content'));
+    this.$el.find('.content:first').html(this.model.get_field_value('content'));
     // Do not worry about subView rendering; they can re-render themselves as necessary.
     return this;
   }

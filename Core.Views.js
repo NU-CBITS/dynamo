@@ -1304,7 +1304,6 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     $users = this.$el.find('div.users:first');
     if ( $users.length !== 0 ) {
-
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
       });
