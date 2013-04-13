@@ -87,7 +87,7 @@
   <div id="dynamo/core/manage_collection" class="template underscore">
     <div class="collection_widget">
       <div class="start">(% start_content ? print(start_content) : null; %)</div>
-      (% if (display.edit) { %)
+      (% if (display.create) { %)
         <div class="btn-toolbar">
           <div class="btn-group">
             (% 
@@ -253,8 +253,6 @@
                   class="slide-content" 
                   style="width:95%;height:400px"
                   placeholder="Enter content">(%= slide.content %)</textarea>
-        <br />
-        <input type="reset" value="Reset form!">
       </div>
     </div>
   </form>
@@ -264,10 +262,9 @@
       <div style="display:table-row;">
           <span style="display:table-cell;"> Label </span>
           <span style="display:table-cell;"> Action </span>
-          <span style="display:table-cell;"> Target </span>
           <span style="display:table-cell;"> Duration </span>
+          <span style="display:table-cell;"> Target </span>
           <span style="display:table-cell;"> Additional </span>
-          <span style="display:table-cell;"> Test </span>
       </div>
     </div>
     <div id="(%= slide.cid %)-slide-actions" class="slide-actions" style="width:100%">
@@ -280,7 +277,7 @@
   <div id="dynamo/guides/slides/actions/edit" class="template underscore">
     <div class="action">
       <span class="cell attribute">
-        <input class="input-medium" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
+        (%= action.label %)
       </span>
       <span class="cell attribute effect">
         <select name="effect" class="input-small">
@@ -293,6 +290,13 @@
           %)
         </select>
       </span>
+      <span class="cell attribute duration">
+        <input class="input-small" 
+                type="text" 
+                name="duration" 
+                data-attribute-name="duration" 
+                value="(%= action.duration %)" /> ms
+      </span>
       <span class="cell attribute target">
         <select name="target">
           (%
@@ -304,15 +308,7 @@
           %)
         </select>
       </span>
-      <span class="cell attribute duration">
-        <input class="input-small" 
-                type="text" 
-                name="duration" 
-                data-attribute-name="duration" 
-                value="(%= action.duration %)" /> ms
-      </span>
       <span class="cell attribute action_attributes"></span>
-      <span><button class="cell test-action">(%= action.label %)</button></span>
     </div>
   </div>
 

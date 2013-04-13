@@ -906,10 +906,7 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
 //4) That those View Classes can also be passed an option, 'position'
 //   which is their index in the collection.
 //
-//options:
-//  - addAtIndexHandler: callback function, passed the click event as an argument,
-//    responsible for handling the addition of a model to the collection at the appropriate index.
-//    the index is available as clickEvent.srcElement.
+
 Dynamo.ManageCollectionView = Backbone.View.extend({
 
   initialize: function() {
@@ -917,6 +914,10 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.start_content = this.options.start_content || '';
     this.end_content = this.options.end_content || '';
     this.display = this.options.display || { show: true };
+    this.display.edit = this.display.edit || false;
+    this.display.create = this.display.create || false;
+    this.display.del = this.display.del || false;
+    // this.display.create = (this.display.create ? this.display.create :  this.display.edit);
     this.canAddExisting = !!this.options.enableAddExisting;
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
@@ -930,15 +931,6 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     e[("click button.delete."+self.collection.codeModelName())] = "removeElement";
     return e;
   },
-
-  // Default implementation of addAtIndexHandler;
-  // Is overridden if view options has specified it's own addAtIndexHandler.
-  // Default implementation allows handling the cases when:
-  // 1) only newly created elements can be added to the collection
-  // 2) existing elements of the same Model class as accepted by the view's
-  //    collection (but that are not already a part of it) can also be
-  //    added to the collection.
-  //
 
   addNew: function(clickEvent) {
     
@@ -957,76 +949,21 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       if (this.options.addExistingHandler) {
         return this.options.addExistingHandler( $(clickEvent.currentTarget).data("collection-index") )
       }
-      return chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
+      return this.chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
     
     };
 
   },
 
-  // addAtIndexHandler: function(clickEvent) {
-  //   if (this.options.addAtIndexHandler) { return this.options.addAtIndexHandler() };
-
-  //   if (this.options.enableAddExisting) {
-  //     this.addNewOrExistingAtIndexDialog(clickEvent, this.addNewAtIndex, this.chooseExistingToAddAtIndex);
-  //   } else {
-  //     var index = clickEvent.currentTarget.dataset.collection_index;
-  //     this.addNewAtIndex(index);
-  //   };
-
-  // },
-
-  //  When someone clicks 'New [Model Class]' on an instantiation of the
-  //  ManageCollectionView, they may want the choice to
-  //  create an entirely new [Model Class] instance,
-  //  or to select an existing [Model Class] instance.
-  //  if the option to add existing [Model Class] instances is enabled,
-  //  then this function creates the dialog that allows the user to choose
-  //  between the options of 'New' or 'Existing' and
-  //  then handles the result of the user's selection.
-  // addNewOrExistingAtIndexDialog: function(clickEvent, newAtIndexCallback, existingAtIndexCallback) {
-  //   var self = this,
-  //       $btn_clicked = $(clickEvent.currentTarget),
-  //       // Fetch the current index at which we want to insert a question.
-  //       element_index = parseInt($btn_clicked.attr("data-collection_index"));
-
-  //   //insert dialog
-  //   $btn_clicked.after(""+
-  //     "<div class='add_dialog btn-toolbar'>"+
-  //       "<div class='btn-group'>"+
-  //         "<button class='add_new btn'>New</button>"+
-  //         "<button class='add_existing btn'>Existing</button>"+
-  //       "</div>"+
-  //     "</div>");
-
-  //   //find inserted dialog
-  //   $add_dlg = $btn_clicked.parent().find("div.add_dialog");
-
-  //   //add_new element handler
-  //   $add_dlg.find("button.add_new").click(function() {
-  //     newAtIndexCallback(element_index);
-  //     //cleanup
-  //     $add_dlg.remove();
-  //     $add_dlg = null;
-  //   });
-
-  //   //add_existing element handler
-  //   $add_dlg.find("button.add_existing").click(function() {
-  //     existingAtIndexCallback(element_index)
-  //     //cleanup
-  //     $add_dlg.remove();
-  //     $add_dlg = null;
-  //   });
-
-  // },
-
   //  Default implementation of addNewAtIndex;
-  //  called by default addAtIndexHandler can be overridden
-  //  by passing in an addNewAtIndex method as an option.
+  //  called by addNew if none other provided
   addNewAtIndex: function(element_index) {
     console.log('inserting '+ this.collection.prettyModelName()+' - at location: '+ element_index);
     this.collection.add({}, {at: element_index});
   },
 
+  //  Default implementation of addExistingAtIndex;
+  //  called by addExisting if none other provided
   addExistingAtIndex: function(element, element_index) {
     console.log('inserting '+ this.collection.prettyModelName(),
                 "id:", element.id, 'Location: ', element_index);

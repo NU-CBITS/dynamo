@@ -40,7 +40,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
-    "click .do-action" : "performAction",
+    "click .guide-action" : "performAction",
     "click .accordion-header li.caret-icons": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
   },
@@ -94,8 +94,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   performAction: function(clickEvent) {
-    var cid = $(clickEvent.currentTarget).data("cid");
-    var action = this.currentSlide.actions.get(cid);
+    var ckID = $(clickEvent.currentTarget).data("ckEditor_id");
+    var action = this.currentSlide.actions.find(function(a) { return (a.get("ckEditor_id") == ckID) });
     action.execute();
   },
 
@@ -115,14 +115,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },    
 
   renderSlide: function() {
-    var $slide_content = this.$el.find("div#current-guide-slide-content"),
-        $actions = $("div#current-slide-actions");
+    var $slide_content = this.$el.find("div#current-guide-slide-content");
+        // $actions = $("div#current-slide-actions");
 
     //  Place current Guide title into correct spot in the title bar.
     this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
-    $actions.empty();
+    // $actions.empty();
     
     if (this.currentSlideIndex() === this.currentGuide.slides.length) {
       
@@ -137,13 +137,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
       this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
       $slide_content.html( this.currentSlide.get_field_value("content") );
-      this.currentSlide.actions.each(function(action) {
-        $actions.append( 
-          t.span({ style:"margin-right:10px;"},
-            t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
-          ) 
-        );
-      });
+
+      // this.currentSlide.actions.each(function(action) {
+      //   $actions.append( 
+      //     t.span({ style:"margin-right:10px;"},
+      //       t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
+      //     ) 
+      //   );
+      // });
     
     }
   
@@ -528,12 +529,49 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.trigger('change:title');
   },
 
+  consolidateActions: function(model, slideContent) {
+    var actions = $(slideContent).find('button.guide-action'),
+    ck_action_ids = _.map(actions, function(action) { return $(action).data("ckEditor_id") }),
+    model_action_ids = model.actions.pluck("ckEditor_id");
+
+    //Treat what is in the HTML as canonical:
+    
+    //If the current model action does not exist in html; destroy it
+    model.actions.each(function(action) {
+      if (!_.contains(ck_action_ids, action.get("ckEditor_id"))) {
+        model.actions.remove(action);
+        action.destroy();
+      };
+    });
+
+    //If ckAction does not exist in model.actions; create it;
+    _.each(ck_action_ids, function(ckActionID) {
+      if (!_.contains(model_action_ids, ckActionID)) {
+    
+        action = _.find(actions, function(a) { return $(a).data("ckEditor_id") == ckActionID });
+        $action = $(action);
+        model.actions.add({
+          ckEditor_id: ckActionID,
+          label: $action.text(),
+          effect: $action.data("effect"),
+          duration: $action.data("duration"),
+          target: null,
+          actionOptions: []
+        });
+      }
+    });
+
+    debugger;
+
+  },
+
   recordContent: function() {
     this.updateContent(this.$el.find('textarea.slide-content:first').val());
   },
 
   updateContent: function(newContent) {
     this.model.set_field_value('content', newContent );
+    this.consolidateActions(this.model, newContent);
     this.model.trigger('change');
     this.model.trigger('change:content');
   },
@@ -552,7 +590,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
     self.actionsView = new Dynamo.ManageCollectionView({
       collection: self.model.actions,
-      display: { edit: true, show: false },
+      display: { create: false, edit: true, show: false },
       guidedPageSelector: self.options.guidedPageSelector,
       enableAddExisting: false,
       editViewOpts: { 
