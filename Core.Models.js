@@ -36,7 +36,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   
   currentSaveState: function() {
     if (this.isNew()) { return 'new' };
-    if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
+    // if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
+    if (this.hasUnsavedChanges()) {return 'saving-changes' };
     return 'current';
   },
 
@@ -44,6 +45,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     switch (this.currentSaveState()) {
       case 'new':
         return 'Unsaved';
+      case 'saving-changes':
+        return "<i class='icon-spinner icon-spin'></i> Saving...";
       case 'unsaved_changes':
         return 'Unsaved changes'
       case 'current':

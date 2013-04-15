@@ -561,8 +561,6 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       }
     });
 
-    debugger;
-
   },
 
   recordContent: function() {
