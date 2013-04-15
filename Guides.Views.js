@@ -94,8 +94,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   performAction: function(clickEvent) {
-    var ckID = $(clickEvent.currentTarget).data("ckEditor_id");
-    var action = this.currentSlide.actions.find(function(a) { return (a.get("ckEditor_id") == ckID) });
+    var ckID = $(clickEvent.currentTarget).data("ckeditor_id");
+    var action = this.currentSlide.actions.find(function(a) { return (a.get("ckeditor_id") == ckID) });
     action.execute();
   },
 
@@ -531,14 +531,14 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   consolidateActions: function(model, slideContent) {
     var actions = $(slideContent).find('button.guide-action'),
-    ck_action_ids = _.map(actions, function(action) { return $(action).data("ckEditor_id") }),
-    model_action_ids = model.actions.pluck("ckEditor_id");
+    ck_action_ids = _.map(actions, function(action) { return $(action).data("ckeditor_id") }),
+    model_action_ids = model.actions.pluck("ckeditor_id");
 
     //Treat what is in the HTML as canonical:
     
     //If the current model action does not exist in html; destroy it
     model.actions.each(function(action) {
-      if (!_.contains(ck_action_ids, action.get("ckEditor_id"))) {
+      if (!_.contains(ck_action_ids, action.get("ckeditor_id"))) {
         model.actions.remove(action);
         action.destroy();
       };
@@ -548,10 +548,10 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     _.each(ck_action_ids, function(ckActionID) {
       if (!_.contains(model_action_ids, ckActionID)) {
     
-        action = _.find(actions, function(a) { return $(a).data("ckEditor_id") == ckActionID });
+        action = _.find(actions, function(a) { return $(a).data("ckeditor_id") == ckActionID });
         $action = $(action);
         model.actions.add({
-          ckEditor_id: ckActionID,
+          ckeditor_id: ckActionID,
           label: $action.text(),
           effect: $action.data("effect"),
           duration: $action.data("duration"),
@@ -560,8 +560,6 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
         });
       }
     });
-
-    debugger;
 
   },
 
