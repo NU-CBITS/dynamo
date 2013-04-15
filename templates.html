@@ -42,21 +42,27 @@
   -->
 
   <div id="dynamo/core/choose_one_xelement" class="template underscore">
-    (% if (canCreateNew) { %) 
-      <div>
-        <button class="btn create_new" data-xelement_type="(%= xelement_type %)">New (%= element_pretty_name %)</button>
+    <div class="widget">
+      <div class="widget-header widget-header-default">
+        <h3>(%= collection_name %)</h3>
       </div>
-    (% }; %)
+      <div class="widget-content">
+        (% if (canCreateNew) { %) 
+          <div>
+            <button class="btn create_new btn-success" data-xelement_type="(%= xelement_type %)">Create (%= this.collection.prettyModelName() %)</button>
+          </div>
+        (% }; %)
 
-    <h3><span>(%= collection_name %)</span></h3>
-    
-    <div>
-      <h4><span>Choose One:</span></h4>
-      <ul style="list-style: none;">
-        (% _.each(elements, function(e) { %)
-          <li style="list-style: none;"><span class="choose_element btn" data-cid="(%= e.cid %)">(%= e.html %)</span></li>
-        (% }); %)
-      </ul>
+        <div>
+          <legend>Choose One:</legend>
+          (% var timeSecondsForRadioGroup = new Date().getTime() %)
+          (% _.each(elements, function(e) { %)
+          <label class="radio">
+            <input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)
+          </label>
+          (% }); %)
+        </div>
+      </div>
     </div>
   </div>
 
@@ -87,7 +93,7 @@
   <div id="dynamo/core/manage_collection" class="template underscore">
     <div class="collection_widget">
       <div class="start">(% start_content ? print(start_content) : null; %)</div>
-      (% if (display.create) { %)
+      (% if (display.edit) { %)
         <div class="btn-toolbar">
           <div class="btn-group">
             (% 
@@ -167,11 +173,11 @@
                 disabled="disabled">
         </label>
         <div class="btn-toolbar">
-          <button class="load-guided-page btn"><i class="icon-upload-alt"></i> Reload</button>
+          <button class="load-guided-page btn"><i class="icon-repeat"></i> Reload</button>
           <button 
-            class="clear-guided-page btn btn-danger"
+            class="clear-guided-page btn btn-warning"
             title="Changing the page to which this guide refers to has a chance of screwing up any actions you've configured.  Make sure you <strong>know what you are doing.</strong>"
-          ><i class="icon-upload-alt"></i> Clear Guided Page</button>
+          >Clear Guided Page</button>
         </div>
 
       (% }; %)
@@ -253,6 +259,10 @@
                   class="slide-content" 
                   style="width:95%;height:400px"
                   placeholder="Enter content">(%= slide.content %)</textarea>
+        <div class="btn-toolbar">
+          <!-- <br /> -->
+          <input type="reset" class="btn btn-warning" value="Reset Form">
+        </div>
       </div>
     </div>
   </form>
@@ -262,9 +272,10 @@
       <div style="display:table-row;">
           <span style="display:table-cell;"> Label </span>
           <span style="display:table-cell;"> Action </span>
-          <span style="display:table-cell;"> Duration </span>
           <span style="display:table-cell;"> Target </span>
+          <span style="display:table-cell;"> Duration </span>
           <span style="display:table-cell;"> Additional </span>
+          <span style="display:table-cell;"> Test </span>
       </div>
     </div>
     <div id="(%= slide.cid %)-slide-actions" class="slide-actions" style="width:100%">
@@ -277,7 +288,7 @@
   <div id="dynamo/guides/slides/actions/edit" class="template underscore">
     <div class="action">
       <span class="cell attribute">
-        (%= action.label %)
+        <input class="input-medium" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
       </span>
       <span class="cell attribute effect">
         <select name="effect" class="input-small">
@@ -290,13 +301,6 @@
           %)
         </select>
       </span>
-      <span class="cell attribute duration">
-        <input class="input-small" 
-                type="text" 
-                name="duration" 
-                data-attribute-name="duration" 
-                value="(%= action.duration %)" /> ms
-      </span>
       <span class="cell attribute target">
         <select name="target">
           (%
@@ -308,7 +312,15 @@
           %)
         </select>
       </span>
+      <span class="cell attribute duration">
+        <input class="input-small" 
+                type="text" 
+                name="duration" 
+                data-attribute-name="duration" 
+                value="(%= action.duration %)" /> ms
+      </span>
       <span class="cell attribute action_attributes"></span>
+      <span><button class="cell test-action">(%= action.label %)</button></span>
     </div>
   </div>
 
@@ -326,10 +338,6 @@
       <span class='pull-right label save_status (%= current_save_state %)'>(%= current_save_text %)</span>
     </div>
     <div class="clearfix"></div>
-    <div class="btn-toolbar">
-      <button class='btn save btn-primary pull-right'>Save Now</button>
-    </div>
-    <div class="clearfix"></div>
     <h1>
       <label>Title</label>
       <input class="title editable" style="width:90%;" type="text" value="(%=title%)" placeholder="Type title of Assessment" />
@@ -337,10 +345,8 @@
     <div class="metadata"></div>
     <h1>Questions</h1>
     <div id="questions"></div>
-    <hr />
-    <div class="btn-toolbar">
-      <button class='btn save btn-primary pull-right'>Save Now</button>
-    </div>
+    <hr>
+    <button class='btn save btn-primary'>Save Now</button>
   </div>
 
   <div id="dynamo/questions/show" class="template underscore">
@@ -349,7 +355,7 @@
     </div>
     <div class="widget-content">
       <div class='instructions'></div>
-      <p class='content'></p>
+      <div class='content'></div>
       <div class="responseGroup"></div>
     </div>
   </div>
