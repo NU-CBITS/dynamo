@@ -712,6 +712,7 @@ Dynamo.InputSliderView = Backbone.View.extend(
 Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this);
+    this.checkedInputsCIDsArray = [this.options.checkedInputs] || [];
     this.chooseOn = (this.options.chooseOn ? this.options.chooseOn : 'title');
     if (this.options.onChoose) { this.chooseXelement = this.options.onChoose };
     if (this.options.modelHTML) { this.modelHTML = this.options.modelHTML };
@@ -733,6 +734,9 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   modelHTML: function(m) {
     return t.span( m.get_field_value(this.chooseOn) );
   },
+  checkedInput: function(m) {
+    return _.contains(this.checkedInputsCIDsArray, m.cid)
+  },
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
@@ -745,7 +749,9 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   },
   render: function() {
     var self = this;
-    var elements = this.collection.map(function(m) { return { id: m.id, cid: m.cid, html: self.modelHTML(m) }  });
+    var elements = this.collection.map(function(m) {
+      return { id: m.id, cid: m.cid, html: self.modelHTML(m), checkedInput: self.checkedInput(m) }
+    });
     this.$el.html(
       this._template({
         collection_name: (this.options.collection_name || this.collection.codeCollectionName || this.collection.prettyModelName()),

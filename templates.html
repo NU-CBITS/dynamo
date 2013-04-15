@@ -57,9 +57,14 @@
           <legend>Choose One:</legend>
           (% var timeSecondsForRadioGroup = new Date().getTime() %)
           (% _.each(elements, function(e) { %)
-          <label class="radio">
-            <input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)
-          </label>
+          (%= console.warn(e) %)
+            <label class="radio">
+              (% if (e.checkedInput) { %)
+                <input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)" checked>(%= e.html %)
+              (% } else { %)
+                <input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)
+              (% } %)
+            </label>
           (% }); %)
         </div>
       </div>
@@ -183,11 +188,8 @@
       (% }; %)
 
       <div class="on-slide-edit" style="(% if (guidedPageState === 'blank') { %) display:none; (%} else { %) display:block; (% }; %)">
-        <hr>
         <div id="slides"></div>
       </div>
-
-      <hr>
       <div id="last-save"></div>
       <div class="label save_status"></div>
       <div class="btn-toolbar">
