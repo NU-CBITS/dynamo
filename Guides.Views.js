@@ -393,7 +393,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.slidesView = new Dynamo.ChooseOneXelementFromCollectionView({
       collection: self.model.slides,
       canCreateNew: true,
-      xelement_type: 'static_html'
+      xelement_type: 'static_html',
+      checkedInputs: $slides_container.find('input:checked').data('cid')
     });
 
     this.model.slides.on("add", this.slidesView.render);
