@@ -116,13 +116,11 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
   renderSlide: function() {
     var $slide_content = this.$el.find("div#current-guide-slide-content");
-        // $actions = $("div#current-slide-actions");
 
     //  Place current Guide title into correct spot in the title bar.
     this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
-    // $actions.empty();
     
     if (this.currentSlideIndex() === this.currentGuide.slides.length) {
       
@@ -137,14 +135,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
       this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
       $slide_content.html( this.currentSlide.get_field_value("content") );
-
-      // this.currentSlide.actions.each(function(action) {
-      //   $actions.append( 
-      //     t.span({ style:"margin-right:10px;"},
-      //       t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
-      //     ) 
-      //   );
-      // });
     
     }
   
@@ -622,8 +612,9 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
 
 editActionView = Backbone.View.extend({
-  initialize: function() {
+  initialize: function(options) {
     _.bindAll(this);
+    this.options = options;
     this.allActions = _.keys(ActionDictionary);
   },
 
@@ -681,6 +672,7 @@ editActionView = Backbone.View.extend({
     viewAtts.actionsAvailable = this.allActions;
     viewAtts.actionTargets = this.options.actionTargets;
     viewAtts.action = this.model.toJSON();
+    viewAtts.position = this.options.position;
     this.$el.html(this._template(viewAtts));
   }
 

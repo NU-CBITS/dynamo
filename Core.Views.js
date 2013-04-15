@@ -1048,7 +1048,9 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   removeElement: function(clickEvent) {
     var element_index = clickEvent.currentTarget.dataset.collection_index;
     console.log('removing: '+ this.collection.prettyModelName()+' - at location: '+ element_index);
-    this.collection.remove(this.collection.at(element_index));
+    var elToRemove = this.collection.at(element_index);
+    this.collection.remove(elToRemove);
+    if (elToRemove.destroy) { elToRemove.destroy(); }
   },
 
   _template: function(data, settings) {

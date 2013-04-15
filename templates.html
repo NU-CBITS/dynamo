@@ -98,7 +98,7 @@
   <div id="dynamo/core/manage_collection" class="template underscore">
     <div class="collection_widget">
       <div class="start">(% start_content ? print(start_content) : null; %)</div>
-      (% if (display.edit) { %)
+      (% if (display.create) { %)
         <div class="btn-toolbar">
           <div class="btn-group">
             (% 
@@ -289,9 +289,7 @@
 
   <div id="dynamo/guides/slides/actions/edit" class="template underscore">
     <div class="action">
-      <span class="cell attribute">
-        <input class="input-medium" name="label" type="text" value="(%= action.label %)" placeholder="Button text"/>
-      </span>
+      <span class="cell attribute">(%= action.label %)</span>
       <span class="cell attribute effect">
         <select name="effect" class="input-small">
           (%
