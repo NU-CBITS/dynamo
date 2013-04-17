@@ -709,6 +709,8 @@ Dynamo.InputSliderView = Backbone.View.extend(
 //      Defaults to 'title'
 //    - modelHTML: function that returns what HTML should be displayed for an element. Defaults to
 //      a span containing the value of the xelement's 'chooseOn' attribute.
+//    - groupBy: a function or string that will group the choices for selection by the return value 
+//        of calling the function on each element in the collection or accessing that property of the element.
 Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this);
@@ -749,13 +751,40 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   },
   render: function() {
     var self = this;
-    var elements = this.collection.map(function(m) {
-      return { id: m.id, cid: m.cid, html: self.modelHTML(m), checkedInput: self.checkedInput(m) }
-    });
+    var elements;
+    if (self.options.groupBy) { 
+      elements = self.collection.chain().map(function(m) {
+        var el = { 
+          id: m.id, 
+          cid: m.cid, 
+          html: self.modelHTML(m), 
+          checkedInput: self.checkedInput(m)
+        };
+        if (_.isString(self.options.groupBy) ) {
+          el.groupBy = m[self.options.groupBy]
+        } else {
+          el.groupBy = self.options.groupBy(m);
+        }
+        return el;
+      }).groupBy("groupBy").value();
+    }
+    else {
+      elements = self.collection.map(function(m) {
+        var el = { 
+          id: m.id, 
+          cid: m.cid, 
+          html: self.modelHTML(m), 
+          checkedInput: self.checkedInput(m)
+        };
+        return el;
+      });
+    }
     this.$el.html(
       this._template({
         collection_name: (this.options.collection_name || this.collection.codeCollectionName || this.collection.prettyModelName()),
         elements: elements,
+        groupBy: (!!this.options.groupBy),
+        canChooseMany: (!!this.options.canChooseMany),
         canCreateNew: this.options.canCreateNew || false,
         xelement_type: this.options.xelement_type,
         element_pretty_name: this.options.element_pretty_name
