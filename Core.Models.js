@@ -812,9 +812,13 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   },
 
   fetchUserCollections: function(fetch_options) {
-    var options = _.extend({async:false}, fetch_options);
-    _.each(this.collections, function(c) { c.fetch(options); });
-    this.trigger('change');
+    if ( (!this.last_time_fetched) || (this.last_time_fetched < ( (30).seconds().ago() )) ) {
+      this.last_time_fetched = (new Date());
+      var options = _.extend({ async: false }, fetch_options);
+      _.each(this.collections, function(c) { c.fetch(options); });
+      this.trigger('change');
+    }
+
   },
 
   forUser: function(user_id) {
