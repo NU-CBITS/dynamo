@@ -1286,8 +1286,7 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
         setObj[ $(this).attr('name') ] = $(this).val();
       };
     });
-    this.model.set(setObj);
-    this.model.save();
+    this.model.save(setObj, {async:false});
   },
 
   addSubView: function(view) {
