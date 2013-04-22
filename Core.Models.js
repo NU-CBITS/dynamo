@@ -327,38 +327,39 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   // Also the availability of the nested resource is available no-sooner than its parent.
   usableNumDaysIn: function(availability, options) {
     var el_availability,
+        parent_availability;
         options = options || {};
+    console.log("Determining Availability for ", this.id)
     if (options.parent) { 
-      var parent_availability; 
       // Availability of the nested resource is available no-sooner-than its parent.
       try {
-        parent_availability = parseInt( (availability[parent]).self );
+        parent_availability = parseInt( (availability[options.parent]).self );
       }
       catch (e) {
-        parent_availability = 0;
-        console.warn("error trying to find parent availability; returning 0")
+        parent_availability = 1;
+        console.warn("Error trying to find parent availability.")
       }
       try {
-        el_availability = parseInt( (availability[parent]).sub_elements([this.id]).self );
+        el_availability = parseInt( ((availability[options.parent]).sub_elements[this.id]).self );
       }
       catch (e) {
-        el_availability = 0;
-        console.warn("error trying to find nested availability; returning 0")
+        el_availability = 1;
+        console.warn("Error trying to find nested availability")
       }
       
-      return _.max( parent_availability, el_availability );
+      el_availability = _.max( [parent_availability, el_availability] );
     }
     else {
       try { 
         el_availability = parseInt( (availability[this.id]).self );
       }
       catch (e) {
-        console.warn("error trying to find availability; returning 0")
-        el_availability = 0;
-      }
-      
-      return el_availability;
+        console.warn("Error trying to find availability")
+        el_availability = 1;
+      };
     }
+    console.log("Availabilities (parent, el): ", parent_availability, el_availability );
+    return el_availability;
   },
 
   get_field_type: function(attribute) {
