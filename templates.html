@@ -187,16 +187,15 @@
 
       (% }; %)
 
-      <div class="on-slide-edit" style="(% if (guidedPageState === 'blank') { %) display:none; (%} else { %) display:block; (% }; %)">
-        <div id="slides"></div>
-      </div>
-      <div id="last-save"></div>
-      <div class="label save_status"></div>
-      <div class="btn-toolbar">
-        <button class="save btn btn-primary">Save Guide</button>
-        <button class="delete btn btn-danger "><i class="icon-trash"></i> Delete</button>
-      </div>
+    <div id="slides"></div>
+
+    <div id="last-save"></div>
+    <div class="label save_status"></div>
+    <div class="btn-toolbar">
+      <button class="save btn btn-primary">Save Guide</button>
+      <button class="delete btn btn-danger "><i class="icon-trash"></i> Delete</button>
     </div>
+  </div>
   </fieldset>
 </div>  
 
@@ -287,42 +286,11 @@
   </div>  
 </div>
 
+  <!-- 
   <div id="dynamo/guides/slides/actions/edit" class="template underscore">
-    <div class="action">
-      <span class="cell attribute">(%= action.label %)</span>
-      <span class="cell attribute effect">
-        <select name="effect" class="input-small">
-          (%
-            var selected_clause;
-            _.each(actionsAvailable, function(effect_name) {
-              (action.effect == effect_name) ? (selected_clause = "selected='selected'") : (selected_clause = "");
-              %)<option value="(%= effect_name %)" (%= selected_clause %)>(%= effect_name %)</option>(%
-            });
-          %)
-        </select>
-      </span>
-      <span class="cell attribute target">
-        <select name="target">
-          (%
-            var selected_clause;
-            _.each(actionTargets, function(selector) {
-              (action.target == selector) ? (selected_clause = " selected='selected'") : (selected_clause = "");
-              %)<option value="(%= selector %)" (%= selected_clause %)>(%= selector %)</option>(%
-            });
-          %)
-        </select>
-      </span>
-      <span class="cell attribute duration">
-        <input class="input-small" 
-                type="text" 
-                name="duration" 
-                data-attribute-name="duration" 
-                value="(%= action.duration %)" /> ms
-      </span>
-      <span class="cell attribute action_attributes"></span>
-      <span><button class="cell test-action btn">(%= action.label %)</button></span>
-    </div>
+    <!-- moved to default_template key in actions view-->
   </div>
+  -->
 
   <div id="dynamo/question_groups/show" class="template underscore">
     <h1><span class="title">(%=title%)</span></h1>
