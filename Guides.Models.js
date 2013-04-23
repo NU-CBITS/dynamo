@@ -320,8 +320,6 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
       duration = 400;
     }
 
-
-
     if (iframeSelector) {
       $(iframeSelector).contents().find($targets).each(function() {
         // if target is not currently viewable, show it.

@@ -472,6 +472,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 });
 
 EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+  
   initialize: function (options) {
 
     _.bindAll(this);
@@ -565,7 +566,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
         $action = $(action);
         model.actions.add({
           ckeditor_id: ckActionID,
-          label: $action.text(),
+          label: $action.data("label"),
           effect: $action.data("effect"),
           duration: $action.data("duration"),
           target: null,
@@ -577,14 +578,18 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   recordContent: function() {
+
     this.updateContent(this.$el.find('textarea.slide-content:first').val());
+
   },
 
   updateContent: function(newContent) {
+
     this.model.set_field_value('content', newContent );
     this.consolidateActions(this.model, newContent);
     this.model.trigger('change');
     this.model.trigger('change:content');
+
   },
 
   initialRender: function (argument) {
@@ -614,11 +619,12 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     
     this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
-
   },
 
   remove: function() {
+
     this.$el.remove();
+
   },
 
   render: function (argument) {
@@ -634,6 +640,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
 
 editActionView = Backbone.View.extend({
+
   initialize: function(options) {
     _.bindAll(this);
     this.options = options;
@@ -641,13 +648,14 @@ editActionView = Backbone.View.extend({
   },
 
   events: {
-    "keyup input[name='label']" : "updateLabel",
     "change select[name='effect']": "updateAction",
     "change select[name='target']" : "updateAttributes",
     "keydown input[name='action_attribute']" : "updateAttributes",
     "click .test-action": "testAction"
   },
+
   default_template: '<div class="action"> <span class="cell attribute"> (%= action.label %) </span> <span class="cell attribute effect"> <select name="effect" class="input-small"> (% var selected_clause; _.each(actionsAvailable, function(effect_name) { ; %) <option value="(%= effect_name %)" (% if (action.effect == effect_name) { %) selected="selected" (% } %)> (%= effect_name %) </option> (% }); %) </select> </span> <span class="cell attribute target"> <option (% if (!_.contains(actionTargets, action.target)) { %) selected="selected" (% }; %)> </option> <select name="target"> (% _.each(actionTargets, function(selector) { %) <option value="(%= selector %)" (% if (action.target == selector) { %) selected="selected" (% } %) > (%= selector %) </option> (% }); %) </select> </span> <span class="cell attribute duration"> <input class="input-small" type="text" name="duration" data-attribute-name="duration" value="(%= action.duration %)" /> ms </span> <span class="cell attribute action_attributes"> </span> <span class="cell test-action btn"> (%= action.label %) </span> </div>',
+ 
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
