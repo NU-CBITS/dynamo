@@ -56,16 +56,34 @@
         <div>
           <legend>Choose One:</legend>
           (% var timeSecondsForRadioGroup = new Date().getTime() %)
-          (% _.each(elements, function(e) { %)
-          (%= console.warn(e) %)
-            <label class="radio">
-              (% if (e.checkedInput) { %)
-                <input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)" checked>(%= e.html %)
-              (% } else { %)
-                <input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)
-              (% } %)
-            </label>
-          (% }); %)
+          (% var input_type; if (canChooseMany) { input_type="checkbox" } else { input_type="radio" } %)
+          (% if (groupBy) { %)
+            (% _.each(elements, function(groupedElements, groupedByValue) { %) 
+              <div>
+                <h4>(%= groupedByValue %)</h4>
+                (% _.each(groupedElements, function(e) { %)
+                  <label class="(%= input_type %)">
+                    (% if (e.checkedInput) { %)
+                      <input type="(%= input_type %)" name="input-group-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)" checked>(%= e.html %)
+                    (% } else { %)
+                      <input type="(%= input_type %)" name="input-group-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)
+                    (% } %)
+                  </label>
+                (% }); %)
+              </div>
+            (% }) %)
+          (% } else { %)
+            (% _.each(elements, function(e) { %)
+            (%= console.warn(e) %)
+              <label class="(%= input_type %)">
+                (% if (e.checkedInput) { %)
+                  <input type="(%= input_type %)" name="input-group-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)" checked>(%= e.html %)
+                (% } else { %)
+                  <input type="(%= input_type %)" name="input-group-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)
+                (% } %)
+              </label>
+            (% }); %)
+          (% } %)
         </div>
       </div>
     </div>

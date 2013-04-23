@@ -309,6 +309,58 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
     console.log(this.get_field_value("title"));
   },
 
+  // The availability object is expected to have the format
+  // of the availability object that is created by the application_builder tool:
+  // {
+  //   "[xelement_id]": {
+  //     self: [num-days-into-trial-accessible],
+  //     "[child_xelement_id]": {
+  //       self: [num-days-into-trial-accessible],
+  //       ...
+  //     }
+  //   },
+  //   "[another_xelement_id]" {
+  //     ...
+  //   }
+  // }
+  // if an element is nested within another, then pass in the parent's id as an option.
+  // Also the availability of the nested resource is available no-sooner than its parent.
+  usableNumDaysIn: function(availability, options) {
+    var el_availability,
+        options = options || {};
+    if (options.parent) { 
+      var parent_availability; 
+      // Availability of the nested resource is available no-sooner-than its parent.
+      try {
+        parent_availability = parseInt( (availability[parent]).self );
+      }
+      catch (e) {
+        parent_availability = 0;
+        console.warn("error trying to find parent availability; returning 0")
+      }
+      try {
+        el_availability = parseInt( (availability[parent]).sub_elements([this.id]).self );
+      }
+      catch (e) {
+        el_availability = 0;
+        console.warn("error trying to find nested availability; returning 0")
+      }
+      
+      return _.max( parent_availability, el_availability );
+    }
+    else {
+      try { 
+        el_availability = parseInt( (availability[this.id]).self );
+      }
+      catch (e) {
+        console.warn("error trying to find availability; returning 0")
+        el_availability = 0;
+      }
+      
+      return el_availability;
+    }
+  },
+
   get_field_type: function(attribute) {
     var field_types = this.get('xel_data_types');
     return field_types[attribute];
@@ -812,9 +864,13 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   },
 
   fetchUserCollections: function(fetch_options) {
-    var options = _.extend({async:false}, fetch_options);
-    _.each(this.collections, function(c) { c.fetch(options); });
-    this.trigger('change');
+    if ( (!this.last_time_fetched) || (this.last_time_fetched < ( (30).seconds().ago() )) ) {
+      this.last_time_fetched = (new Date());
+      var options = _.extend({ async: false }, fetch_options);
+      _.each(this.collections, function(c) { c.fetch(options); });
+      this.trigger('change');
+    }
+
   },
 
   forUser: function(user_id) {
