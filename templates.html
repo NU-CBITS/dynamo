@@ -689,9 +689,12 @@
         </div>
       </div>
 
-      <div id="event-form-save-delete-buttons-container" style="padding-top:20px;">
-        <button id="event-save-button" class="save btn btn-primary" data-bind="click: save">Save Event</button>
-        <button id="event-delete-button" class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
+      <div id="event-form-save-delete-buttons-container">
+        <div class="btn-toolbar pull-right">
+          <button id="event-save-button" class="save btn btn-primary" data-bind="click: save">Save Event</button>
+          <button id="event-delete-button" class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
+        </div>
+        <div class="clearfix"></div>
       </div>
     </form>
   </div> <!-- end 'dynamo/activity_tracker/edit_form' -->
