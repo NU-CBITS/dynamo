@@ -209,8 +209,18 @@ Dynamo.isCoreStable = function() {
 // an application's templates are expected to be at:
 //   http://www.somedomain.com/app_templates.html
 Dynamo.loadTemplates = function(options) {
+
+  if (DIT) { 
+    Dynamo.DIT = DIT;
+    //If the DIT variable exists here, then it assumes you have defined DIT in a javascript file that defines all necessary templates;
+    return;
+  };
+
+  // If DIT is not already defined, then there are two circumstances: Either templates have been stored in localStorage already,
+  // or we need to redirect to dynamo/templates.html to store them in localStorage.
+
   DIT = localStorage.getItem("DYNAMO_TEMPLATES");
-  if (!DIT) {
+  if (!DIT) { //redirect.
 
     var path = window.location.href.split("/");
         
@@ -230,7 +240,7 @@ Dynamo.loadTemplates = function(options) {
     path[path.length - 1] = "dynamo/templates.html";
     window.location.href = path.join("/");
 
-  } else {
+  } else { //parse from localStorage.
 
     $(window).on("unload", function() {
       localStorage.removeItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL");
@@ -239,24 +249,6 @@ Dynamo.loadTemplates = function(options) {
     });
     
     DIT = Dynamo.DIT = JSON.parse(DIT);
-
-    // Templates below here require characters that are valid in javascript, but are encoded characters in HTML,
-    // leading to an encoding issue at some point in the pulled-from-the-templates-page.html->stored-in-local-storage->retrieved
-    // cycle.
-    // b/c we don't have time to fully solve this problem ATM, we instead them here as a single string.
-    // In order to keep this as-smooth-and-orderly-a-process-as-possible, please adhere to the following:
-    // - the templates must not use single-quotes in their body, only double quotes, as single quotes are used here.
-    // - If you need to edit any of these templates:
-    //  - copy it into an empty editor ( I recommend sublime )
-    //  - pretty-html format it
-    //  - make your edits
-    //  - use "http://www.textfixer.com/tools/remove-line-breaks.php" or similar to remove them.
-    //  - enclose the string in single-quotes
-    //  - copy over the string here.
-    // 
-    // grumble,
-    // -gs 4/11/2013
-    DIT["dynamo/core/manage_collection/element"] = '<div class="(%= element_code_name %) element" data-collection_index="(%= index %)"> (% if ( (typeof(display.del) !== "undefined") && display.del) { %) <div class="delete_container btn-toolbar" style="margin-top: 0px;"> <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)"> <!-- <i class="icon-trash"></i> --> <i class="icon-trash"> </i> Delete (%= element_pretty_name %) </button> </div> (% } %) (% if ((typeof(display.edit) !== "undefined") && display.edit) { print(t.form("", { class: "edit_container widget", style: "margin-bottom:10px;" })) } %) (% if (typeof(display.show) !== "undefined" && display.show) { print(t.div("", { class: "show_container widget" })) } %) </div> (% if ((typeof(display.create) !== "undefined") && display.create) { %) <div class="btn-toolbar"> <div class="btn-group"> <button class="btn add-new-(%= element_code_name %)" data-collection-index="(%= (index + 1) %)"> Create (%= element_pretty_name %) </button> (% if (typeof(canAddExisting) !== "undefined") { %) <button class="btn add-existing-(%= element_code_name %)" data-collection-index="(%= (index + 1) %)"> Add Existing (%= element_pretty_name %) </button> (% } %) </div> </div> (% } %)';
 
   };
 
