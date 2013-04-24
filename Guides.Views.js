@@ -205,7 +205,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     });
     this.model.on('save_status_change', this.renderSaveStatus);
 
-    this._initializedIframeLoadFn = false;
+    this._GPOnLoadFnIsDefined = false;
     this._additionalRender = false;
 
   },
@@ -219,13 +219,13 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     return {
-      'keyup input#guide_title'         : "updateTitle",
-      'keyup input#guide_description'   : "updateDescription",
-      'click button.skip-guided-page'   : "skipGuidedPage",
-      'click button.load-guided-page'   : "updateGuidedPage",
-      'click button.clear-guided-page'  : "clearGuidedPage",  
-      'click button.save'               : "saveGuide",
-      'click button.delete'             : "destroyGuide"
+      'keypress input#guide_title'          : "updateTitle",
+      'keypress input#guide_description'    : "updateDescription",
+      'click button.skip-guided-page'       : "skipGuidedPage",
+      'click button.load-guided-page'       : "updateGuidedPage",
+      'click button.clear-guided-page'      : "clearGuidedPage",  
+      'click button.save'                   : "saveGuide",
+      'click button.delete'                 : "destroyGuide"
     };
   },
 
@@ -259,23 +259,35 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
-  initializeOnIframeLoadFn: function() {
+  // If we are guiding another page, then we would like to know the elements on that page.
+  // this defines an on-iframe-loaded function that takes care of defining the elements of the
+  // guided page on that page.
+  onGuidedPageLoad: function() {
     var self = this;
-    if (!this._initializedIframeLoadFn) {
+
+    if (!self._GPOnLoadFnIsDefined) {
       
-      $(this.options.iframe_selector).load(function() {
+      $(self.options.iframe_selector).load(function() {
 
         console.log("IFRAME LOADED", this.contentWindow.Backbone);
 
+        // We must ensure that the guided page's Backbone has finished populating the page with templates,
+        // in order to get an accurate set of usable elements that exist on the guided page.
+        // Hence, we wait for an event from the guided page's Backbone instance.
+        //
+        // This requires that the guided page be aware that it will be used by the guide editor
+        // and include the line 'Backbone.trigger("PageLoad:Complete")'
+        // at the end of it's page loading function(s)
         this.contentWindow.Backbone.on("PageLoad:Complete", function() {
 
-          window.console.log("In Page-Load Callback");
+          window.console.log("In On Backbone Page-Loaded Callback");
 
           // Once the iframe is loaded...
           self.usableElements = [];
           $(self.options.iframe_selector).contents().find("[id]").each(function() {
             self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
           });
+
 
           self.usableElements.sort(function(a,b) {
             // Put all elements w/ id's first
@@ -309,22 +321,31 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
             return 0;
           });// sort
 
-        });
+          // This line is necessary for when: 
+          // someone creates a new guide, and they start creating slides before they specify a 
+          // page to guide;
+          // once the guided page is loaded, you must reload the slides in order to be able to 
+          // get the selectors of the elements selectable in the edit-slide dialog.
+          self.renderSlides();
+
+        }); // BB load complete
 
         console.log("Usable Elements in Guided Page", self.usableElements);
         $("#iframe-container").show();
         self.trigger("guided_page:loaded");
 
+
       }); //load
 
 
     }; // if
-    this._initializedIframeLoadFn = true;
+    this._GPOnLoadFnIsDefined = true;
+
   },
 
   loadGuidedPage: function() {
     $(this.options.iframe_selector).prop("src", this.model.guided_page_url);
-    this.initializeOnIframeLoadFn();
+    this.onGuidedPageLoad();
   },
 
   saveGuide: function() {
@@ -363,6 +384,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     if (this.model.guided_page_url === "[None]") {
       this.guidedPageSM.skip();
+      this.renderSlides();
     };
 
 
@@ -412,7 +434,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     });
 
     $slides_container.empty();
-    $slides_container.append(this.slidesView.render().$el);
+    $slides_container.html(this.slidesView.render().$el);
     this.slideEditing.allow();
 
   },
@@ -450,6 +472,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 });
 
 EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+  
   initialize: function (options) {
 
     _.bindAll(this);
@@ -495,8 +518,8 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     var e = {};
-    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
-    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
+    change_title_key = "keypress input#"+this.model.cid+"-slide-title";
+    change_content_key = "keypress textarea#"+this.model.cid+"-slide-content";
     e[change_title_key] = "updateTitle";
     e[change_content_key] = "updateContent";
     e["click button.delete-slide"] = "destroySlide";
@@ -543,7 +566,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
         $action = $(action);
         model.actions.add({
           ckeditor_id: ckActionID,
-          label: $action.text(),
+          label: $action.data("label"),
           effect: $action.data("effect"),
           duration: $action.data("duration"),
           target: null,
@@ -555,14 +578,18 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   recordContent: function() {
+
     this.updateContent(this.$el.find('textarea.slide-content:first').val());
+
   },
 
   updateContent: function(newContent) {
+
     this.model.set_field_value('content', newContent );
     this.consolidateActions(this.model, newContent);
     this.model.trigger('change');
     this.model.trigger('change:content');
+
   },
 
   initialRender: function (argument) {
@@ -592,11 +619,12 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     
     this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
-
   },
 
   remove: function() {
+
     this.$el.remove();
+
   },
 
   render: function (argument) {
@@ -612,6 +640,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
 
 editActionView = Backbone.View.extend({
+
   initialize: function(options) {
     _.bindAll(this);
     this.options = options;
@@ -619,17 +648,18 @@ editActionView = Backbone.View.extend({
   },
 
   events: {
-    "keyup input[name='label']" : "updateLabel",
     "change select[name='effect']": "updateAction",
     "change select[name='target']" : "updateAttributes",
     "keydown input[name='action_attribute']" : "updateAttributes",
-    "click button.test-action": "testAction"
+    "click .test-action": "testAction"
   },
 
+  default_template: '<div class="action"> <span class="cell attribute"> (%= action.label %) </span> <span class="cell attribute effect"> <select name="effect" class="input-small"> (% var selected_clause; _.each(actionsAvailable, function(effect_name) { ; %) <option value="(%= effect_name %)" (% if (action.effect == effect_name) { %) selected="selected" (% } %)> (%= effect_name %) </option> (% }); %) </select> </span> <span class="cell attribute target"> <option (% if (!_.contains(actionTargets, action.target)) { %) selected="selected" (% }; %)> </option> <select name="target"> (% _.each(actionTargets, function(selector) { %) <option value="(%= selector %)" (% if (action.target == selector) { %) selected="selected" (% } %) > (%= selector %) </option> (% }); %) </select> </span> <span class="cell attribute duration"> <input class="input-small" type="text" name="duration" data-attribute-name="duration" value="(%= action.duration %)" /> ms </span> <span class="cell attribute action_attributes"> </span> <span class="cell test-action btn"> (%= action.label %) </span> </div>',
+ 
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || DIT["dynamo/guides/slides/actions/edit"];
+        this.template = this.options.template || this.default_template;
       };
       this.compiled_template = _.template(this.template)
     };
@@ -663,7 +693,8 @@ editActionView = Backbone.View.extend({
     this.$el.find("button.test-action").text(this.model.get("label"));
   },
 
-  testAction: function() {
+  testAction: function(clickEvent) {
+    clickEvent.preventDefault();
     this.model.execute(this.options.guidedPageSelector);
   },
 

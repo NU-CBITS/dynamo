@@ -305,6 +305,12 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
     var self = this, 
         duration;
 
+    var $targets = this.get("target");
+    if ($targets == "") {
+      alert("The action does not have a valid target; please try selecting a switching the target selected in the select box.");
+      return false;
+    }
+
     try { 
       duration = parseInt(this.get("duration")) 
     } 
@@ -312,32 +318,32 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
       console.warn("Duration is not parse-able as a number!", this.get("duration"), "; instead, setting to 400ms");
       this.set({"duration": 400});
       duration = 400;
-    }; 
+    }
 
     if (iframeSelector) {
-      $(iframeSelector).contents().find(this.get("target")).each(function() {
+      $(iframeSelector).contents().find($targets).each(function() {
         // if target is not currently viewable, show it.
         if ( $(this).is(":hidden") )  {
-          $(this).ancestors().andSelf().each(function() {
+          $(this).parents().andSelf().each(function() {
             $(this).show();
           })
         };
+
         $(this).effect(self.get("effect"), self.effectOptions(), duration);
 
       });
     } else {
-      var $targets = $(this.get("target"));
-      // if target is not currently viewable, show it.
     
       $targets.each(function() {
         if ( $(this).is(":hidden") )  {
-          $(this).ancestors().andSelf().each(function() {
+          $(this).parents().andSelf().each(function() {
             $(this).show();
           });
         };
         $(this).effect(self.get("effect"), self.effectOptions(), duration);
       });
-    };
+
+    }
     
   }
 

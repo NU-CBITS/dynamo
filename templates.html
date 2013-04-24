@@ -205,16 +205,15 @@
 
       (% }; %)
 
-      <div class="on-slide-edit" style="(% if (guidedPageState === 'blank') { %) display:none; (%} else { %) display:block; (% }; %)">
-        <div id="slides"></div>
-      </div>
-      <div id="last-save"></div>
-      <div class="label save_status"></div>
-      <div class="btn-toolbar">
-        <button class="save btn btn-primary">Save Guide</button>
-        <button class="delete btn btn-danger "><i class="icon-trash"></i> Delete</button>
-      </div>
+    <div id="slides"></div>
+
+    <div id="last-save"></div>
+    <div class="label save_status"></div>
+    <div class="btn-toolbar">
+      <button class="save btn btn-primary">Save Guide</button>
+      <button class="delete btn btn-danger "><i class="icon-trash"></i> Delete</button>
     </div>
+  </div>
   </fieldset>
 </div>  
 
@@ -305,42 +304,11 @@
   </div>  
 </div>
 
+  <!-- 
   <div id="dynamo/guides/slides/actions/edit" class="template underscore">
-    <div class="action">
-      <span class="cell attribute">(%= action.label %)</span>
-      <span class="cell attribute effect">
-        <select name="effect" class="input-small">
-          (%
-            var selected_clause;
-            _.each(actionsAvailable, function(effect_name) {
-              (action.effect == effect_name) ? (selected_clause = "selected='selected'") : (selected_clause = "");
-              %)<option value="(%= effect_name %)" (%= selected_clause %)>(%= effect_name %)</option>(%
-            });
-          %)
-        </select>
-      </span>
-      <span class="cell attribute target">
-        <select name="target">
-          (%
-            var selected_clause;
-            _.each(actionTargets, function(selector) {
-              (action.target == selector) ? (selected_clause = " selected='selected'") : (selected_clause = "");
-              %)<option value="(%= selector %)" (%= selected_clause %)>(%= selector %)</option>(%
-            });
-          %)
-        </select>
-      </span>
-      <span class="cell attribute duration">
-        <input class="input-small" 
-                type="text" 
-                name="duration" 
-                data-attribute-name="duration" 
-                value="(%= action.duration %)" /> ms
-      </span>
-      <span class="cell attribute action_attributes"></span>
-      <span><button class="cell test-action btn">(%= action.label %)</button></span>
-    </div>
+    <!-- moved to default_template key in actions view-->
   </div>
+  -->
 
   <div id="dynamo/question_groups/show" class="template underscore">
     <h1><span class="title">(%=title%)</span></h1>
@@ -721,9 +689,12 @@
         </div>
       </div>
 
-      <div id="event-form-save-delete-buttons-container" style="padding-top:20px;">
-        <button id="event-save-button" class="save btn btn-primary" data-bind="click: save">Save Event</button>
-        <button id="event-delete-button" class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
+      <div id="event-form-save-delete-buttons-container">
+        <div class="btn-toolbar pull-right">
+          <button id="event-save-button" class="save btn btn-primary" data-bind="click: save">Save Event</button>
+          <button id="event-delete-button" class="del btn btn-danger" data-bind="click: destroy"><i class="icon-trash"></i> Delete Event</button>
+        </div>
+        <div class="clearfix"></div>
       </div>
     </form>
   </div> <!-- end 'dynamo/activity_tracker/edit_form' -->
@@ -788,6 +759,35 @@
         </li>
         <li class="caret-icons">
           <a><i class="icon-caret-right"></i></a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="dynamo/guides/index_without_dropdowns" class="template underscore">
+    <div class="row-fluid">
+      <h3>Guides <small id="current-guide-title"></small></h3>
+      <ul id="guide-select" class="accordion-header nav pull-right" style="margin: inherit 0">
+        <li class="caret-icons">
+          <a><i class="icon-caret-right"></i></a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="dynamo/guides/index_in_navbar" class="template underscore">
+    <div class="row-fluid navbar">
+      <h1 class='text-prog-blue'>
+        <i class='icon-lightbulb'></i> Learn <small class='text-prog-blue'>Today&#39;s Lesson</small>
+      </h1>
+      <ul id="guide-select" class="accordion-header nav pull-right" style="margin: inherit 0">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
+          <ul id="guides-list" class="dropdown-menu">
+            (% _.each(elements, function(e) { %)
+              <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
+            (% }) %)
+          </ul>
         </li>
       </ul>
     </div>
