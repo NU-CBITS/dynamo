@@ -219,8 +219,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     return {
-      'keypress input#guide_title'          : "updateTitle",
-      'keypress input#guide_description'    : "updateDescription",
+      'keyup input#guide_title'          : "updateTitle",
+      'keyup input#guide_description'    : "updateDescription",
       'click button.skip-guided-page'       : "skipGuidedPage",
       'click button.load-guided-page'       : "updateGuidedPage",
       'click button.clear-guided-page'      : "clearGuidedPage",  
@@ -518,8 +518,8 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     var e = {};
-    change_title_key = "keypress input#"+this.model.cid+"-slide-title";
-    change_content_key = "keypress textarea#"+this.model.cid+"-slide-content";
+    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
+    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
     e[change_title_key] = "updateTitle";
     e[change_content_key] = "updateContent";
     e["click button.delete-slide"] = "destroySlide";
