@@ -116,12 +116,26 @@ Dynamo.CurrentUser = function() {
 
   // If there's a param in local storage
   if ( localStorage.getItem("CurrentUser") ) {
+    
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
+    //USERS is expected to be the globally defined and available of collection of users.
     if (typeof(USERS) !== "undefined") {
       Dynamo._CurrentUser = USERS.get(user_atts.guid);
+
+      // Having a CurrentUser Item in LS, but having it not be part of available users = 
+      // particular / uncommon situation more likely related to admins w/ different envs for same app;
+      if (!Dynamo._CurrentUser) {
+        localStorage.removeItem("CurrentUser");
+        alert("It seems you are signed in as a nonexistent user; You will be brought to the login page.");
+        Dynamo.redirectTo("login.html");
+      };
+
     } else {
+      //must not matter too much; create a dummy user.
       Dynamo._CurrentUser = new Dynamo.User(user_atts)
+
     };
+
     return Dynamo._CurrentUser;
   };
 
