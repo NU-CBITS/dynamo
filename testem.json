@@ -1,0 +1,13 @@
+{
+  "framework": "mocha+chai",
+  "src_files": [
+    "vendor/jquery-1.9.1.min.js",
+    "vendor/underscore-1.4.2.min.js",
+    "vendor/backbone-1.0.0.min.js",
+    "Core.js",
+    "Core.Models.js",
+    "Core.Collections.js",
+    "tests/sinon-1.6.0.js",
+    "tests/CoreTest.js"
+  ]
+}
