@@ -302,28 +302,17 @@ _.each(methods, function(method) {
 Dynamo._previousSync = Backbone.sync;
 
 Dynamo.AuthenticatedSync = function (method, model, options) {
-
   // Default options, unless specified.
   options || (options = {});
-  console.log("");
-  console.log("In AuthenticatedSync: ", method, model, options);
 
   // Ensure appropriate session variables for authentication.
   options.beforeSend = function(jqXHR, settings) {
-    console.log("In BeforeSend (jqXHR, settings):", jqXHR, settings);
-    var new_data;
-    if (!settings.url) {
-      console.warn("No settings.url in beforeSend??");
-    };
     settings.url = addSessionVarsToUrl(settings.url);
-    console.log("final URL: ", settings.url);
     if (settings.data) {
-      console.log("adding transmitted_at as data", settings.data);
-      new_data = JSON.parse(settings.data);
+      var new_data = JSON.parse(settings.data);
       new_data.transmitted_at = (new Date()).toString();
       settings.data = JSON.stringify(new_data);
     };
-    console.log("---------------");
   };
 
   return Dynamo._previousSync(method, model, options);
