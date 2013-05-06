@@ -36,7 +36,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   
   currentSaveState: function() {
     if (this.isNew()) { return 'new' };
-    if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
+    // if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
+    if (this.hasUnsavedChanges()) {return 'saving-changes' };
     return 'current';
   },
 
@@ -44,6 +45,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     switch (this.currentSaveState()) {
       case 'new':
         return 'Unsaved';
+      case 'saving-changes':
+        return "<i class='icon-spinner icon-spin'></i> Saving...";
       case 'unsaved_changes':
         return 'Unsaved changes'
       case 'current':
@@ -52,9 +55,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   },
 
   debouncedSave: _.debounce(function() { 
-    console.log("Debounced Save Called!");
     if ( this.hasUnsavedChanges() ) { 
-      console.log("Model ", this, " had unsaved changes");
+      console.log("debouncedSave: Model ", this, " had unsaved changes");
       this.save({silent:true}) 
     } else {
       console.log("debouncedSave: Model", this, "did not have any unsaved changes");
@@ -84,38 +86,6 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     this._unsavedChanges = false;
     if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
   }
-
-  // startPeriodicSaving: function(interval_in_seconds) {
-  //   console.log('started Periodic saving at the model level every '+interval_in_seconds+' seconds');
-  //   var self = this, saveIntervalID;
-  //   if (!this.currentSaveIntervalID) {
-  //     this.currentSaveIntervalID = setInterval(self.suggestSaveIfChanged, interval_in_seconds*1000);
-  //   } else {
-  //     console.warn("Attempted to initiate interval-initiated-save of Model<cid: "+this.cid+">"+
-  //       " but it is already being saved at an interval.  Command Ignored. Current Interval ID is: "+ this.currentSaveIntervalID);
-  //   };
-  //   this.on('change', this.setUnsavedChanges); 
-  //   this.on('sync', this.clearUnsavedChanges);
-  //   this.on('destroy', this.stopPeriodicSaving);
-  // },
-
-  // stopPeriodicSaving: function() {
-  //   console.log('stopping scheduled saving at the model level');
-  //   clearInterval(this.currentSaveIntervalID);
-  //   this.currentSaveIntervalID = null;
-  //   this.off('change', this.setUnsavedChanges); 
-  //   this.off('sync', this.clearUnsavedChanges);
-  // },
-
-  // ,
-  // suggestSaveIfChanged: function() {
-  //   console.log("in suggestSaveIfChanged; this._unsavedChanges= "+ this._unsavedChanges);
-  //   if (this.hasUnsavedChanges()) {
-  //     console.log("Suggesting Xelements Save on:");
-  //     console.log(this);
-  //     this.trigger('save:suggested');
-  //   };
-  // }
 
 });
 
@@ -189,7 +159,7 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
   defaults: {
     name: "Default Group",
-    created_at: new Date(),
+    created_at: (new Date()).toString(),
   },
 
   addUser: function(user, index) {
@@ -224,6 +194,10 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
   set_field_value: function(attributes, options) {
     return this.set(attributes, options);
+  },
+
+  startDate: function() {
+    return (new Date(this.get('start_date')));
   },
 
   updateUsers: function () {
@@ -333,6 +307,59 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
     this.stringifyAllValues();
     this.initializeAsSaveable();
     console.log(this.get_field_value("title"));
+  },
+
+  // The availability object is expected to have the format
+  // of the availability object that is created by the application_builder tool:
+  // {
+  //   "[xelement_id]": {
+  //     self: [num-days-into-trial-accessible],
+  //     "[child_xelement_id]": {
+  //       self: [num-days-into-trial-accessible],
+  //       ...
+  //     }
+  //   },
+  //   "[another_xelement_id]" {
+  //     ...
+  //   }
+  // }
+  // if an element is nested within another, then pass in the parent's id as an option.
+  // Also the availability of the nested resource is available no-sooner than its parent.
+  usableNumDaysIn: function(availability, options) {
+    var el_availability,
+        parent_availability;
+        options = options || {};
+    console.log("Determining Availability for ", this.id)
+    if (options.parent) { 
+      // Availability of the nested resource is available no-sooner-than its parent.
+      try {
+        parent_availability = parseInt( (availability[options.parent]).self );
+      }
+      catch (e) {
+        parent_availability = 1;
+        console.warn("Error trying to find parent availability.")
+      }
+      try {
+        el_availability = parseInt( ((availability[options.parent]).sub_elements[this.id]).self );
+      }
+      catch (e) {
+        el_availability = 1;
+        console.warn("Error trying to find nested availability")
+      }
+      
+      el_availability = _.max( [parent_availability, el_availability] );
+    }
+    else {
+      try { 
+        el_availability = parseInt( (availability[this.id]).self );
+      }
+      catch (e) {
+        console.warn("Error trying to find availability")
+        el_availability = 1;
+      };
+    }
+    console.log("Availabilities (parent, el): ", parent_availability, el_availability );
+    return el_availability;
   },
 
   get_field_type: function(attribute) {
@@ -523,7 +550,6 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
 
   parse: function(resp) {
     var self = this;
-    console.log("In ValuesOnlyXelement.parse", resp);
     if ( !_.isObject(resp) ) {
       throw new Error("ValuesOnlyXelement.parse: Unexpected response from server.");
     };
@@ -544,11 +570,9 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
         };
       });
 
-      console.log("returning atts: ", atts);
       return atts;
     }
     else {
-      console.log("returning original response");
       return resp; 
     };
   }
@@ -637,9 +661,12 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
   get_fields_as_object: function() {
     var self = this;
     var fields = {
+      id: self.id,
+      cid: self.cid,
       user_id: self.get("user_id"),
       xelement_id: self.get("xelement_id"),
-      group_id: self.get("group_id")
+      group_id: self.get("group_id"),
+      created_at: ( new Date( self.get("created_at") ) )
     };
     return _.extend(fields, _.object(self.get('names'), _.map(self.get('names'), function(n) { return self.get_field_value(n) }) ) )
   },
@@ -687,7 +714,6 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
         value = values[i];
     };    
 
-    console.log("Value: ", value);
     return value;
 
   },
@@ -780,10 +806,10 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 //GroupWide Data
 // 
 // expects: 
-//  - a trireme_root_url 
+//  - a  trireme_root_url 
 //  - an xelement
-//  - a group object
-//
+//  - a  group object
+// 
 // Although data is stored in collections by user, 
 // at the site level, some data may be important to display based upon all contributions
 // from the group.
@@ -800,7 +826,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     _.bindAll(this);
     var self = this;
 
-    if ( !this.get('server_url')    ) { throw new Error("no server_url");   };
+    // if ( !this.get('server_url')    ) { throw new Error("no server_url");   };
     if ( !this.get('xelement_id')   ) { throw new Error("no xelement_id");  };
     if ( !this.get('group_id')      ) { throw new Error("no group_id");     }; 
 
@@ -821,14 +847,16 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     var self = this;
     this.collections = [];
     this.group.users.each(function(user) {
-      var UserData = new Dynamo.DataCollection(null, {
-        // server_url: self.get('server_url'),
-        xelement_id: self.get('xelement_id'),
-        user_id: user.id,
-        group_id: self.get('group_id')
-      });
 
-      UserData.fetch({async:false});
+      var classProps = _.extend({ 
+          xelement_id: self.get('xelement_id'),
+          user_id: user.id,
+          group_id: self.get('group_id')
+        }, (self.get("collectionProperties") || {}) );
+
+      var UserData = new Dynamo.DataCollection(null, classProps);
+
+      UserData.fetch({ async:false });
       UserData.on('add',    function() { self.trigger('change') });
       UserData.on('remove', function() { self.trigger('change') });
       UserData.on('reset',  function() { self.trigger('change') });
@@ -837,22 +865,19 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   },
 
   fetchUserCollections: function(fetch_options) {
-    var options = _.extend({async:false, silent: true}, fetch_options);
-    _.each(this.collections, function(c) { c.fetch(options); });
-    this.trigger('change');
+    if ( (!this.last_time_fetched) || (this.last_time_fetched < ( (30).seconds().ago() )) ) {
+      this.last_time_fetched = (new Date());
+      var options = _.extend({ async: false }, fetch_options);
+      _.each(this.collections, function(c) { c.fetch(options); });
+      this.trigger('change');
+    }
+
   },
 
   forUser: function(user_id) {
     return _.find(this.collections, function(ud_collection) {
       return (ud_collection.user_id() == user_id)       
     });
-
-    // if (existingCollection) {
-    //   return existingCollection
-    // } else {
-    //   return ( new Backbone.Collection([]) )
-    // };
-
   },
 
   length: function() {
@@ -883,16 +908,15 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return _.find(this.collections, function(c) { return c.user_id() == user_id });
   },
 
-  where: function(filterFn) {
+  where: function(filterFn, collectionOptions) {
     var result = _.chain(this.collections)
                   .map(function(c) { return c.filter(filterFn) })
                   .flatten()
                   .compact()
                   .value();
 
-    return new Backbone.Collection( result );
+    return ( new Backbone.Collection( result, collectionOptions ) );
   }
-
 
 });
 

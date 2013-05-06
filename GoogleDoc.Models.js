@@ -41,8 +41,8 @@ function GoogleDoc(html_string) {
     });
     _pages.push({ title: $(title).text(), content: slide_content });
   });
-  self.length = _pages.length;
-  debugger; //check length of document here - it was not right before.
+  // self.length = _pages.length;
+  // debugger; //check length of document here - it was not right before.
   self.pages = function() {
     return _pages;
   }

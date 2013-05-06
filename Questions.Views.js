@@ -35,107 +35,6 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     }
   },
 
-  // chooseQuestionPopup: function(element_index) {
-
-  //   var self = this, $popup;
-
-  //   // Initialize what is to be a popup.
-  //   if ( $('div#popup_container').length == 0 ) { $('body').append('<div id="popup_container"><div>') };
-  //   $popup = $('div#popup_container');
-
-  //   // Allow the user to choose a Question Group view
-  //   self.chooseQuestionGroupView = new Dynamo.ChooseOneXelementFromCollectionView({
-
-  //     canCreateNew: false,
-  //     xelement_type: null,
-  //     element_pretty_name: null,
-
-  //     collection_name: "Assessments",
-  //     collection: QUESTION_GROUPS
-
-  //   });
-
-  //   //Show the dialog
-  //   $popup.empty();
-
-  //   $popup.wijdialog({
-  //     autoOpen: true,
-  //     modal: true,
-  //     width: ($(window).width()*.8),
-  //     height: ($(window).height()*.8),
-
-  //     title: "Add a Question (in position " + (element_index+1)+")",
-
-  //     captionButtons: {
-  //             pin:      { visible: false },
-  //             refresh:  { visible: false },
-  //             toggle:   { visible: false },
-  //             minimize: { visible: false },
-  //             maximize: { visible: false },
-  //             close:    { visible: true }
-  //     },
-
-  //     close: function (beforeCloseEvent) {
-  //       //Attempt to cleanup / avoid mem leaks.
-  //       if (self.chooseQuestionView)      { self.chooseQuestionView.remove()      };
-  //       if (self.chooseQuestionGroupView) { self.chooseQuestionGroupView.remove() };
-  //       self.chooseQuestionView = null;
-  //       self.chooseQuestionGroupView = null;
-  //       $chooseQcontainer = null;
-  //       $popup = null;
-  //     }
-
-  //   });
-
-  //   $popup.append( self.chooseQuestionGroupView.$el );
-  //   self.chooseQuestionGroupView.render();
-
-  //   // Once the user picks a Question Group,
-  //   // show the questions in that Question Group,
-  //   // so that the user can pick a question.
-  //   var $chooseQcontainer;
-  //   self.chooseQuestionGroupView.on('element:chosen', function() {
-
-  //     self.chooseQuestionView = new Dynamo.ChooseOneXelementFromCollectionView({
-
-  //       canCreateNew: false,
-  //       xelement_type: null,
-  //       element_pretty_name: null,
-
-  //       collection_name: (self.chooseQuestionGroupView.chosen_element.get_field_value('title') + " Questions"),
-  //       collection: self.chooseQuestionGroupView.chosen_element.questions
-
-  //     });
-
-  //     if ( $popup.find('div#choose_question').length == 0 ) { //jQuery version of false
-
-  //       $popup.append('<div id="choose_question"><div>');
-
-  //     };
-
-  //     $chooseQcontainer = $popup.find('div#choose_question');
-
-  //     $chooseQcontainer.empty();
-  //     $chooseQcontainer.append( self.chooseQuestionView.$el );
-  //     self.chooseQuestionView.render();
-
-  //     self.chooseQuestionView.on('element:chosen', function() {
-
-  //       // Once the user picks a question, add it to this question group :)
-  //       console.log('Inserting Question at location: '+ element_index);
-  //       self.model.questions.add(self.chooseQuestionView.chosen_element, {at: element_index});
-  //       $popup.wijdialog('close');
-
-  //     });
-
-  //   });
-
-  // },
-
-  // editTitleInPopup: function(click_event) {
-  //   this.editTextFieldInPopup('title', click_event);
-  // },
-
   events: function() {
     switch(this.displayEdit) {
       case true:
@@ -1109,7 +1008,7 @@ showQuestionView = protoQuestionView.extend({
       console.log('RE-RENDERING QUESTION');
     };
     this.$el.find('div.instructions:first').html(this.model.metaContent.get('instructions'));
-    this.$el.find('div.content:first').html(this.model.get_field_value('content'));
+    this.$el.find('.content:first').html(this.model.get_field_value('content'));
     // Do not worry about subView rendering; they can re-render themselves as necessary.
     return this;
   }
@@ -1304,23 +1203,26 @@ PollResponseView = protoKnockoutView.extend({
     '(% _.each(responses, function(r) { %)'+
       '(% if (r.label) { print( t.div(r.label+":") ) }; %)'+
       '(% _.each(r.responseValues, function(rv) { %)'+
-        '<li>'+
+        '<div>'+
           '<p class="title pull-left">(%= rv.value %)</p>'+
           '<p class="info response_percentage pull-right label label-info">'+
+            '(%= rv.proportion %)'+
             '(% if (_.isNumber(rv.percentage) && !_.isNaN(rv.percentage)) { %)'+
-              '(%= rv.percentage %)%'+
+              ' ( (%= rv.percentage * 100 %)% )'+
             '(% } %)'+
           '</p>'+
           '<div class="clearfix"></div>'+
           '<p class="response_choosers">'+
             '(% _.each(rv.choosers, function(user) { %)'+
               '<div>'+
-                '<img src="(%=user.image_url%)" style="width:40px;"><br />'+
+                // Currently , no image_url exists -W
+                // '<img src="(%= user.image_url %)" style="width:40px;"><br />'+
                 '<span class="name">(%= user.username %)</span>'+
               '</div>'+
             '(% }); %)'+
           '</p>'+
-        '</li>'+
+        '</div>'+
+        '<hr />'+
       '(% }); %)'+
     '(% }); %)',
 
@@ -1328,29 +1230,33 @@ PollResponseView = protoKnockoutView.extend({
   initialize: function() {
     _.bindAll(this);
     this.question = QUESTIONS.get(this.model.get('xelement_id'));
-    this.model.on('change', this.render);
+    this.responses = this.question.getResponses();
+    // _.each(this.model.collections, function(c) {
+    //   c.on('all', this.render);
+    // });
+    // this.model.on('change', this.render);
   },
 
   buildViewModel: function() {
     var self = this,
-        responses = [];
+        pollResponsesModel = [];
 
-    _.each(this.question.getResponses(), function(r) {
+    _.each(this.responses, function(response) {
 
-      var response = {
-        label: r.label,
+      var pollResponseData = {
+        label: response.label,
         responseValues: []
       };
 
-      _.each(r.responseValues, function(rv) {
+      _.each(response.responseValues, function(rv) {
       
         var responseVal = {
           value: rv.value
         };
         
-        // Fetch user_data that matches this response value.  
+        // Fetch user_data that matches this response value.
         var userDataForResponseVal = self.model.where(function(ud) { 
-          return (ud.get_field_value(r.name) == rv.value) 
+          return (ud.get_field_value(response.name) == rv.value) 
         });
 
         // Pull the user_id out of the user_data and use it to get the
@@ -1362,17 +1268,18 @@ PollResponseView = protoKnockoutView.extend({
 
         // Calculate the percentage of users that have chosen this
         // option out of all of the users in the group.
-        responseVal.percentage = responseVal.choosers.length / self.model.collections.length;
+        responseVal.proportion = ""+responseVal.choosers.length+" of "+self.model.collections.length;
+        responseVal.percentage = (Math.floor( (responseVal.choosers.length/self.model.collections.length) * 100) / 100);
 
-        response.responseValues.push(responseVal);
+        pollResponseData.responseValues.push(responseVal);
 
       });
 
-      responses.push(response);
+      pollResponsesModel.push(pollResponseData);
 
     });
 
-    return responses;
+    return pollResponsesModel;
   },
 
   render: function() {

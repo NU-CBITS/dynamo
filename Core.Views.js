@@ -337,7 +337,7 @@ Dynamo.InputGroupView = Backbone.View.extend(
     },
     events: {
       "click div.label_and_input" : "setInput",
-      "click input": "setInput",
+      "click input"               : "setInput",
       "change select"             : "setAttribute",
       "change input"              : "setAttribute"
     },
@@ -346,11 +346,21 @@ Dynamo.InputGroupView = Backbone.View.extend(
       this.setValue($(event.currentTarget).val());
     },
     setInput: function(event) {
-      var $i = $('input', event.currentTarget);
-      $i.attr( 'checked', !$i.is(':checked') );
-      this.setValue( $i.val() );
-      this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
-      this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
+      // This method sets the value by determing what type of input was clicked.
+      // In the case of an input with the class 'radio' or 'checkbox' (from Twitter Bootstrapp) - which doesn't have the classes 'label_and_input' or 'hasSelectedInput'
+      // then we just grab the val() of the event and set.
+      // Otherwise, we stick to the 'original' functionality.
+      if ($(event.currentTarget).hasClass('radio') || $(event.currentTarget).hasClass('checkbox') ) {
+        // if input.radio or input.checkbox from TwitterBootstrap
+        this.setValue( $(event.currentTarget).val() );
+      } else {
+        // Original functionality
+        var $i = $('input', event.currentTarget);
+        $i.attr( 'checked', !$i.is(':checked') );
+        this.setValue( $i.val() );
+        this.$el.find('div.label_and_input').removeClass('hasSelectedInput');
+        this.$el.find('div.label_and_input:has(input:checked)').addClass('hasSelectedInput');
+      };
     },
     _template: function(data, settings) {
       if (!this.compiled_template) {
@@ -699,16 +709,19 @@ Dynamo.InputSliderView = Backbone.View.extend(
 //      Defaults to 'title'
 //    - modelHTML: function that returns what HTML should be displayed for an element. Defaults to
 //      a span containing the value of the xelement's 'chooseOn' attribute.
+//    - groupBy: a function or string that will group the choices for selection by the return value 
+//        of calling the function on each element in the collection or accessing that property of the element.
 Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this);
+    this.checkedInputsCIDsArray = [this.options.checkedInputs] || [];
     this.chooseOn = (this.options.chooseOn ? this.options.chooseOn : 'title');
     if (this.options.onChoose) { this.chooseXelement = this.options.onChoose };
     if (this.options.modelHTML) { this.modelHTML = this.options.modelHTML };
   },
   events: {
     "click button.create_new" : "createNewXelement",
-    "click li.choose_element" : "chooseXelement"
+    "click .choose_element" : "chooseXelement"
   },
   createNewXelement: function(clickEvent) {
     var klass = Dynamo.typeToModelClass(clickEvent.currentTarget.dataset.xelement_type);
@@ -723,6 +736,9 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   modelHTML: function(m) {
     return t.span( m.get_field_value(this.chooseOn) );
   },
+  checkedInput: function(m) {
+    return _.contains(this.checkedInputsCIDsArray, m.cid)
+  },
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
@@ -735,11 +751,40 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   },
   render: function() {
     var self = this;
-    var elements = this.collection.map(function(m) { return { id: m.id, cid: m.cid, html: self.modelHTML(m) }  });
+    var elements;
+    if (self.options.groupBy) { 
+      elements = self.collection.chain().map(function(m) {
+        var el = { 
+          id: m.id, 
+          cid: m.cid, 
+          html: self.modelHTML(m), 
+          checkedInput: self.checkedInput(m)
+        };
+        if (_.isString(self.options.groupBy) ) {
+          el.groupBy = m[self.options.groupBy]
+        } else {
+          el.groupBy = self.options.groupBy(m);
+        }
+        return el;
+      }).groupBy("groupBy").value();
+    }
+    else {
+      elements = self.collection.map(function(m) {
+        var el = { 
+          id: m.id, 
+          cid: m.cid, 
+          html: self.modelHTML(m), 
+          checkedInput: self.checkedInput(m)
+        };
+        return el;
+      });
+    }
     this.$el.html(
       this._template({
         collection_name: (this.options.collection_name || this.collection.codeCollectionName || this.collection.prettyModelName()),
         elements: elements,
+        groupBy: (!!this.options.groupBy),
+        canChooseMany: (!!this.options.canChooseMany),
         canCreateNew: this.options.canCreateNew || false,
         xelement_type: this.options.xelement_type,
         element_pretty_name: this.options.element_pretty_name
@@ -896,10 +941,7 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
 //4) That those View Classes can also be passed an option, 'position'
 //   which is their index in the collection.
 //
-//options:
-//  - addAtIndexHandler: callback function, passed the click event as an argument,
-//    responsible for handling the addition of a model to the collection at the appropriate index.
-//    the index is available as clickEvent.srcElement.
+
 Dynamo.ManageCollectionView = Backbone.View.extend({
 
   initialize: function() {
@@ -907,6 +949,10 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.start_content = this.options.start_content || '';
     this.end_content = this.options.end_content || '';
     this.display = this.options.display || { show: true };
+    this.display.edit = this.display.edit || false;
+    this.display.create = this.display.create || false;
+    this.display.del = this.display.del || false;
+    // this.display.create = (this.display.create ? this.display.create :  this.display.edit);
     this.canAddExisting = !!this.options.enableAddExisting;
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
@@ -920,15 +966,6 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     e[("click button.delete."+self.collection.codeModelName())] = "removeElement";
     return e;
   },
-
-  // Default implementation of addAtIndexHandler;
-  // Is overridden if view options has specified it's own addAtIndexHandler.
-  // Default implementation allows handling the cases when:
-  // 1) only newly created elements can be added to the collection
-  // 2) existing elements of the same Model class as accepted by the view's
-  //    collection (but that are not already a part of it) can also be
-  //    added to the collection.
-  //
 
   addNew: function(clickEvent) {
     
@@ -947,76 +984,21 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       if (this.options.addExistingHandler) {
         return this.options.addExistingHandler( $(clickEvent.currentTarget).data("collection-index") )
       }
-      return chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
+      return this.chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
     
     };
 
   },
 
-  // addAtIndexHandler: function(clickEvent) {
-  //   if (this.options.addAtIndexHandler) { return this.options.addAtIndexHandler() };
-
-  //   if (this.options.enableAddExisting) {
-  //     this.addNewOrExistingAtIndexDialog(clickEvent, this.addNewAtIndex, this.chooseExistingToAddAtIndex);
-  //   } else {
-  //     var index = clickEvent.currentTarget.dataset.collection_index;
-  //     this.addNewAtIndex(index);
-  //   };
-
-  // },
-
-  //  When someone clicks 'New [Model Class]' on an instantiation of the
-  //  ManageCollectionView, they may want the choice to
-  //  create an entirely new [Model Class] instance,
-  //  or to select an existing [Model Class] instance.
-  //  if the option to add existing [Model Class] instances is enabled,
-  //  then this function creates the dialog that allows the user to choose
-  //  between the options of 'New' or 'Existing' and
-  //  then handles the result of the user's selection.
-  // addNewOrExistingAtIndexDialog: function(clickEvent, newAtIndexCallback, existingAtIndexCallback) {
-  //   var self = this,
-  //       $btn_clicked = $(clickEvent.currentTarget),
-  //       // Fetch the current index at which we want to insert a question.
-  //       element_index = parseInt($btn_clicked.attr("data-collection_index"));
-
-  //   //insert dialog
-  //   $btn_clicked.after(""+
-  //     "<div class='add_dialog btn-toolbar'>"+
-  //       "<div class='btn-group'>"+
-  //         "<button class='add_new btn'>New</button>"+
-  //         "<button class='add_existing btn'>Existing</button>"+
-  //       "</div>"+
-  //     "</div>");
-
-  //   //find inserted dialog
-  //   $add_dlg = $btn_clicked.parent().find("div.add_dialog");
-
-  //   //add_new element handler
-  //   $add_dlg.find("button.add_new").click(function() {
-  //     newAtIndexCallback(element_index);
-  //     //cleanup
-  //     $add_dlg.remove();
-  //     $add_dlg = null;
-  //   });
-
-  //   //add_existing element handler
-  //   $add_dlg.find("button.add_existing").click(function() {
-  //     existingAtIndexCallback(element_index)
-  //     //cleanup
-  //     $add_dlg.remove();
-  //     $add_dlg = null;
-  //   });
-
-  // },
-
   //  Default implementation of addNewAtIndex;
-  //  called by default addAtIndexHandler can be overridden
-  //  by passing in an addNewAtIndex method as an option.
+  //  called by addNew if none other provided
   addNewAtIndex: function(element_index) {
     console.log('inserting '+ this.collection.prettyModelName()+' - at location: '+ element_index);
     this.collection.add({}, {at: element_index});
   },
 
+  //  Default implementation of addExistingAtIndex;
+  //  called by addExisting if none other provided
   addExistingAtIndex: function(element, element_index) {
     console.log('inserting '+ this.collection.prettyModelName(),
                 "id:", element.id, 'Location: ', element_index);
@@ -1095,7 +1077,9 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   removeElement: function(clickEvent) {
     var element_index = clickEvent.currentTarget.dataset.collection_index;
     console.log('removing: '+ this.collection.prettyModelName()+' - at location: '+ element_index);
-    this.collection.remove(this.collection.at(element_index));
+    var elToRemove = this.collection.at(element_index);
+    this.collection.remove(elToRemove);
+    if (elToRemove.destroy) { elToRemove.destroy(); }
   },
 
   _template: function(data, settings) {
@@ -1302,8 +1286,7 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
         setObj[ $(this).attr('name') ] = $(this).val();
       };
     });
-    this.model.set(setObj);
-    this.model.save();
+    this.model.save(setObj, {async:false});
   },
 
   addSubView: function(view) {
@@ -1357,7 +1340,6 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     $users = this.$el.find('div.users:first');
     if ( $users.length !== 0 ) {
-
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
       });
@@ -1593,7 +1575,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
       console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
-      alert('Saved.');
+      // alert('Saved.');
     });
 
   },

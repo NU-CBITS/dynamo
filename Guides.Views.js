@@ -40,7 +40,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
-    "click .do-action" : "performAction",
+    "click .guide-action" : "performAction",
     "click .accordion-header li.caret-icons": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
   },
@@ -94,8 +94,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   performAction: function(clickEvent) {
-    var cid = $(clickEvent.currentTarget).data("cid");
-    var action = this.currentSlide.actions.get(cid);
+    var ckID = $(clickEvent.currentTarget).data("ckeditor_id");
+    var action = this.currentSlide.actions.find(function(a) { return (a.get("ckeditor_id") == ckID) });
     action.execute();
   },
 
@@ -108,25 +108,26 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-
     this.$el.html( this._template({}) );
-    this.$el.find("div#guide-select-nav").prepend(this.guideSelect.render().$el);
+    this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
 
     return this;
-  },
+  },    
 
   renderSlide: function() {
-    var $slide_content = this.$el.find("div#current-guide-slide-content"),
-        $actions = $("div#current-slide-actions");
+    var $slide_content = this.$el.find("div#current-guide-slide-content");
+
+    //  Place current Guide title into correct spot in the title bar.
+    this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
-    $actions.empty();
     
     if (this.currentSlideIndex() === this.currentGuide.slides.length) {
       
       //We have reached the end of the guide.
       $slide_content.html(""+
-        '<p><h3>You have reached the end of this guide, <br />"'+this.currentGuide.get_field_value("title")+'"</h3></p>'
+        // lead is currently being overwritten
+        '<p class="lead" style="font-size: 21px;font-weight: 200;line-height: 30px;">You have reached the end of this guide</p>'
       );
     
     } else {
@@ -134,13 +135,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
       this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
       $slide_content.html( this.currentSlide.get_field_value("content") );
-      this.currentSlide.actions.each(function(action) {
-        $actions.append( 
-          t.span({ style:"margin-right:10px;"},
-            t.button(action.get("label"), { class: "cell do-action", "data-cid":action.cid })
-          ) 
-        );
-      });
     
     }
   
@@ -211,7 +205,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     });
     this.model.on('save_status_change', this.renderSaveStatus);
 
-    this._initializedIframeLoadFn = false;
+    this._GPOnLoadFnIsDefined = false;
     this._additionalRender = false;
 
   },
@@ -225,13 +219,13 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     return {
-      'keyup input#guide_title'         : "updateTitle",
-      'keyup input#guide_description'   : "updateDescription",
-      'click button.skip-guided-page'   : "skipGuidedPage",
-      'click button.load-guided-page'   : "updateGuidedPage",
-      'click button.clear-guided-page'  : "clearGuidedPage",  
-      'click button.save'               : "saveGuide",
-      'click button.delete'             : "destroyGuide"
+      'keyup input#guide_title'          : "updateTitle",
+      'keyup input#guide_description'    : "updateDescription",
+      'click button.skip-guided-page'       : "skipGuidedPage",
+      'click button.load-guided-page'       : "updateGuidedPage",
+      'click button.clear-guided-page'      : "clearGuidedPage",  
+      'click button.save'                   : "saveGuide",
+      'click button.delete'                 : "destroyGuide"
     };
   },
 
@@ -265,23 +259,35 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.render();
   },
 
-  initializeOnIframeLoadFn: function() {
+  // If we are guiding another page, then we would like to know the elements on that page.
+  // this defines an on-iframe-loaded function that takes care of defining the elements of the
+  // guided page on that page.
+  onGuidedPageLoad: function() {
     var self = this;
-    if (!this._initializedIframeLoadFn) {
+
+    if (!self._GPOnLoadFnIsDefined) {
       
-      $(this.options.iframe_selector).load(function() {
+      $(self.options.iframe_selector).load(function() {
 
         console.log("IFRAME LOADED", this.contentWindow.Backbone);
 
+        // We must ensure that the guided page's Backbone has finished populating the page with templates,
+        // in order to get an accurate set of usable elements that exist on the guided page.
+        // Hence, we wait for an event from the guided page's Backbone instance.
+        //
+        // This requires that the guided page be aware that it will be used by the guide editor
+        // and include the line 'Backbone.trigger("PageLoad:Complete")'
+        // at the end of it's page loading function(s)
         this.contentWindow.Backbone.on("PageLoad:Complete", function() {
 
-          window.console.log("In Page-Load Callback");
+          window.console.log("In On Backbone Page-Loaded Callback");
 
           // Once the iframe is loaded...
           self.usableElements = [];
           $(self.options.iframe_selector).contents().find("[id]").each(function() {
             self.usableElements.push({tagName: this.tagName.toLowerCase(), "idName": this.id, "className": this.className});
           });
+
 
           self.usableElements.sort(function(a,b) {
             // Put all elements w/ id's first
@@ -315,22 +321,31 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
             return 0;
           });// sort
 
-        });
+          // This line is necessary for when: 
+          // someone creates a new guide, and they start creating slides before they specify a 
+          // page to guide;
+          // once the guided page is loaded, you must reload the slides in order to be able to 
+          // get the selectors of the elements selectable in the edit-slide dialog.
+          self.renderSlides();
+
+        }); // BB load complete
 
         console.log("Usable Elements in Guided Page", self.usableElements);
         $("#iframe-container").show();
         self.trigger("guided_page:loaded");
 
+
       }); //load
 
 
     }; // if
-    this._initializedIframeLoadFn = true;
+    this._GPOnLoadFnIsDefined = true;
+
   },
 
   loadGuidedPage: function() {
     $(this.options.iframe_selector).prop("src", this.model.guided_page_url);
-    this.initializeOnIframeLoadFn();
+    this.onGuidedPageLoad();
   },
 
   saveGuide: function() {
@@ -369,6 +384,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     if (this.model.guided_page_url === "[None]") {
       this.guidedPageSM.skip();
+      this.renderSlides();
     };
 
 
@@ -389,7 +405,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.slidesView = new Dynamo.ChooseOneXelementFromCollectionView({
       collection: self.model.slides,
       canCreateNew: true,
-      xelement_type: 'static_html'
+      xelement_type: 'static_html',
+      checkedInputs: $slides_container.find('input:checked').data('cid')
     });
 
     this.model.slides.on("add", this.slidesView.render);
@@ -417,7 +434,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     });
 
     $slides_container.empty();
-    $slides_container.append(this.slidesView.render().$el);
+    $slides_container.html(this.slidesView.render().$el);
     this.slideEditing.allow();
 
   },
@@ -454,15 +471,32 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
 });
 
-editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
+  
   initialize: function (options) {
-    var self = this;
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
     this.model.on('change', this.render);
     this.model.on('sync', this.completeRender);
     this.initializeAsSaveable(this.model);
+    this.instantiateEditorFn = this.options.instantiateEditorFn || function(options, thisView) {
+      var e = new wysihtml5.Editor(options.selector, { 
+        toolbar: options.toolbar, 
+        stylesheets: options.stylesheets,
+        parserRules:  options.parserRules
+      });
+      e.on("change", function() {
+        self.updateContent( thisView.$el.find('textarea.slide-content:first').val() )
+      });
+      return e;
+    };
+    this.instantiateEditorOptions = _.extend({ 
+        selector: this.model.cid+"-slide-content",
+        toolbar: this.model.cid+"-wysihtml5-toolbar", // id of toolbar element
+        stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
+        parserRules:  wysihtml5ParserRules // defined in parser rules set 
+    }, ( _.result(this.options, 'instantiateEditorOptions') || {}) );
 
   },
 
@@ -509,10 +543,53 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.trigger('change:title');
   },
 
+  consolidateActions: function(model, slideContent) {
+    var actions = $(slideContent).find('button.guide-action'),
+    ck_action_ids = _.map(actions, function(action) { return $(action).data("ckeditor_id") }),
+    model_action_ids = model.actions.pluck("ckeditor_id");
+
+    //Treat what is in the HTML as canonical:
+    
+    //If the current model action does not exist in html; destroy it
+    model.actions.each(function(action) {
+      if (!_.contains(ck_action_ids, action.get("ckeditor_id"))) {
+        model.actions.remove(action);
+        action.destroy();
+      };
+    });
+
+    //If ckAction does not exist in model.actions; create it;
+    _.each(ck_action_ids, function(ckActionID) {
+      if (!_.contains(model_action_ids, ckActionID)) {
+    
+        action = _.find(actions, function(a) { return $(a).data("ckeditor_id") == ckActionID });
+        $action = $(action);
+        model.actions.add({
+          ckeditor_id: ckActionID,
+          label: $action.data("label"),
+          effect: $action.data("effect"),
+          duration: $action.data("duration"),
+          target: null,
+          actionOptions: []
+        });
+      }
+    });
+
+  },
+
+  recordContent: function() {
+
+    this.updateContent(this.$el.find('textarea.slide-content:first').val());
+
+  },
+
   updateContent: function(newContent) {
+
     this.model.set_field_value('content', newContent );
+    this.consolidateActions(this.model, newContent);
     this.model.trigger('change');
     this.model.trigger('change:content');
+
   },
 
   initialRender: function (argument) {
@@ -520,26 +597,16 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
         actionsView,
         self = this;
 
-    console.log('INITIAL SLIDE RENDER');
-
     atts = {
       slide: self.model.get_fields_as_object()
     };
     self.$el.html( self._template( atts ) );
 
-    self.editor = new wysihtml5.Editor(self.model.cid+"-slide-content", { 
-      toolbar: self.model.cid+"-wysihtml5-toolbar", // id of toolbar element
-      stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
-      parserRules:  wysihtml5ParserRules // defined in parser rules set 
-    });
-
-    self.editor.on("change", function() {
-      self.updateContent( self.$el.find('textarea.slide-content:first').val() )
-    });
+    self.editor = self.instantiateEditorFn(self.instantiateEditorOptions, self);
 
     self.actionsView = new Dynamo.ManageCollectionView({
       collection: self.model.actions,
-      display: { edit: true, show: false },
+      display: { create: false, edit: true, show: false },
       guidedPageSelector: self.options.guidedPageSelector,
       enableAddExisting: false,
       editViewOpts: { 
@@ -552,11 +619,12 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     
     this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
-
   },
 
   remove: function() {
+
     this.$el.remove();
+
   },
 
   render: function (argument) {
@@ -572,23 +640,26 @@ editSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
 
 editActionView = Backbone.View.extend({
-  initialize: function() {
+
+  initialize: function(options) {
     _.bindAll(this);
+    this.options = options;
     this.allActions = _.keys(ActionDictionary);
   },
 
   events: {
-    "keyup input[name='label']" : "updateLabel",
     "change select[name='effect']": "updateAction",
     "change select[name='target']" : "updateAttributes",
     "keydown input[name='action_attribute']" : "updateAttributes",
-    "click button.test-action": "testAction"
+    "click .test-action": "testAction"
   },
 
+  default_template: '<div class="action"> <span class="cell attribute"> (%= action.label %) </span> <span class="cell attribute effect"> <select name="effect" class="input-small"> (% var selected_clause; _.each(actionsAvailable, function(effect_name) { ; %) <option value="(%= effect_name %)" (% if (action.effect == effect_name) { %) selected="selected" (% } %)> (%= effect_name %) </option> (% }); %) </select> </span> <span class="cell attribute target"> <option (% if (!_.contains(actionTargets, action.target)) { %) selected="selected" (% }; %)> </option> <select name="target"> (% _.each(actionTargets, function(selector) { %) <option value="(%= selector %)" (% if (action.target == selector) { %) selected="selected" (% } %) > (%= selector %) </option> (% }); %) </select> </span> <span class="cell attribute duration"> <input class="input-small" type="text" name="duration" data-attribute-name="duration" value="(%= action.duration %)" /> ms </span> <span class="cell attribute action_attributes"> </span> <span class="cell test-action btn"> (%= action.label %) </span> </div>',
+ 
   _template: function(data, settings) {
     if (!this.compiled_template) {
       if (!this.template) {
-        this.template = this.options.template || DIT["dynamo/guides/slides/actions/edit"];
+        this.template = this.options.template || this.default_template;
       };
       this.compiled_template = _.template(this.template)
     };
@@ -622,7 +693,8 @@ editActionView = Backbone.View.extend({
     this.$el.find("button.test-action").text(this.model.get("label"));
   },
 
-  testAction: function() {
+  testAction: function(clickEvent) {
+    clickEvent.preventDefault();
     this.model.execute(this.options.guidedPageSelector);
   },
 
@@ -631,6 +703,7 @@ editActionView = Backbone.View.extend({
     viewAtts.actionsAvailable = this.allActions;
     viewAtts.actionTargets = this.options.actionTargets;
     viewAtts.action = this.model.toJSON();
+    viewAtts.position = this.options.position;
     this.$el.html(this._template(viewAtts));
   }
 

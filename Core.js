@@ -116,8 +116,26 @@ Dynamo.CurrentUser = function() {
 
   // If there's a param in local storage
   if ( localStorage.getItem("CurrentUser") ) {
+    
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
-    Dynamo._CurrentUser = new User(user_atts);
+    //USERS is expected to be the globally defined and available of collection of users.
+    if (typeof(USERS) !== "undefined") {
+      Dynamo._CurrentUser = USERS.get(user_atts.guid);
+
+      // Having a CurrentUser Item in LS, but having it not be part of available users = 
+      // particular / uncommon situation more likely related to admins w/ different envs for same app;
+      if (!Dynamo._CurrentUser) {
+        localStorage.removeItem("CurrentUser");
+        alert("It seems you are signed in as a nonexistent user; You will be brought to the login page.");
+        Dynamo.redirectTo("login.html");
+      };
+
+    } else {
+      //must not matter too much; create a dummy user.
+      Dynamo._CurrentUser = new Dynamo.User(user_atts)
+
+    };
+
     return Dynamo._CurrentUser;
   };
 
@@ -146,6 +164,13 @@ Dynamo.CurrentUser = function() {
 
 
 };
+
+Dynamo.CurrentGroup = function() {
+  if (typeof (USER_GROUPS) == "undefined") {
+    new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
+  };
+  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) )  
+}
 
 Dynamo.CurrentGroupMembers = function() {
   if (typeof (USER_GROUPS) == "undefined") {
@@ -198,8 +223,18 @@ Dynamo.isCoreStable = function() {
 // an application's templates are expected to be at:
 //   http://www.somedomain.com/app_templates.html
 Dynamo.loadTemplates = function(options) {
+
+  if (DIT) { 
+    Dynamo.DIT = DIT;
+    //If the DIT variable exists here, then it assumes you have defined DIT in a javascript file that defines all necessary templates;
+    return;
+  };
+
+  // If DIT is not already defined, then there are two circumstances: Either templates have been stored in localStorage already,
+  // or we need to redirect to dynamo/templates.html to store them in localStorage.
+
   DIT = localStorage.getItem("DYNAMO_TEMPLATES");
-  if (!DIT) {
+  if (!DIT) { //redirect.
 
     var path = window.location.href.split("/");
         
@@ -219,7 +254,7 @@ Dynamo.loadTemplates = function(options) {
     path[path.length - 1] = "dynamo/templates.html";
     window.location.href = path.join("/");
 
-  } else {
+  } else { //parse from localStorage.
 
     $(window).on("unload", function() {
       localStorage.removeItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL");
@@ -228,6 +263,7 @@ Dynamo.loadTemplates = function(options) {
     });
     
     DIT = Dynamo.DIT = JSON.parse(DIT);
+
   };
 
 };

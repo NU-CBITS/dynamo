@@ -186,7 +186,13 @@ t.formInput = function(type, label, atts) {
     case "radio":
     case "checkbox":
       // return t.input(atts) + t.label(label, atts.id);
-      return t.label(t.input(atts)+" "+label, atts.id);
+      if (atts.class == undefined) {
+        atts.class = type 
+      } else {
+        atts.class = atts.class + " " + type
+      }
+      // return t.label(t.input(atts)+" "+label, atts.id);
+      return t.label(t.input(atts)+" "+label, atts);
       break;
     case "option":
       return t.tag('option', atts, label);
