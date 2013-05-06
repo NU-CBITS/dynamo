@@ -519,23 +519,28 @@ editResponseValueView = Backbone.View.extend({
 
 
 // TakeAssessmentView
-//
+// Allows the question group to be viewed and responded to by a user, actually storing data.
+// to a Trireme endpoint.
+// 
+// Expects:
 // 1) Expects a QuestionGroup as its model.
 // 2) Expects a User model to be passed in as the 'responder' option.
 //
-// Allows the question group to be viewed and responded to by a user,
-// actually storing the data if necessary options are passed in
+// Optionally:
+// userResponseData - a Dynamo.Data object representing the user's already existing answers;
+//                    if passed in, then the view will edit this set of answers as opposed to
+//                    creating a new Data object to store.
 //
-// lays the groundwork for a Computer Adaptive Testing (CAT) algorithm
-// to be defined in a Question Group's metacontent.
 //
-// Defaults to a method which simply shows the next question based upon
-// the order of the questions as they are in the Question Group's 'questions' collection.
-TakeAssessmentView = Dynamo.SaveableModelView.extend({
+// Implementation currently has done laid groundwork for a Computer Adaptive Testing (CAT) algorithm
+// to be defined in a Question Group's metacontent.  Without any sort of algo present, it simply defaults 
+// to a method which simply shows the next question based upon the order of the questions as they are 
+// in the Question Group's 'questions' collection.
+TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend({
   initialize: function() {
     _.bindAll(this);
 
-    this.template = this.options.template || templates.take_assessment;
+    this.template = this.options.template || DIT["dynamo/question_groups/show"];
 
     //the user taking the assessment:
     this.responder = this.options.responder;
