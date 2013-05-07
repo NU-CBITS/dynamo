@@ -803,20 +803,19 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
 });
 
-//GroupWide Data
+// GroupWide Data
 // 
 // expects: 
-//  - a  trireme_root_url 
-//  - an xelement
-//  - a  group object
+//  - an xelement_id attribute
+//  - a  group_id attribute
 // 
-// Although data is stored in collections by user, 
-// at the site level, some data may be important to display based upon all contributions
-// from the group.
+// optional
+// - a server_url attribute (defaults to Dynamo.TriremeURL)
 // 
-// e.g. a comment thread is data submitted across all the users in the group.
-// it matters not as much the set of comments that a user submitted, but rather the 
-// set of comments that belong to a particular object.
+// Although data is stored in collections by user, at the site level, some data may be important to 
+// display based upon all contributions from the group.  For example, a comment thread is data submitted 
+// across all the users in the group.  It matters not as much the set of comments that a user submitted, 
+// but rather the set of comments that belong to a particular object.
 // 
 // so, the GroupWideData model was created to house data that belongs to a particular object
 // across all the users in a particular group.
