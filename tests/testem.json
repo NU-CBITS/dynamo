@@ -8,6 +8,8 @@
     "Core.Models.js",
     "Core.Collections.js",
     "tests/sinon-1.6.0.js",
-    "tests/CoreTest.js"
+    "tests/Config.js",
+    "tests/CoreTest.js",
+    "tests/Core.ModelsTest.js"
   ]
 }
