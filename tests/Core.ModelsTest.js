@@ -36,6 +36,50 @@ describe("Core.Models", function() {
     })
 
     describe("UnitaryXelement", function() {
+      describe("#usableNumDaysIn", function() {
+        var x = new UnitaryXelement({ guid: "childId" });
+        var avail;
+
+        beforeEach(function() {
+          avail = {
+                    parentId: {
+                      self: null,
+                      sub_elements: {
+                        childId: {
+                          self: null
+                        }
+                      }
+                    }
+                  };
+        })
+
+        it("should default to 1", function() {
+          assert.equal(1, x.usableNumDaysIn(null, null));
+          assert.equal(1, x.usableNumDaysIn(null, { parent: "parentId" }));
+          assert.equal(1, x.usableNumDaysIn(avail, null));
+          assert.equal(1, x.usableNumDaysIn(avail, { parent: "baz" }));
+        })
+
+        it("should return the parent value when larger", function() {
+          avail.parentId.self = 6;
+          avail.parentId.sub_elements.childId.self = 3;
+          assert.equal(6, x.usableNumDaysIn(avail, { parent: "parentId" }));
+        })
+
+        it("should return the child value when larger", function() {
+          avail.parentId.self = 4;
+          avail.parentId.sub_elements.childId.self = 8;
+          assert.equal(8, x.usableNumDaysIn(avail, { parent: "parentId" }));
+        })
+
+        it("should return the matching parent value when no parent option", function() {
+          x.set("guid", "parentId");
+          avail.parentId.self = 5;
+          assert.equal(5, x.usableNumDaysIn(avail, { parent: null }));
+          assert.equal(5, x.usableNumDaysIn(avail));
+          x.set("guid", "childId");
+        })
+      })
     })
   })
 })

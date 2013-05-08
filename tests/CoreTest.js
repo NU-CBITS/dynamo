@@ -157,4 +157,8 @@ describe("Core", function() {
       assert.equal("foo?user_id=" + user.id + "&session_id=YO-IMA-SESSION-ID", addSessionVarsToUrl("foo"));
     })
   })
+
+  describe(".JSONparseNested", function() {
+    // TODO
+  })
 })
