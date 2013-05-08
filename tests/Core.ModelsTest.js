@@ -118,6 +118,12 @@ describe("Core.Models", function() {
           assert.equal("the pen is mightier", x.get_field_value("quotation"));
         })
       })
+
+      describe("failing test", function() {
+        it("fails", function() {
+          assert.equal(1, 2);
+        })
+      })
     })
   })
 })
