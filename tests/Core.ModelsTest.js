@@ -82,22 +82,7 @@ describe("Core.Models", function() {
       })
 
       describe("field value accessors", function() {
-        var x = new UnitaryXelement({
-          xel_data_types: {
-            cats: "array",
-            recipe: "json",
-            hammerTime: "datetime",
-            onceUponATime: "datetime",
-            quotation: "speech"
-          },
-          xel_data_values: {
-            cats: ["Fluffy"],
-            recipe: { title: "souffle", isEasy: "false" },
-            hammerTime: 1368024806488,
-            onceUponATime: "Wed May 08 2013 09:56:28 GMT-0500 (CDT)",
-            quotation: "the pen is mightier"
-          }
-        });
+        var x = new UnitaryXelement(window.dynamoTestFixtures.UnitaryXelementAttributes());
 
         describe("#get_field_value", function() {
           it("should convert arrays to JSON", function() {

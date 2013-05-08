@@ -7,9 +7,13 @@
     "Core.js",
     "Core.Models.js",
     "Core.Collections.js",
+    "Core.Views.js",
+    "templates.js",
     "tests/sinon-1.6.0.js",
     "tests/Config.js",
+    "tests/fixtures/UnitaryXelementAttributes.js",
     "tests/CoreTest.js",
-    "tests/Core.ModelsTest.js"
+    "tests/Core.ModelsTest.js",
+    "tests/Core.ViewsTest.js"
   ]
 }
