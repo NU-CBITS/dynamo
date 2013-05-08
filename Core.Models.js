@@ -896,7 +896,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   },
 
   userCollectionFor: function(user_id) {
-    return _.find(this.collections, function(c) { return c.user_id() == user_id });
+    return _.find(this.collections, function(c) { return (c.user_id() == user_id) });
   },
 
   where: function(filterFn, collectionOptions) {

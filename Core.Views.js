@@ -799,7 +799,8 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
 //  can inherit from this view which provides a set of functions
 //  related to viewing the current save state,
 //  or setting up periodic saving and triggering a save
-Dynamo.SaveableModelView = Backbone.View.extend({
+SaveableModelView = Dynamo.SaveableModelView = Backbone.View.extend({
+  
   initializeAsSaveable: function(saveableModel) {
     this.saveableModel = saveableModel;
     this.saveableModel.initializeAsSaveable();

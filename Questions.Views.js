@@ -532,20 +532,21 @@ editResponseValueView = Backbone.View.extend({
 //                    creating a new Data object to store.
 //
 //
-// Implementation currently has done laid groundwork for a Computer Adaptive Testing (CAT) algorithm
+// Implementation currently has laid groundwork for a Computer Adaptive Testing (CAT) algorithm
 // to be defined in a Question Group's metacontent.  Without any sort of algo present, it simply defaults 
 // to a method which simply shows the next question based upon the order of the questions as they are 
 // in the Question Group's 'questions' collection.
 TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend({
+  
   initialize: function() {
     _.bindAll(this);
 
     this.template = this.options.template || DIT["dynamo/question_groups/show"];
 
-    //the user taking the assessment:
+    // The user taking the assessment:
     this.responder = this.options.responder;
 
-    //Organize questions, laying groundwork for CAT:
+    // Organize questions, laying groundwork for CAT:
     this.maximumNumberOfQuestions = this.model.questions.length
     this.unpresentedQuestions = new QuestionCollection(this.model.questions.models);
     this.presentedQuestions = new QuestionCollection();
@@ -570,21 +571,18 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
     this.current_index = 0;
     this.current_question = null;
 
-    //CAT groundwork related:
-    //define the function by which we will decide the next question shown;
-    //and choose an initial question to be presented.
-    //defaults to a function which simply shows the next question.
+    // CAT groundwork related:
+    // define the function by which we will decide the next question shown;
+    // and choose an initial question to be presented.
+    // defaults to a function which simply shows the next question.
     this.setSelectNextFunction();
     this.addToPresentedQuestions();
-
-    $('select,input,textarea', this.el).live('change', this.saveSaveableModel);
-    // setInterval(this.saveIfChanges, 2000);
 
   },
 
   initializeResponseData: function() {
 
-    //you can pass in a data object,
+    // You can pass in a data object,
     if (this.options.userResponseData) {
       this.userResponseData = this.options.userResponseData;
       
@@ -598,7 +596,7 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
 
     }
 
-    //or pass in sufficient options to define a new data object,
+    // or pass in sufficient options to define a new data object,
     if ( this.options.server_url && ( this.options.group_id ) ) {
 
       this.userResponseData = new Dynamo.Data ({
@@ -678,7 +676,7 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
       // Required b/c sometimes callback will be the click event,
       // and in that case, it will cause an error.
       if ( _.isFunction(callback) ) {
-        self.userResponseData.save(null, { success: callback, remote: SERVER_CONNECTIVITY.exists() });
+        self.userResponseData.save(null, { success: callback, remote: true });
       }
       else {
         self.userResponseData.save();
@@ -739,12 +737,12 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
   saveResponses: function(callback) {
     var self = this;
 
-    //only begin saving all responses
-    //if we're not in the process of doing so already...
+    //  only begin saving all responses
+    //  if we're not in the process of doing so already...
     if (self.numResponsesSaved === null) {
       console.log("AssesmentSaveCycle - saveResponses: BEGIN CYCLE ");
       self.numResponsesSaved = 0;
-      this.questionResponses.invoke('save', null, { success: function() { self.onResponseSaved(callback) }, remote: SERVER_CONNECTIVITY.exists() });
+      this.questionResponses.invoke('save', null, { success: function() { self.onResponseSaved(callback) }, remote: true });
     }
     else {
       console.log("AssesmentSaveCycle - saveResponses: numResponsesSaved !== null ");
@@ -841,13 +839,15 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
     if (!this._initialRender) { this.initialRender() };
 
     this.currentQuestionView = null; //BSTS: Avoid memory leak (i think) -gs;
-    this.currentQuestionView = new showQuestionView({
+    this.currentQuestionView = new Dynamo.showQuestionView({
       model: this.current_question,
       userResponseModel: this.current_response
     });
 
-    this.$el.children('div.question:first').html(this.currentQuestionView.$el);
+    var $questions = this.$el.children('div#current-question:first');
+    $questions.empty().append(this.currentQuestionView.render().$el);
     this.currentQuestionView.render();
+    $('select,input,textarea', this.el).on('change', this.saveSaveableModel);
 
   }
 
@@ -914,13 +914,13 @@ protoQuestionView = Dynamo.protoQuestionView = Dynamo.BaseUnitaryXelementView.ex
 //   a model onto which it saves
 //   a user's response to this question's responses.
 //   if this key is ommitted, it will create it's own.
-showQuestionView = protoQuestionView.extend({
+showQuestionView = Dynamo.showQuestionView = protoQuestionView.extend({
 
   initialize: function() {
 
     _.bindAll(this);
     _.extend(this, Backbone.Events);
-    this.cid = _.uniqueId('showQuestionView-');
+    this.cid = _.uniqueId('showQ-');
     this.subViews = [];
     this.position = this.options.position;
 
