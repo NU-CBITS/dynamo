@@ -117,6 +117,10 @@ describe("Core.Models", function() {
         it("should default to the raw field value", function() {
           assert.equal("the pen is mightier", x.get_field_value("quotation"));
         })
+
+        it("should fail", function() {
+          assert.isTrue(false);
+        })
       })
     })
   })
