@@ -360,21 +360,18 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   },
 
   get_field_value: function(attribute) {
-    var value, field_values = this.get('xel_data_values');
+    var rawValue = this.get('xel_data_values')[attribute];
+
     switch ( this.get_field_type(attribute) ) {
       case "array":
-        value = JSONparseNested(field_values[attribute]);
-        break;
+        return JSONparseNested(rawValue);
       case "json":
-        value = convertFalses(JSONparseNested(field_values[attribute]));
-        break;
+        return convertFalses(JSONparseNested(rawValue));
       case "datetime":
-        value = new Date(field_values[attribute]);
-        break;
-      default:
-        value = field_values[attribute];
+        return new Date(rawValue);
     };
-    return value;
+
+    return rawValue;
   },
 
   set_field_values: function(set_obj, options) {

@@ -81,7 +81,7 @@ describe("Core.Models", function() {
         })
       })
 
-      describe("#get_field_value", function() {
+      describe("field value accessors", function() {
         var x = new UnitaryXelement({
           xel_data_types: {
             cats: "array",
@@ -99,27 +99,65 @@ describe("Core.Models", function() {
           }
         });
 
-        it("should convert arrays to JSON", function() {
-          assert.equal("Fluffy", x.get_field_value("cats")[0]);
+        describe("#get_field_value", function() {
+          it("should convert arrays to JSON", function() {
+            assert.equal("Fluffy", x.get_field_value("cats")[0]);
+          })
+
+          it("should convert JSON to JSON with falsy conversion", function() {
+            var val = x.get_field_value("recipe");
+            assert.equal("souffle", val.title);
+            assert.isFalse(val.isEasy);
+          })
+
+          it("should convert date representations to Date objects", function() {
+            assert.equal(1368024806488, x.get_field_value("hammerTime").valueOf());
+            assert.equal(1368024988000, x.get_field_value("onceUponATime").valueOf());
+          })
+
+          it("should default to the raw field value", function() {
+            assert.equal("the pen is mightier", x.get_field_value("quotation"));
+          })
         })
 
-        it("should convert JSON to JSON with falsy conversion", function() {
-          var val = x.get_field_value("recipe");
-          assert.equal("souffle", val.title);
-          assert.isFalse(val.isEasy);
-        })
+        describe("#set_field_value", function() {
+          it("should not convert strings", function() {
+            x.set_field_value("cats", "foo bar");
+            assert.equal("foo bar", x.get('xel_data_values').cats);
+          })
 
-        it("should convert date representations to Date objects", function() {
-          assert.equal(1368024806488, x.get_field_value("hammerTime").valueOf());
-          assert.equal(1368024988000, x.get_field_value("onceUponATime").valueOf());
-        })
+          it("should convert arrays to JSON strings", function() {
+            x.set_field_value("cats", ["Puffy"]);
+            assert.equal("[\"Puffy\"]", x.get('xel_data_values').cats);
+          })
 
-        it("should default to the raw field value", function() {
-          assert.equal("the pen is mightier", x.get_field_value("quotation"));
-        })
+          it("should convert objects to JSON strings", function() {
+            x.set_field_value("recipe", { title: "pizza" });
+            assert.equal("{\"title\":\"pizza\"}", x.get('xel_data_values').recipe);
+          })
 
-        it("should fail", function() {
-          assert.isTrue(false);
+          it("should not convert other attributes", function() {
+            x.set_field_value("quotation", "call me Ishmael");
+            assert.equal("call me Ishmael", x.get('xel_data_values').quotation);
+          })
+
+          it("should broadcast change events", function(done) {
+            x.on("change", done);
+            x.set_field_value("cats", null, { silent: false });
+            x.off("change");
+          })
+
+          it("should broadcast change:xel_data_values events", function(done) {
+            x.on("change:xel_data_values", done);
+            x.set_field_value("hammerTime", null, { silent: false });
+            x.off("change:xel_data_values");
+          })
+
+          it("should broadcast change:xel_data_values:[attr] events", function(done) {
+            x.on("change:xel_data_values:onceUponATime", done);
+            x.set_field_value("onceUponATime", null, { silent: false });
+            x.off("change:xel_data_values:onceUponATime");
+          })
         })
       })
     })
