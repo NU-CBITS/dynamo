@@ -80,6 +80,44 @@ describe("Core.Models", function() {
           x.set("guid", "childId");
         })
       })
+
+      describe("#get_field_value", function() {
+        var x = new UnitaryXelement({
+          xel_data_types: {
+            cats: "array",
+            recipe: "json",
+            hammerTime: "datetime",
+            onceUponATime: "datetime",
+            quotation: "speech"
+          },
+          xel_data_values: {
+            cats: ["Fluffy"],
+            recipe: { title: "souffle", isEasy: "false" },
+            hammerTime: 1368024806488,
+            onceUponATime: "Wed May 08 2013 09:56:28 GMT-0500 (CDT)",
+            quotation: "the pen is mightier"
+          }
+        });
+
+        it("should convert arrays to JSON", function() {
+          assert.equal("Fluffy", x.get_field_value("cats")[0]);
+        })
+
+        it("should convert JSON to JSON with falsy conversion", function() {
+          var val = x.get_field_value("recipe");
+          assert.equal("souffle", val.title);
+          assert.isFalse(val.isEasy);
+        })
+
+        it("should convert date representations to Date objects", function() {
+          assert.equal(1368024806488, x.get_field_value("hammerTime").valueOf());
+          assert.equal(1368024988000, x.get_field_value("onceUponATime").valueOf());
+        })
+
+        it("should default to the raw field value", function() {
+          assert.equal("the pen is mightier", x.get_field_value("quotation"));
+        })
+      })
     })
   })
 })
