@@ -140,4 +140,19 @@ describe("Core.Views", function() {
       view.off("element:chosen");
     })
   })
+
+  describe("Dynamo.ShowUserView", function() {
+    beforeEach(function() {
+      var view = new Dynamo.ShowUserView({
+        el: "#sandbox",
+        model: new Backbone.Model({ username: "lola", guid: 123 })
+      });
+      view.render();
+    })
+
+    it("should render the username and guid", function() {
+      assert.equal("lola", $(".attribute.username").text());
+      assert.equal("(123)", $(".attribute.guid").text());
+    })
+  })
 })
