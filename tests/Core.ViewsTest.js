@@ -1,3 +1,9 @@
+// this somehow solves a global leak issue triggered when running
+// ChooseOneXelementFromCollectionView tests...would like to get to the bottom of it!
+// <hack>
+var content, atts;
+// </hack>
+
 describe("Core.Views", function() {
   beforeEach(function() {
     $("body").append("<div id='sandbox'>");
@@ -8,7 +14,7 @@ describe("Core.Views", function() {
   })
 
   describe("Dynamo.ShowXelementSimpleView", function() {
-    var attrs = window.dynamoTestFixtures.UnitaryXelementAttributes();
+    var attrs = TestFixtures.UnitaryXelementAttributes();
     var vals = attrs.xel_data_values;
 
     it("should render only the title and specified attrs", function() {
@@ -58,6 +64,59 @@ describe("Core.Views", function() {
       view.getArrayFn = function() { return ["Han Solo"] };
       view.render();
       $(".array-view > .item").trigger("click");
+    })
+  })
+
+  describe("Dynamo.ChooseOneXelementFromCollectionView", function() {
+    var view;
+    var viewOptions;
+
+    beforeEach(function() {
+      var tywin = { xel_data_types: { title: "string"}, xel_data_values: { title: "Tywin" } };
+      var cersei = { xel_data_types: { title: "string"}, xel_data_values: { title: "Cercei" } };
+      var collection = new Backbone.Collection([
+        new Dynamo.UnitaryXelement(tywin),
+        new Dynamo.UnitaryXelement(cersei)
+      ]);
+      collection.prettyModelName = function() { return "Family Member"; };
+      viewOptions = {
+        el: "#sandbox",
+        collection: collection,
+        collection_name: "The Lannisters"
+      }
+    })
+
+    function renderView(options) {
+      view = new Dynamo.ChooseOneXelementFromCollectionView(options || viewOptions);
+      view.render();
+    }
+
+    it("should render radio buttons", function() {
+      renderView();
+      assert.equal("Tywin", $("label.radio:first > span").text());
+      assert.equal("Cercei", $("label.radio:last > span").text());
+    })
+
+    it("should trigger an event by default when a button is selected", function(done) {
+      renderView();
+      view.on("element:chosen", done);
+      $("label.radio:first input").trigger("click");
+      view.off("element:chosen");
+    })
+
+    it("should call onChoose when defined and a button is selected", function(done) {
+      viewOptions.onChoose = function() { done() };
+      renderView(viewOptions);
+      $("label.radio:first input").trigger("click");
+    })
+
+    it("should allow adding new options when canCreateNew is true", function(done) {
+      viewOptions.canCreateNew = true;
+      viewOptions.xelement_type = "question";
+      renderView(viewOptions);
+      view.on("element:chosen", done);
+      $(".widget-content button.create_new").trigger("click");
+      view.off("element:chosen");
     })
   })
 })

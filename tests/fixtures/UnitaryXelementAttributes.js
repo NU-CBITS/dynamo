@@ -1,6 +1,6 @@
-window.dynamoTestFixtures = window.dynamoTestFixtures || {};
+window.TestFixtures = window.TestFixtures || {};
 
-window.dynamoTestFixtures.UnitaryXelementAttributes = function() {
+TestFixtures.UnitaryXelementAttributes = function() {
   return {
     xel_data_types: {
       title: "string",

@@ -2,7 +2,7 @@
 //
 // Dynamo.XelementClass (set by the developer before any mantle files)
 
-QuestionGroupModel = Dynamo.XelementClass.extend({
+QuestionGroupModel = Dynamo.QuestionGroupModel = Dynamo.XelementClass.extend({
 
   // Values:
   codeName: "question_group",
@@ -18,7 +18,7 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
     this.metadata = new Backbone.Model(this.getMetadata());
     this.metadata.on('all', this.setUnsavedChanges);
 
-    // Create a collection of questions based on the 
+    // Create a collection of questions based on the
     // array of guids a question_group has in its metacontent.
     try {
       question_ids =  JSON.parse( this.get_field_value("required_xelement_ids") )
@@ -26,24 +26,24 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
     catch (e) {
       question_ids = this.get_field_value("required_xelement_ids");
     };
-    
+
     question_models = _.map( question_ids, function(id) { return QUESTIONS.get(id) });
 
     self.questions = new QuestionCollection(question_models);
     this.questions.on('add',    this.setUnsavedChanges);
     this.questions.on('remove', this.setUnsavedChanges);
 
-    //  Saving a question group should save both the QuestionGroup and 
-    //  All member questions; 
+    //  Saving a question group should save both the QuestionGroup and
+    //  All member questions;
     //  Achieve this by...
     //  Storing original save function, then defining a new one.
-    //  new save function saves composite questions; 
-    //  On the sync of those questions w/ the server, 
+    //  new save function saves composite questions;
+    //  On the sync of those questions w/ the server,
     //  then save this questionGroup.
     //  WARNING - The format of this override breaks the ability to pass variables to save
     //  i.e., save is expected to be called without any arguments for QuestionGroups
     this.saveQuestionGroup = this.save;
-    
+
     this.save = function() {
       this.saveQuestions();
       if (this.questions.length == 0) {
@@ -52,28 +52,28 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
     };
 
     this.questions.on('sync', this.updateSelfAndSave);
-    
+
   },
 
   //defaultSelectNext
-  //When taking an assessment it will be possible that a 
+  //When taking an assessment it will be possible that a
   //question group specify some sort of CAT-like algorithm
-  //(probably as part of its metadata) to calculate what question 
+  //(probably as part of its metadata) to calculate what question
   //in the group the responder should be shown next.
   //
   //To allow for this, we define the following such method as a default and
-  //possible first attempt at specifying the function signature 
+  //possible first attempt at specifying the function signature
   //for such methods in general.
   //In the general case, the selectNext method would expect:
   //
-  //  1) a question_group, 
-  //  2) an array of answered question_ids, and 
+  //  1) a question_group,
+  //  2) an array of answered question_ids, and
   //  3) a DataModel object which stores a set of user-given answers to those answered questions.
-  //  
-  //It should return: 
+  //
+  //It should return:
   //  The id of the next question that the user should be presented.
-  //  
-  //This default implementation simply selects the next question (based upon index) 
+  //
+  //This default implementation simply selects the next question (based upon index)
   //in the array of a question group's 'questions' attribute.
   defaultSelectNext: function(qg, answered_question_ids, responseData) {
     console.log("In defaultSelectNext. (qg, answered_question_ids, responseData):");
@@ -92,13 +92,13 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
     return this.metacontent().metadata
   },
 
-  defaults: function() { 
+  defaults: function() {
     var d = this.defaultsFor('question_group');
     d.xel_data_values.title = "Assessment";
     return d;
   },
 
-  // Should not have to call directly; 
+  // Should not have to call directly;
   // called when overridden save function is called.
   saveQuestions: function (argument) {
     this.questions.invoke('save');
@@ -114,7 +114,7 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
     this.set_field_value('required_xelement_ids', (_.compact(this.questions.pluck("guid"))) );
   },
 
-  // Shouldn't have to call this method directly, 
+  // Shouldn't have to call this method directly,
   // Instead, called when the questions collection syncs.
   updateSelfAndSave: function() {
     this.updateMetadata();
@@ -126,7 +126,7 @@ QuestionGroupModel = Dynamo.XelementClass.extend({
 
 });
 
-QuestionModel = Dynamo.XelementClass.extend({
+QuestionModel = Dynamo.QuestionModel = Dynamo.XelementClass.extend({
   //values:
   codeName: "question",
   prettyName: "Question",
@@ -143,7 +143,7 @@ QuestionModel = Dynamo.XelementClass.extend({
     this.responses.on('all', this.updateResponses);
   },
 
-  defaults: function() { 
+  defaults: function() {
     return this.defaultsFor('question');
   },
 
@@ -155,7 +155,7 @@ QuestionModel = Dynamo.XelementClass.extend({
     return this.set_field_value('content', this.contentModel.get('content') );
   },
 
-  getMetaContent: function () { 
+  getMetaContent: function () {
     return this.metacontent().metaContent
   },
 
@@ -164,11 +164,11 @@ QuestionModel = Dynamo.XelementClass.extend({
     mc.metaContent = this.metaContent.toJSON();
     return this.set_field_value('metacontent_external', mc);
   },
-  
+
   getResponses: function () {
     return this.metacontent().responseGroup;
   },
-  
+
   updateResponses: function () {
     var mc = this.metacontent();
     mc.responseGroup = this.responses.toJSON();
@@ -184,7 +184,7 @@ QuestionModel = Dynamo.XelementClass.extend({
 
 });
 
-QuestionAboutDataModel = Dynamo.XelementClass.extend({
+QuestionAboutDataModel = Dynamo.QuestionAboutDataModel = Dynamo.XelementClass.extend({
   //values:
   codeName: "question_about_data",
   prettyName: "Question",
@@ -197,7 +197,7 @@ QuestionAboutDataModel = Dynamo.XelementClass.extend({
     this.contentModel.on('all', this.updateContent);
   },
 
-  defaults: function() { 
+  defaults: function() {
     return this.defaultsFor('question');
   },
 
@@ -208,11 +208,11 @@ QuestionAboutDataModel = Dynamo.XelementClass.extend({
   updateContent: function(new_content) {
     return this.set_field_value('content', this.contentModel.get('content') );
   },
-  
+
   getResponseAttributeDefinitions: function () {
     return this.metacontent().responseAttributeDefinitions;
   },
-  
+
   updateResponseAttributeDefinitions: function () {
     var mc = this.metacontent();
     mc.responseAttributeDefinitions = this.responseAttributeDefinitions.toJSON();
@@ -228,13 +228,12 @@ QuestionAboutDataModel = Dynamo.XelementClass.extend({
 
 });
 
-// ResponseModel = Dynamo.XelementClass.extend({
-ResponseModel = Dynamo.Model.extend({
+ResponseModel = Dynamo.ResponseModel = Dynamo.Model.extend({
   // values:
   codeName: "response",
-  prettyName: "Response", 
-  //functions:    
-  initialize: function() { 
+  prettyName: "Response",
+  //functions:
+  initialize: function() {
     _.bindAll(this);
     // this.initAsXelement();
     // this.set_field_value('xelement_type', 'question_response');
@@ -242,40 +241,40 @@ ResponseModel = Dynamo.Model.extend({
     self.on('change', function() { console.log("Response '"+self.get('name')+"' changed "+self.cid)});
     self.responseValues = new ResponseValueCollection(self.get('responseValues'));
     self.responseValues.on('all', self.updateResponseValues);
-  },  
-  defaults: function() { 
+  },
+  defaults: function() {
     return {
       name: "name",
       label: "label",
-      responseType: "text", 
-      responseValues: []        
+      responseType: "text",
+      responseValues: []
     }
   },
   updateResponseValues: function() {
     this.set('responseValues', this.responseValues.toJSON() );
   },
-  viewClass: function() { 
+  viewClass: function() {
     return showResponseView
   },
-  editViewClass: function() { 
+  editViewClass: function() {
     // creates div with name, label, and ResponseType!
     // This is a backboneView
     return editResponseView
   }
 });
 
-ResponseValueModel = Dynamo.Model.extend({
+ResponseValueModel = Dynamo.ResponseValueModel = Dynamo.Model.extend({
   // values:
   codeName: "response_value",
   prettyName: "Response Value",
-  //functions: 
+  //functions:
   initialize: function() {
     var self = this;
-    self.on('change', function() { 
+    self.on('change', function() {
       console.log("ResponseValue changed: '"+self.get('label')+"'-'"+self.get('value')+"' - "+self.cid)
     });
-  },   
-  defaults: function() { 
+  },
+  defaults: function() {
     return {
       name: "name",
       label: "label"
