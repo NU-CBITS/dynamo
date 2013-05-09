@@ -7,7 +7,7 @@ describe("Core.Views", function() {
     $("body > #sandbox").remove();
   })
 
-  /*describe("Dynamo.ShowXelementSimpleView", function() {
+  describe("Dynamo.ShowXelementSimpleView", function() {
     var attrs = window.dynamoTestFixtures.UnitaryXelementAttributes();
     var vals = attrs.xel_data_values;
 
@@ -26,7 +26,7 @@ describe("Core.Views", function() {
       assert.equal(JSON.stringify(vals.quotation), $(".attribute.quotation").html());
       assert.equal(0, $(".attribute.onceUponATime").length);
     })
-  })*/
+  })
 
   describe("Dynamo.ShowArrayView", function() {
     var view;
