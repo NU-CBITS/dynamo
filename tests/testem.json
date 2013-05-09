@@ -6,6 +6,7 @@
     "vendor/underscore-1.4.2.min.js",
     "vendor/backbone-1.0.0.min.js",
     "vendor/tee.js",
+    "vendor/date.js",
     "Core.js",
     "Core.Models.js",
     "Core.Collections.js",

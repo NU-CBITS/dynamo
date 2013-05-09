@@ -1,6 +1,46 @@
 TestFixtures.XELEMENT_BASE();
 
 describe("Core.Models", function() {
+  describe("Dynamo.Group", function() {
+    function MockUser(id) {
+      return new Backbone.Model({ id: id });
+    }
+
+    function MockUsersCollection() {
+      var users = [MockUser(1), MockUser(2), MockUser(3)];
+      this.filter = function(iter) { return _.filter(users, iter); };
+    };
+
+    var group;
+
+    before(function() {
+      USERS = new MockUsersCollection();
+      group = new Dynamo.Group({
+        users: [1, 2],
+        start_date: 1368024806488,
+        stuff: { foo: "bar" }
+      });
+    })
+
+    after(function() {
+      delete USERS;
+    })
+
+    it("should grab users from the global group based on id", function() {
+      assert.equal(2, group.users.length);
+    })
+
+    describe("#formVal", function() {
+      it("should return a formatted start_date", function() {
+        assert.equal("2013-05-08", group.formVal("start_date"));
+      })
+
+      it("should return other attributes raw", function() {
+        assert.equal("bar", group.formVal("stuff").foo);
+      })
+    })
+  })
+
   describe("Dynamo.XelementRoot", function() {
     var MyXelement = Backbone.Model.extend(_.extend({}, Dynamo.XelementRoot, {}));
 
