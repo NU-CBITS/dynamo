@@ -4,6 +4,8 @@
 var content, atts;
 // </hack>
 
+TestFixtures.XELEMENT_BASE();
+
 describe("Core.Views", function() {
   beforeEach(function() {
     $("body").append("<div id='sandbox'>");
@@ -64,6 +66,25 @@ describe("Core.Views", function() {
       view.getArrayFn = function() { return ["Han Solo"] };
       view.render();
       $(".array-view > .item").trigger("click");
+    })
+  })
+
+  describe("Dynamo.InputSliderView", function() {
+    beforeEach(function() {
+      var view = new Dynamo.InputSliderView({
+        el: "#sandbox",
+        low_end_text: "low",
+        high_end_text: "high",
+        initial_value: 2,
+        min_value: -1,
+        max_value: 5,
+        step: 1
+      });
+      view.render();
+    })
+
+    it("works", function() {
+      assert.equal(1, $("#sandbox .ui-slider").length)
     })
   })
 

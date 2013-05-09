@@ -2,6 +2,7 @@
   "framework": "mocha+chai",
   "src_files": [
     "vendor/jquery-1.9.1.min.js",
+    "vendor/jquery-ui-1.9.2.custom.min.js",
     "vendor/underscore-1.4.2.min.js",
     "vendor/backbone-1.0.0.min.js",
     "vendor/tee.js",
