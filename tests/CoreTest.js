@@ -1,12 +1,11 @@
 var USERS;
 
 describe("Core", function() {
+  var user;
+  function n() { return Math.floor((Math.random()*10000)+1); };
   function TestUser() {
-    function n() { return Math.floor((Math.random()*10000)+1); }
     return new Dynamo.User({ guid: n(), group_id: n() });
   }
-
-  var user;
 
   beforeEach(function() {
     user = TestUser();
@@ -19,12 +18,12 @@ describe("Core", function() {
         Dynamo._CurrentUser = null;
       })
 
-      it("should return a preassigned current user", function() {
+      it("By Default, should return a preassigned current user", function() {
         Dynamo._CurrentUser = user;
         assert.equal(user, Dynamo.CurrentUser());
       })
 
-      it("should return a predefined current user", function() {
+      it("with predefined testing guids, should return the user defined by those guids", function() {
         Dynamo.CURRENT_USER_ID = user.get("guid");
         Dynamo.CURRENT_GROUP_ID = user.get("group_id");
         assert.equal(user.get("guid"), Dynamo.CurrentUser().get("guid"));
@@ -43,7 +42,7 @@ describe("Core", function() {
           })
         })
 
-        describe("and there is a user collection", function() {
+        describe("and there is a global USERS collection of users", function() { //would consider eliminating this global.
           var otherUser = TestUser();
 
           before(function() {

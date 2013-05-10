@@ -83,7 +83,7 @@ describe("Core.Views", function() {
       view.render();
     })
 
-    it("works", function() {
+    it("renders", function() {
       assert.equal(1, $("#sandbox .ui-slider").length)
     })
   })
@@ -91,6 +91,11 @@ describe("Core.Views", function() {
   describe("Dynamo.ChooseOneXelementFromCollectionView", function() {
     var view;
     var viewOptions;
+
+    function renderView(options) {
+      view = new Dynamo.ChooseOneXelementFromCollectionView(options || viewOptions);
+      view.render();
+    }
 
     beforeEach(function() {
       var tywin = { xel_data_types: { title: "string"}, xel_data_values: { title: "Tywin" } };
@@ -106,11 +111,6 @@ describe("Core.Views", function() {
         collection_name: "The Lannisters"
       }
     })
-
-    function renderView(options) {
-      view = new Dynamo.ChooseOneXelementFromCollectionView(options || viewOptions);
-      view.render();
-    }
 
     it("should render radio buttons", function() {
       renderView();
@@ -131,7 +131,7 @@ describe("Core.Views", function() {
       $("label.radio:first input").trigger("click");
     })
 
-    it("should allow adding new options when canCreateNew is true", function(done) {
+    it("should allow choosing a new model instance when canCreateNew is true", function(done) {
       viewOptions.canCreateNew = true;
       viewOptions.xelement_type = "question";
       renderView(viewOptions);
