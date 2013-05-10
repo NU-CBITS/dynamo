@@ -8,7 +8,7 @@ TestFixtures.XELEMENT_BASE();
 
 describe("Core.Views", function() {
   beforeEach(function() {
-    $("body").append("<div id='sandbox'>");
+    $("body").append("<div id='sandbox' style='display:none;'>");
   })
 
   afterEach(function() {
@@ -153,6 +153,89 @@ describe("Core.Views", function() {
     it("should render the username and guid", function() {
       assert.equal("lola", $(".attribute.username").text());
       assert.equal("(123)", $(".attribute.guid").text());
+    })
+  })
+
+  describe("Dynamo.ModelBackoutView", function() {
+    var mockModel;
+    var view;
+
+    beforeEach(function() {
+      mockModel = new Backbone.Model({
+        title: "foo",
+        start_month: 2,
+        start_date: 20,
+        start_year: 1999,
+        start_hour: 15,
+        start_minute: 30,
+        end_month: 3,
+        end_date: 2,
+        end_year: 1999,
+        end_hour: 1,
+        end_minute: 0,
+        tags: ["alpha", "beta", "gamma"],
+        inReviewing: false,
+        inScheduling: false,
+        actual_pleasure: 4,
+        actual_accomplishment: 8,
+        emotion: "anxious",
+        emotion_intensity: 5,
+        inMonitoring: true,
+        motivation: "goal_directed",
+        startAndEndDaysAreEqual: false
+      });
+      mockModel.get_field_value = function(attr) {
+        return this.get(attr);
+      };
+      mockModel.set_field_values = function(object, options) {};
+      view = new Dynamo.ModelBackoutView({
+        model: mockModel,
+        el: "#sandbox",
+        knockoutTemplate: DIT["dynamo/activity_tracker/edit_event"],
+        arrayDefaults: {},
+        computedAtts: {
+          startAndEndDaysAreEqual: {
+            read: function() {
+              return this.view.knockoutModel.start_date() >
+                this.view.knockoutModel.end_date();
+            },
+            write: function() {}
+          }
+        }
+      });
+      view.render();
+    })
+
+    describe("changing input values", function() {
+      it("should cause the model field to be set", function() {
+        sinon.spy(mockModel, "set_field_values");
+        $("button.add-tag-attribute").click();
+        $("input.edit-tag-attribute:last").val("kappa").trigger("change");
+        assert.deepEqual(["alpha", "beta", "gamma", "kappa"],
+                         mockModel.set_field_values.lastCall.args[0].tags);
+        mockModel.set_field_values.restore();
+      })
+
+      it("should trigger change events on the model", function(done) {
+        mockModel.on("change:fromKnockout:title", done);
+        $("input#title-attribute-input").val("bar").trigger("change");
+        mockModel.off("change:fromKnockout:title");
+      })
+    })
+
+    describe("changing model attributes", function() {
+      it("should update the input value", function() {
+        mockModel.set({ end_hour: 2 });
+        assert.equal(2, $("select#end-time-hour").val());
+      })
+    })
+
+    describe("changing computed values", function() {
+      it("should trigger change events on the model", function(done) {
+        mockModel.on("change:fromKnockout:startAndEndDaysAreEqual", done);
+        $("input#end-time-day").val($("input#start-time-day").val()).trigger("change");
+        mockModel.off("change:fromKnockout:startAndEndDaysAreEqual");
+      })
     })
   })
 })

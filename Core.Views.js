@@ -1688,7 +1688,9 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   //use the correct Knockout method to make a change
   //to an attribute on the knockout model.
   updateKnockoutModelAttribute: function(attr, value) {
-    if (typeof(value) == undefined) { value = this.model.get_field_value(attr) };
+    if (typeof(value) == "undefined") {
+      value = this.model.get_field_value(attr)
+    };
     var observableFunction = this.knockoutModel[attr];
     if ( ko.isWriteableObservable(observableFunction) ) {
       observableFunction(value);
