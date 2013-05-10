@@ -2,14 +2,25 @@
   "framework": "mocha+chai",
   "src_files": [
     "vendor/jquery-1.9.1.min.js",
+    "vendor/jquery-ui-1.9.2.custom.min.js",
     "vendor/underscore-1.4.2.min.js",
     "vendor/backbone-1.0.0.min.js",
+    "vendor/knockout-2.2.min.js",
+    "vendor/tee.js",
+    "vendor/date.js",
     "Core.js",
     "Core.Models.js",
     "Core.Collections.js",
-    "tests/sinon-1.6.0.js",
+    "Core.Views.js",
     "tests/Config.js",
+    "Questions.Models.js",
+    "Questions.Collections.js",
+    "templates.js",
+    "tests/sinon-1.6.0.js",
+    "tests/fixtures/UnitaryXelementAttributes.js",
+    "tests/fixtures/XELEMENT_BASE.js",
     "tests/CoreTest.js",
-    "tests/Core.ModelsTest.js"
+    "tests/Core.ModelsTest.js",
+    "tests/Core.ViewsTest.js"
   ]
 }

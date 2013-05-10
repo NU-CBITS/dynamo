@@ -1,8 +1,8 @@
-//  
-//  
+//
+//
 //  Dynamo.Core.Models.js
-// 
-// 
+//
+//
 //  Dependencies:
 //    - Dynamo.Core.js
 
@@ -30,10 +30,10 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     this._unsavedChanges = false;
   },
 
-  logChange: function () { 
+  logChange: function () {
     console.log("Xelement<cid="+this.cid+"> - "+this.prettyName+" changed");
   },
-  
+
   currentSaveState: function() {
     if (this.isNew()) { return 'new' };
     // if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
@@ -54,14 +54,14 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     };
   },
 
-  debouncedSave: _.debounce(function() { 
-    if ( this.hasUnsavedChanges() ) { 
+  debouncedSave: _.debounce(function() {
+    if ( this.hasUnsavedChanges() ) {
       console.log("debouncedSave: Model ", this, " had unsaved changes");
-      this.save({silent:true}) 
+      this.save({silent:true})
     } else {
       console.log("debouncedSave: Model", this, "did not have any unsaved changes");
     }
-  }, 
+  },
   3000),
 
   hasUnsavedChanges: function() {
@@ -73,16 +73,16 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   },
 
   setUnsavedChanges: function() {
-    var previous = this._unsavedChanges; 
+    var previous = this._unsavedChanges;
     this._unsavedChanges = true;
-    if (this._unsavedChanges !== previous) { 
+    if (this._unsavedChanges !== previous) {
       this.trigger('save_status_change');
       this.trigger('save:suggested');
     };
   },
 
   clearUnsavedChanges: function() {
-    var previous = this._unsavedChanges; 
+    var previous = this._unsavedChanges;
     this._unsavedChanges = false;
     if (this._unsavedChanges !== previous) { this.trigger('save_status_change') };
   }
@@ -118,7 +118,7 @@ User = Dynamo.User = Dynamo.Model.extend({
 
   get_field_value: function(attribute) {
     return this.get(attribute);
-  },  
+  },
 
   set_field_value: function() {
     return this.set(arguments);
@@ -127,7 +127,7 @@ User = Dynamo.User = Dynamo.Model.extend({
   viewClass: function() { return Dynamo.ShowUserView; },
 
   editViewClass: function() { return Dynamo.EditUserView; },
-  
+
   urlRoot: function() { return Dynamo.TriremeURL+'/users' },
 
 });
@@ -190,7 +190,7 @@ Group = Dynamo.Group = Dynamo.Model.extend({
 
   get_field_value: function(attribute) {
     return this.get(attribute);
-  },  
+  },
 
   set_field_value: function(attributes, options) {
     return this.set(attributes, options);
@@ -204,8 +204,8 @@ Group = Dynamo.Group = Dynamo.Model.extend({
     var users_array = this.users.map(function(model) { return model.id });
     this.set({'users': users_array});
     return this.users
-  },  
-  
+  },
+
   urlRoot: function() { return Dynamo.TriremeURL+'/groups' },
 
   viewClass: function() { return Dynamo.ShowGroupView; },
@@ -246,7 +246,7 @@ XelementRoot = Dynamo.XelementRoot = {
     };
     _.extend(fields, this.get("xel_data_values") );
     return fields;
-  },  
+  },
 
   metacontent: function() {
     return this.get_field_value('metacontent_external');
@@ -268,9 +268,9 @@ XelementRoot = Dynamo.XelementRoot = {
     if (typeof(this._required_xelements) !== "undefined") {
       return this._required_xelements
     };
-    
+
     // Create a collection of assets based on the array of guids in 'required_xelement_ids'
-    var required_xelement_ids, raw_json_models; 
+    var required_xelement_ids, raw_json_models;
     try {
       required_xelement_ids =  JSON.parse( this.get_field_value("required_xelement_ids") )
     }
@@ -282,21 +282,43 @@ XelementRoot = Dynamo.XelementRoot = {
                       .compact()
                       .value();
     this._required_xelements = new XelementCollection(raw_json_models);
-    
+
     return this._required_xelements;
   },
-  
+
   // url: function() { return Dynamo.TriremeURL+'/xelements' },
   urlRoot: function() {
-    return Dynamo.TriremeURL+'/xelements' 
+    return Dynamo.TriremeURL+'/xelements'
   },
 
-  viewClass: function() { 
-    return Dynamo.ShowXelementSimpleView; 
+  viewClass: function() {
+    return Dynamo.ShowXelementSimpleView;
   }
 
 };
 
+Dynamo.XelementAvailability = function(availabilityObject, elementId) {
+  this.availability = availabilityObject || {};
+
+  this.elementId = elementId;
+
+  this.usableNumDaysIn = function(parentXelementId) {
+    if (parentXelementId) {
+      var parentAvailability = this.availability[parentXelementId] || {};
+
+      return _.max([
+        coerceNum(parentAvailability.self),
+        coerceNum(((parentAvailability.sub_elements || {})[this.elementId] || {}).self)
+      ]);
+    }
+
+    return coerceNum((this.availability[this.elementId] || {}).self);
+  }
+
+  function coerceNum(maybeNum) {
+    return typeof(maybeNum) == "number" ? maybeNum : 1;
+  }
+}
 
 UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend({}, Dynamo.XelementRoot, {
 
@@ -314,52 +336,22 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   // {
   //   "[xelement_id]": {
   //     self: [num-days-into-trial-accessible],
-  //     "[child_xelement_id]": {
-  //       self: [num-days-into-trial-accessible],
-  //       ...
+  //     sub_elements: {
+  //       "[child_xelement_id]": {
+  //         self: [num-days-into-trial-accessible],
+  //         ...
+  //       }
   //     }
   //   },
-  //   "[another_xelement_id]" {
+  //   "[another_xelement_id]": {
   //     ...
   //   }
   // }
   // if an element is nested within another, then pass in the parent's id as an option.
   // Also the availability of the nested resource is available no-sooner than its parent.
   usableNumDaysIn: function(availability, options) {
-    var el_availability,
-        parent_availability;
-        options = options || {};
-    console.log("Determining Availability for ", this.id)
-    if (options.parent) { 
-      // Availability of the nested resource is available no-sooner-than its parent.
-      try {
-        parent_availability = parseInt( (availability[options.parent]).self );
-      }
-      catch (e) {
-        parent_availability = 1;
-        console.warn("Error trying to find parent availability.")
-      }
-      try {
-        el_availability = parseInt( ((availability[options.parent]).sub_elements[this.id]).self );
-      }
-      catch (e) {
-        el_availability = 1;
-        console.warn("Error trying to find nested availability")
-      }
-      
-      el_availability = _.max( [parent_availability, el_availability] );
-    }
-    else {
-      try { 
-        el_availability = parseInt( (availability[this.id]).self );
-      }
-      catch (e) {
-        console.warn("Error trying to find availability")
-        el_availability = 1;
-      };
-    }
-    console.log("Availabilities (parent, el): ", parent_availability, el_availability );
-    return el_availability;
+    return (new Dynamo.XelementAvailability(availability, this.id))
+      .usableNumDaysIn((options || {}).parent);
   },
 
   get_field_type: function(attribute) {
@@ -368,21 +360,18 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   },
 
   get_field_value: function(attribute) {
-    var value, field_values = this.get('xel_data_values');
+    var rawValue = this.get('xel_data_values')[attribute];
+
     switch ( this.get_field_type(attribute) ) {
       case "array":
-        value = JSONparseNested(field_values[attribute]);
-        break; 
+        return JSONparseNested(rawValue);
       case "json":
-        value = convertFalses(JSONparseNested(field_values[attribute]));
-        break;
+        return convertFalses(JSONparseNested(rawValue));
       case "datetime":
-        value = new Date(field_values[attribute]);
-        break;
-      default:
-        value = field_values[attribute];
-    };    
-    return value;
+        return new Date(rawValue);
+    };
+
+    return rawValue;
   },
 
   set_field_values: function(set_obj, options) {
@@ -399,7 +388,7 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
       case "json":
         if (_.isString(new_value)) {
           field_values[attribute] = new_value;
-        } 
+        }
         else {
           field_values[attribute] = JSON.stringify(new_value);
         };
@@ -426,8 +415,8 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
 
 
 // A client-side Xelement is NOT saveable!
-// From the perspective of a Unitary Xelement, 
-// a ClientSide Xelement's attributes are those that 
+// From the perspective of a Unitary Xelement,
+// a ClientSide Xelement's attributes are those that
 // comprise the xel_data_values key in a UnitaryXelement
 ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.extend({}, Dynamo.XelementRoot, {
 
@@ -437,15 +426,15 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
   idAttribute: 'guid',
   urlRoot: Dynamo.TriremeURL+'/xelements',
   converted_atts: [
-      "active_membership", 
-      "authorization_rule_guids_list", 
-      "data_collections", 
-      "metacontent_external", 
+      "active_membership",
+      "authorization_rule_guids_list",
+      "data_collections",
+      "metacontent_external",
       "methods"
   ],
   removed_atts: [
-    "metacontent_internal", 
-    "required_xelement_ids" 
+    "metacontent_internal",
+    "required_xelement_ids"
   ],
   sync: ReadOnlySync,
 
@@ -476,8 +465,8 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
           version_id: null,
           views: {},
           xelement_type: "question"
-        }; 
-        break;    
+        };
+        break;
       case "question":
         return {
           active_membership: [],
@@ -526,7 +515,7 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
           views: {},
           xelement_type: "question_about_data"
         };
-        break;        
+        break;
       default:
         throw new Error("ValuesOnlyXelement.defaultsFor: No defaults specified");
     };
@@ -538,10 +527,10 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
 
   get_field_value: function(attribute) {
     return this.get(attribute);
-  },  
+  },
 
   set_field_value: function(attribute, new_value) {
-    return this.set(attribute, new_value); 
+    return this.set(attribute, new_value);
   },
 
   parseBeforeLocalSave: function(resp) {
@@ -555,7 +544,7 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
     };
     if ( resp.xel_data_values ) {
       var atts = {};
-      
+
       atts.guid = resp.guid;
 
       _.each(resp.xel_data_values,  function(value, key) { //each function
@@ -573,7 +562,7 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
       return atts;
     }
     else {
-      return resp; 
+      return resp;
     };
   }
 
@@ -594,9 +583,9 @@ Dynamo.getDataFieldsAsObject = function(dataModel) {
 
 //Data
 //modified from Data class in Backhand.js
-//expects: 
-//- a trireme_root_url 
-//- an xelement_id // 
+//expects:
+//- a trireme_root_url
+//- an xelement_id //
 //- a user_id //
 //- a group_id
 Data = Dynamo.Data = Dynamo.SaveableModel.extend({
@@ -606,7 +595,7 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
   idAttribute: "instance_id",
 
   initialize: function() {
-    
+
     _.bindAll(this);
 
     // if (this.collection) {
@@ -614,7 +603,7 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
     //   if ( !this.get('server_url')    ) { this.set('server_url',    c.server_url()  )  };
     //   if ( !this.get('xelement_id')   ) { this.set('xelement_id',   c.xelement_id() )  };
     //   if ( !this.get('user_id')       ) { this.set('user_id',       c.user_id()     )  };
-    //   if ( !this.get('group_id')      ) { this.set('group_id',      c.group_id()    )  }; 
+    //   if ( !this.get('group_id')      ) { this.set('group_id',      c.group_id()    )  };
     // };
 
     this.initializeAsSaveable();
@@ -629,7 +618,7 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
       else {
         defaultAttsObject = this.defaultDataAtts;
       };
-      
+
       var self = this;
       _.each(defaultAttsObject, function(valArray, key) {
         self.set_field(key, valArray[0], valArray[1], { silent:true });
@@ -673,7 +662,7 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   // get_field
   // Finds a data's field by name and returns it's type and value as a 2-element an array.
-  // If not found, returns an array of [ undefined, undefined ] 
+  // If not found, returns an array of [ undefined, undefined ]
   get_field: function(name) {
     var i = _.indexOf(this.get('names'), name);
     if ( i == -1 ) { return [ void 0, void 0 ] };
@@ -690,20 +679,20 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
     if ( i == -1 ) { return void 0 };
     var datatypes = this.get('datatypes');
     return datatypes[i];
-  },  
+  },
 
   get_field_value: function(attr_name) {
     var i, value, values;
 
     i = _.indexOf(this.get('names'), attr_name);
     if ( i == -1 ) { return void 0 };
-    
+
     values = this.get('values');
-    
+
     switch ( this.get_field_type(attr_name) ) {
       case "array":
         value = JSONparseNested(values[i]);
-        break; 
+        break;
       case "json":
         value = convertFalses(JSONparseNested(values[i]));
         break;
@@ -712,7 +701,7 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
         break;
       default:
         value = values[i];
-    };    
+    };
 
     return value;
 
@@ -723,13 +712,13 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
   // Returns false if the field was not found
   remove_field: function(name) {
     var removed = [],
-        names = this.get('names'), 
-        datatypes = this.get('datatypes'), 
+        names = this.get('names'),
+        datatypes = this.get('datatypes'),
         values = this.get('values'),
         i = _.indexOf(names, name);
-    
+
     if ( i == -1 ) { return false };
-    
+
     //Splice out an array value:
     _.each([names, datatypes, values], function(a, index) {
       removed[index] = a.splice(i, 1);
@@ -748,13 +737,13 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   // set_field
   // Mimicks the behavior of Backbone's "model.set" for a data field.
-  // If the model has a validate method, it will be validated before 
-  // the attributes are set; No changes will occur if the validation fails, 
-  // and set will return false. 
+  // If the model has a validate method, it will be validated before
+  // the attributes are set; No changes will occur if the validation fails,
+  // and set will return false.
   // Otherwise, set returns a reference to the model.
   set_field: function(name, type, value, options) {
-    var names = this.get('names'), 
-        datatypes = this.get('datatypes'), 
+    var names = this.get('names'),
+        datatypes = this.get('datatypes'),
         values = this.get('values'),
         field_index = _.indexOf(names, name);
 
@@ -763,16 +752,16 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
         case "array":
           //TO FIX: this is a quick momentary hack we need to fix.
           value = value;
-          break; 
+          break;
         case "json":
           value = JSON.stringify(value);
           break;
         default:
           value = value.toString();
-      };    
+      };
     };
 
-    if ( field_index == -1 ) { 
+    if ( field_index == -1 ) {
       names.push(name);
       datatypes.push(type);
       values.push(value);
@@ -795,28 +784,28 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   //  The URL to which this data should post.
   urlRoot: function() {
-    return  this.server_url() + 
-            "/data/groups/" + this.get('group_id') + 
-            "/users/" + this.get('user_id') + 
+    return  this.server_url() +
+            "/data/groups/" + this.get('group_id') +
+            "/users/" + this.get('user_id') +
             "/xelements/" + this.get('xelement_id');
   }
 
 });
 
 // GroupWide Data
-// 
-// expects: 
+//
+// expects:
 //  - an xelement_id attribute
 //  - a  group_id attribute
-// 
+//
 // optional
 // - a server_url attribute (defaults to Dynamo.TriremeURL)
-// 
-// Although data is stored in collections by user, at the site level, some data may be important to 
-// display based upon all contributions from the group.  For example, a comment thread is data submitted 
-// across all the users in the group.  It matters not as much the set of comments that a user submitted, 
+//
+// Although data is stored in collections by user, at the site level, some data may be important to
+// display based upon all contributions from the group.  For example, a comment thread is data submitted
+// across all the users in the group.  It matters not as much the set of comments that a user submitted,
 // but rather the set of comments that belong to a particular object.
-// 
+//
 // so, the GroupWideData model was created to house data that belongs to a particular object
 // across all the users in a particular group.
 GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
@@ -827,10 +816,10 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
     // if ( !this.get('server_url')    ) { throw new Error("no server_url");   };
     if ( !this.get('xelement_id')   ) { throw new Error("no xelement_id");  };
-    if ( !this.get('group_id')      ) { throw new Error("no group_id");     }; 
+    if ( !this.get('group_id')      ) { throw new Error("no group_id");     };
 
     this.group = USER_GROUPS.get( this.get('group_id') );
-    if (!this.group) { throw new Error( "no group found for group_id:"+this.get('group_id') ) }; 
+    if (!this.group) { throw new Error( "no group found for group_id:"+this.get('group_id') ) };
 
     this.buildUserCollections();
 
@@ -847,7 +836,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     this.collections = [];
     this.group.users.each(function(user) {
 
-      var classProps = _.extend({ 
+      var classProps = _.extend({
           xelement_id: self.get('xelement_id'),
           user_id: user.id,
           group_id: self.get('group_id')
@@ -875,7 +864,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   forUser: function(user_id) {
     return _.find(this.collections, function(ud_collection) {
-      return (ud_collection.user_id() == user_id)       
+      return (ud_collection.user_id() == user_id)
     });
   },
 
@@ -890,8 +879,8 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   perUser: function(perUserCollectionFn, classProps) {
     var result = _.chain(this.collections)
-                  .map(function(collection) { 
-                    var val = perUserCollectionFn(collection) 
+                  .map(function(collection) {
+                    var val = perUserCollectionFn(collection)
                     if (_.isFunction(val)) {
                       console.warn("perUser returning a function, NOT a value - possible typo?");
                     };
@@ -939,7 +928,7 @@ Dynamo.TempData = Dynamo.Data.extend({
   prettyName: 'Data',
 
   sync: PseudoSync
-  
+
 });
 
 
@@ -956,7 +945,7 @@ Dynamo.typeToModelClass = function(xelement_type) {
       break;
     case 'static_html': case 'slide':
       return Dynamo.SlideModel;
-      break;            
+      break;
     default:
       throw "undefined class for xelement_type '"+xelement_type+"'";
   };
