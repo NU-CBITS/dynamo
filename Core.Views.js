@@ -106,6 +106,8 @@ function HTMLizeJSON(obj) {
 }
 
 
+
+
 // 
 // Fundamental Type Views
 // 
@@ -167,6 +169,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   return showArrayView
 
 }) ();
+
 
 /**************************************
 //

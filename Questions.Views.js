@@ -585,8 +585,8 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
     // You can pass in a data object,
     if (this.options.userResponseData) {
       this.userResponseData = this.options.userResponseData;
-      
-      this.questionResponses = new DataCollection(null, {
+            
+      this.questionResponses = new Dynamo.DataCollection(null, {
         server_url: this.userResponseData.get('server_url'),
         user_id: this.userResponseData.get('user_id'),
         group_id: this.userResponseData.get('group_id')
@@ -616,7 +616,7 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
     };
 
     //or do neither and not actually store data
-    console.warn("TakeAssessmentView: Insufficient options passed to Data actually save data");
+    console.warn("TakeAssessmentView: Insufficient options passed to actually save data");
     alert("Warning: Entered data is not being saved!");
 
     this.userResponseData = new Dynamo.TempData();
@@ -644,16 +644,20 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
   attributes: { class: "Assessment" },
 
   events: {
+
     "click div.assessment.navigation button.previous" : "showPrevious",
     "click div.assessment.navigation button.next"     : "showNext",
     "click div.assessment.navigation button.finish"   : "finishAssessment"
+    
   },
 
   finishAssessment: function() {
-    var self = this;
-    self.$el.empty();
+
+    this.current_index = 0;
+    this.$el.empty();
     this.saveSaveableModel();
-    self.trigger('finished');
+    this.trigger('finished');
+
   },
 
   remove: function() {
@@ -834,21 +838,26 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
     this.current_question = this.presentedQuestions.at(this.current_index);
     this.current_response = this.questionResponses.at(this.current_index);
 
+    debugger;
+
     this.current_response.on('change', this.updateUserResponseData);
 
     if (!this._initialRender) { this.initialRender() };
 
-    this.currentQuestionView = null; //BSTS: Avoid memory leak (i think) -gs;
+    if (this.currentQuestionView) { this.currentQuestionView.remove() }; //Avoid zombies -gs;
     this.currentQuestionView = new Dynamo.showQuestionView({
       model: this.current_question,
       userResponseModel: this.current_response
     });
+    this.currentQuestionView.on("rendered", function() { self.trigger("current_question:rendered") });
 
     var $questions = this.$el.children('div#current-question:first');
     $questions.empty().append(this.currentQuestionView.render().$el);
     this.currentQuestionView.render();
-    $('select,input,textarea', this.el).on('change', this.saveSaveableModel);
 
+    this.currentQuestionView.on("response:chosen", this.saveSaveableModel );
+
+    return this;
   }
 
 });
@@ -1015,6 +1024,7 @@ showQuestionView = Dynamo.showQuestionView = protoQuestionView.extend({
     this.$el.find('div.instructions:first').html(this.model.metaContent.get('instructions'));
     this.$el.find('.content:first').html(this.model.get_field_value('content'));
     // Do not worry about subView rendering; they can re-render themselves as necessary.
+    this.trigger("rendered");
     return this;
   }
 
@@ -1105,10 +1115,10 @@ showResponseView = srvWithChevrons.extend({
     var self, view_class, view_options;
     self = this;
 
-    //Fetch the View Class for this type of response:
+    //  Fetch the View Class for this type of response:
     view_class = viewClassForInputType( self.model.get('responseType') );
 
-    //Build the appropriate options to pass into this view on instantiation:
+    //  Build the appropriate options to pass into this view on instantiation:
     view_options = this.model.pick( view_class.optionsAttributes ) //pick method in Dynamo core.
     view_options.getValue = function() {
       return self.userResponseModel.get_field_value(self.model.get('name'));
@@ -1120,7 +1130,7 @@ showResponseView = srvWithChevrons.extend({
     };
     view_options.form_id = this.cid;
 
-    //Instantiate and render
+    //  Instantiate and render
     this.internal_view = null; //BSTS: Avoid circ-ref memory leak (i think) -gs;
     this.internal_view = new view_class(view_options);
     this.$el.html(this.internal_view.$el);
