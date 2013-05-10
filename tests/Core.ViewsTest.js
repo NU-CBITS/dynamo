@@ -238,4 +238,67 @@ describe("Core.Views", function() {
       })
     })
   })
+
+  describe("Dynamo.ManageCollectionView", function() {
+    var viewOptions;
+    var view;
+    var TestView = Backbone.View.extend({
+      render: function() {
+        this.$el.html(this.model.get("title"));
+      }
+    });
+    var TestEditView = Backbone.View.extend({
+      render: function() {
+        this.$el.html("<input type='text' value='" + this.model.get("title") + "'>");
+      }
+    });
+
+    function renderView(options) {
+      view = new Dynamo.ManageCollectionView(options || viewOptions);
+      view.render();
+    }
+
+    beforeEach(function() {
+      var collection = new Backbone.Collection([
+        { title: "Doc" },
+        { title: "Sleepy" }
+      ]);
+      collection.codeModelName = function() { return "Sprocket"; };
+      collection.prettyModelName = function() { return "Sprocket"; };
+      viewOptions = {
+        el: "#sandbox",
+        collection: collection,
+        viewClass: TestView,
+        editViewClass: TestEditView,
+        display: {
+          show: true,
+          edit: true,
+          create: true,
+          del: true
+        }
+      };
+    })
+
+    it("should wire up the addNewHandler", function(done) {
+      viewOptions.addNewHandler = function() { done() };
+      renderView(viewOptions);
+      $("button.add-new-Sprocket:first").trigger("click");
+    })
+
+    it("should wire up the addExistingHandler", function(done) {
+      viewOptions.enableAddExisting = true;
+      viewOptions.addExistingHandler = function() { done() };
+      renderView(viewOptions);
+      $("button.add-existing-Sprocket:first").trigger("click");
+    })
+
+    it("should enable element deletion", function() {
+      renderView();
+      var elementCount = $(".elements .element").length;
+      var modelCount = view.collection.length;
+      $("button.delete.Sprocket:first").trigger("click");
+      assert.equal(elementCount - 1, $(".elements .element").length);
+      assert.equal(modelCount - 1, view.collection.length);
+    })
+  })
 })
