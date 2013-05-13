@@ -318,4 +318,24 @@ describe("Core.Views", function() {
       view.render();
     })
   })
+
+  describe("Dynamo.EditGroupView", function() {
+    beforeEach(function() {
+      sinon.stub(Dynamo, "ManageCollectionView", function() { return new Backbone.View() });
+    })
+
+    afterEach(function() {
+      Dynamo.ManageCollectionView.restore();
+    })
+
+    it("should pass a smoke test", function() {
+      var model = new Backbone.Model();
+      model.toFormValues = function() { return null };
+      var view = new Dynamo.EditGroupView({
+        model: model,
+        template: "<div></div>"
+      });
+      view.render();
+    })
+  })
 })
