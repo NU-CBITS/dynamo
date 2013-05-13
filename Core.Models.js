@@ -812,7 +812,8 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   initialize: function(attributes, options) {
     _.bindAll(this);
-    var self = this;
+    var self = this,
+        options = options || {};
 
     this.groupsCln = options.groups || USER_GROUPS;
 
