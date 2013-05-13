@@ -1,6 +1,16 @@
 TestFixtures.XELEMENT_BASE();
+var USER_GROUPS;
 
 describe("Core.Models", function() {
+  describe("Dynamo.User", function() {
+    describe("#get_field_value", function() {
+      it("should return the attribute", function() {
+        var user = new Dynamo.User({ meter: "iambic pentameter" });
+        assert.equal("iambic pentameter", user.get_field_value("meter"));
+      })
+    })
+  })
+
   describe("Dynamo.Group", function() {
     function MockUser(id) {
       return new Backbone.Model({ id: id });
@@ -37,6 +47,138 @@ describe("Core.Models", function() {
 
       it("should return other attributes raw", function() {
         assert.equal("bar", group.formVal("stuff").foo);
+      })
+    })
+  })
+
+  describe("Dynamo.Data", function() {
+    function modelAttrs() {
+      return {
+        created_at: 1368024806488,
+        user_id: "Alf",
+        names: ["color"],
+        datatypes: ["string"],
+        values: ["fuschia"]
+      };
+    }
+
+    function createData(attrs) {
+      return new Dynamo.Data(attrs || modelAttrs());
+    }
+
+    describe("#get_fields_as_object", function() {
+      it("should return the fields", function() {
+        var data = createData();
+        var o = data.get_fields_as_object();
+        assert.equal(1368024806488, o.created_at.valueOf());
+        assert.equal("Alf", o.user_id);
+      })
+    })
+
+    describe("#get_field", function() {
+      describe("when the field name is not found", function() {
+        it("should return an array of undefineds", function() {
+          var data = createData();
+          assert.isUndefined(data.get_field("baz")[0]);
+        })
+      })
+
+      describe("when the field name is found", function() {
+        it("should return an array with the type and value", function() {
+          var data = createData();
+          assert.deepEqual(["string", "fuschia"], data.get_field("color"));
+        })
+      })
+    })
+
+    describe("#get_field_value", function() {
+      describe("when the field name is not found", function() {
+        it("should return undefined", function() {
+          var data = createData();
+          assert.isUndefined(data.get_field_value("baz"));
+        })
+      })
+
+      describe("when the field name is found", function() {
+        it("should return the value", function() {
+          var data = createData();
+          assert.equal("fuschia", data.get_field_value("color"));
+        })
+      })
+    })
+
+    describe("#remove_field", function() {
+      describe("when the field name is not found", function() {
+        it("should return false", function() {
+          var data = createData();
+          assert.isFalse(data.remove_field("baz"));
+        })
+      })
+
+      describe("when the field name is found", function() {
+        it("should return the value removed", function() {
+          var data = createData();
+          assert.deepEqual([["color"], ["string"], ["fuschia"]], data.remove_field("color"));
+        })
+      })
+    })
+
+    describe("#set_field", function() {
+      describe("when the field name is not found", function() {
+        it("should add the field", function() {
+          var data = createData();
+          data.set_field("scent", "string", "geranium");
+          assert.deepEqual(["color", "scent"], data.get("names"));
+          assert.deepEqual(["string", "string"], data.get("datatypes"));
+          assert.deepEqual(["fuschia", "geranium"], data.get("values"));
+        })
+      })
+
+      describe("when the field name is found", function() {
+        it("should update the field", function() {
+          var data = createData();
+          data.set_field("color", "array", ["blue", "green"]);
+          assert.deepEqual(["color"], data.get("names"));
+          assert.deepEqual(["array"], data.get("datatypes"));
+          assert.deepEqual([["blue", "green"]], data.get("values"));
+        })
+      })
+
+      describe("when the silent option is false", function(done) {
+        it("should trigger a change event", function() {
+          var data = createData();
+          data.on("change:color", done);
+          data.set_field("color", "string", "periwinkle", { silent: false });
+        })
+      })
+    })
+  })
+
+  describe("Dynamo.GroupWideData", function() {
+    function createData() {
+      var users = new Backbone.Collection([{ id: 1 }]);
+      var group = new Backbone.Model({ id: 456 });
+      group.users = users;
+      USER_GROUPS = new Backbone.Collection([group]);
+      return new Dynamo.GroupWideData({
+        xelement_id: 123,
+        group_id: 456
+      });
+    }
+
+    describe("#forUser", function() {
+      it("should return the user by passing a user_id", function() {
+        var data = createData();
+        assert.equal(1, data.forUser(1).user_id());
+      })
+    })
+
+    describe("#perUser", function() {
+      it("should return a Backbone Collection containing the mapped results", function() {
+        var data = createData();
+        function fn(userCollection) { return { id: "fn-" + userCollection.user_id() } }
+        assert.isDefined(data.perUser(fn).get("fn-1"));
+        assert.isNotNull(data.perUser(fn).get("fn-1"));
       })
     })
   })

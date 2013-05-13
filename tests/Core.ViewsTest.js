@@ -241,7 +241,6 @@ describe("Core.Views", function() {
 
   describe("Dynamo.ManageCollectionView", function() {
     var viewOptions;
-    var view;
     var TestView = Backbone.View.extend({
       render: function() {
         this.$el.html(this.model.get("title"));
@@ -254,8 +253,8 @@ describe("Core.Views", function() {
     });
 
     function renderView(options) {
-      view = new Dynamo.ManageCollectionView(options || viewOptions);
-      view.render();
+      var view = new Dynamo.ManageCollectionView(options || viewOptions);
+      return view.render();
     }
 
     beforeEach(function() {
@@ -293,12 +292,50 @@ describe("Core.Views", function() {
     })
 
     it("should enable element deletion", function() {
-      renderView();
+      var view = renderView();
       var elementCount = $(".elements .element").length;
       var modelCount = view.collection.length;
       $("button.delete.Sprocket:first").trigger("click");
       assert.equal(elementCount - 1, $(".elements .element").length);
       assert.equal(modelCount - 1, view.collection.length);
+    })
+  })
+
+  describe("Dynamo.ShowGroupView", function() {
+    beforeEach(function() {
+      sinon.stub(Dynamo, "ManageCollectionView", function() { return new Backbone.View() });
+    })
+
+    afterEach(function() {
+      Dynamo.ManageCollectionView.restore();
+    })
+
+    it("should pass a smoke test", function() {
+      var view = new Dynamo.ShowGroupView({
+        model: new Backbone.Model(),
+        template: "<div></div>"
+      });
+      view.render();
+    })
+  })
+
+  describe("Dynamo.EditGroupView", function() {
+    beforeEach(function() {
+      sinon.stub(Dynamo, "ManageCollectionView", function() { return new Backbone.View() });
+    })
+
+    afterEach(function() {
+      Dynamo.ManageCollectionView.restore();
+    })
+
+    it("should pass a smoke test", function() {
+      var model = new Backbone.Model();
+      model.toFormValues = function() { return null };
+      var view = new Dynamo.EditGroupView({
+        model: model,
+        template: "<div></div>"
+      });
+      view.render();
     })
   })
 })
