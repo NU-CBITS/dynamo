@@ -1,6 +1,15 @@
 TestFixtures.XELEMENT_BASE();
 
 describe("Core.Models", function() {
+  describe("Dynamo.User", function() {
+    describe("#get_field_value", function() {
+      it("should return the attribute", function() {
+        var user = new Dynamo.User({ meter: "iambic pentameter" });
+        assert.equal("iambic pentameter", user.get_field_value("meter"));
+      })
+    })
+  })
+
   describe("Dynamo.Group", function() {
     function MockUser(id) {
       return new Backbone.Model({ id: id });
