@@ -1,4 +1,5 @@
 TestFixtures.XELEMENT_BASE();
+var USER_GROUPS;
 
 describe("Core.Models", function() {
   describe("Dynamo.User", function() {
@@ -149,6 +150,35 @@ describe("Core.Models", function() {
           data.on("change:color", done);
           data.set_field("color", "string", "periwinkle", { silent: false });
         })
+      })
+    })
+  })
+
+  describe("Dynamo.GroupWideData", function() {
+    function createData() {
+      var users = new Backbone.Collection([{ id: 1 }]);
+      var group = new Backbone.Model({ id: 456 });
+      group.users = users;
+      USER_GROUPS = new Backbone.Collection([group]);
+      return new Dynamo.GroupWideData({
+        xelement_id: 123,
+        group_id: 456
+      });
+    }
+
+    describe("#forUser", function() {
+      it("should return the user by passing a user_id", function() {
+        var data = createData();
+        assert.equal(1, data.forUser(1).user_id());
+      })
+    })
+
+    describe("#perUser", function() {
+      it("should return a Backbone Collection containing the mapped results", function() {
+        var data = createData();
+        function fn(userCollection) { return { id: "fn-" + userCollection.user_id() } }
+        assert.isDefined(data.perUser(fn).get("fn-1"));
+        assert.isNotNull(data.perUser(fn).get("fn-1"));
       })
     })
   })
