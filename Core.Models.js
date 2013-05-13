@@ -810,20 +810,42 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 // across all the users in a particular group.
 GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
-  initialize: function() {
+  initialize: function(attributes, options) {
     _.bindAll(this);
     var self = this;
+
+    this.groupsCln = options.groups || USER_GROUPS;
 
     // if ( !this.get('server_url')    ) { throw new Error("no server_url");   };
     if ( !this.get('xelement_id')   ) { throw new Error("no xelement_id");  };
     if ( !this.get('group_id')      ) { throw new Error("no group_id");     };
 
-    this.group = USER_GROUPS.get( this.get('group_id') );
+    this.group = this.groupsCln.get( this.get('group_id') );
     if (!this.group) { throw new Error( "no group found for group_id:"+this.get('group_id') ) };
 
     this.buildUserCollections();
 
     return true;
+  },
+
+  attributeNames: function() {
+    var self = this;
+
+    if (self._attributeNames !== void 0) {
+      return self._attributeNames;
+    };
+
+    self._attributeNames = null;
+
+    _.each(self.collections, function(c) {
+      if (!self._attributeNames) {
+        if (c.length > 0) {
+          self._attributeNames = c.last().get("names");
+        }
+      }
+    });
+
+    return self._attributeNames
   },
 
   add: function(modelToAdd) {
