@@ -1238,14 +1238,14 @@ Dynamo.ShowGroupView = Dynamo.BaseUnitaryXelementView.extend({
     console.log('-> ShowGroupView render');
 
     self = this;
-    self.$el.html( self.template({
+    self.$el.html( self._template({
         position: this.position,
         group: this.model.toJSON()
       })
     );
 
     if (!self.usersView) {
-      $groups = this.$el.find('div.groups:first');
+      var $groups = this.$el.find('div.groups:first');
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
         enableAddExisting: true,
