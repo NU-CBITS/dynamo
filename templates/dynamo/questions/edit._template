@@ -1,0 +1,23 @@
+<div class="widget-header navbar" style="margin-bottom: 0px;">
+  <h3>(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
+
+  <ul class="nav pull-right accordion-header">
+    <li>
+      <h3 class="pull-right label save_status (%= current_save_state %)">(%= current_save_text %)</h3>
+    </li>
+    <li class="caret-icons"> <!-- <a><i class="icon-caret-right"></i></a> --> </li>
+  </ul>
+</div>
+
+<div class="widget-content">
+  <label>Name</label> <!-- upper most level of question name -->
+  <input class="title editable" style="width:90%;" type="text" placeholder="Type how you will refer to this question here..."/>
+
+  <div class="instructions"></div>
+
+  <div class="content"></div>
+
+  <h3>Responses:</h3>
+
+  <div class="responseGroup"></div>
+</div>

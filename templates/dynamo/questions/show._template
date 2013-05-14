@@ -1,0 +1,11 @@
+<div class="widget-header">
+  (% if (position) { print( t.h3(position+".", {class: "position"}) ); }; %)
+</div>
+
+<div class="widget-content">
+  <div class="instructions"></div>
+
+  <div class="content"></div>
+
+  <div class="responseGroup"></div>
+</div>
