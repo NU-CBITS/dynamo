@@ -32,7 +32,7 @@ describe("Core", function() {
       })
 
       describe("when there is a stored user", function() {
-        describe("and there is not a user collection", function() {
+        describe("and there is no global 'USERS' collection of users", function() {
           before(function() {
             localStorage.setItem("CurrentUser", JSON.stringify(user.toJSON()));
           })
@@ -42,18 +42,51 @@ describe("Core", function() {
           })
         })
 
-        describe("and there is a global USERS collection of users", function() { //would consider eliminating this global.
+        describe("and there is a global 'USERS' collection of users", function() { //would consider eliminating this global.
           var otherUser = TestUser();
 
-          before(function() {
-            localStorage.setItem("CurrentUser", JSON.stringify(user.toJSON()));
-            otherUser.set("guid", user.get("guid"));
-            USERS = new Dynamo.UserCollection([otherUser]);
+          describe("and the stored user is in USERS", function() {
+
+            before(function() {
+              localStorage.setItem("CurrentUser", JSON.stringify(user.toJSON()));
+              otherUser.set("guid", user.get("guid"));
+              USERS = new Dynamo.UserCollection([otherUser]);
+            })
+
+            it("should return the user from USERS", function() {
+              assert.equal(otherUser.guid, Dynamo.CurrentUser().guid);
+            })
+
           })
 
-          it("should return the user from the collection", function() {
-            assert.equal(otherUser.guid, Dynamo.CurrentUser().guid);
-          })
+          describe("and the stored user is not in USERS", function() {
+
+            before(function() {
+              localStorage.setItem("CurrentUser", JSON.stringify(user.toJSON()));
+              otherUser.set("guid", "NOT-THE-STORED-GUID");
+              USERS = new Dynamo.UserCollection([otherUser]);
+            })
+
+            //Don't know if stubbing window.location.href will work...?
+            beforeEach(function() {
+              sinon.stub(window.location, "href", function(fileName) { return fileName });
+            })
+
+            afterEach(function() {
+              window.location.href.restore();
+            })            
+            
+            //Mind writing these two, Eric? you'll do it faster than I will. -gs.
+            it("should throw an alert", function() {
+
+            });
+
+            it("should redirect the browser to the login page", function() {
+
+            }); 
+
+          });
+        
         })
       })
 

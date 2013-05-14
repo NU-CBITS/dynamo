@@ -167,14 +167,14 @@ describe("Core.Models", function() {
     }
 
     describe("#forUser", function() {
-      it("should return the user by passing a user_id", function() {
+      it("should return a user's data collection when passed a user_id", function() {
         var data = createData();
         assert.equal(1, data.forUser(1).user_id());
       })
     })
 
     describe("#perUser", function() {
-      it("should return a Backbone Collection containing the mapped results", function() {
+      it("should return a new Backbone Collection containing the results the mapped results across users", function() {
         var data = createData();
         function fn(userCollection) { return { id: "fn-" + userCollection.user_id() } }
         assert.isDefined(data.perUser(fn).get("fn-1"));
@@ -187,7 +187,7 @@ describe("Core.Models", function() {
     var MyXelement = Backbone.Model.extend(_.extend({}, Dynamo.XelementRoot, {}));
 
     describe(".defaultsFor", function() {
-      it("should return defaults", function() {
+      it("should return the defaults specified for the given xelement_type", function() {
         var d = (new MyXelement()).defaultsFor("app");
         assert.equal("new app", d.title);
         assert.equal("app", d.xelement_type);

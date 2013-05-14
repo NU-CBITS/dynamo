@@ -12,7 +12,7 @@ describe("Core.Views", function() {
   })
 
   afterEach(function() {
-    $("body > #sandbox").remove();
+    $("body > div#sandbox").remove();
   })
 
   describe("Dynamo.ShowXelementSimpleView", function() {
@@ -23,7 +23,7 @@ describe("Core.Views", function() {
       var model = new Dynamo.UnitaryXelement(attrs);
       var view = new Dynamo.ShowXelementSimpleView({
         model: model,
-        el: "#sandbox",
+        el: "div#sandbox",
         atts_to_display: ["cats", "recipe", "hammerTime", "quotation"]
       });
       view.render();
@@ -40,9 +40,9 @@ describe("Core.Views", function() {
     var view;
 
     beforeEach(function() {
-      $("#sandbox").append("<div class='array-view'></div>");
+      $("div#sandbox").append("<div class='array-view'></div>");
       view = new Dynamo.ShowArrayView({
-        container: "#sandbox",
+        container: "div#sandbox",
         elementTemplate: "<div class='item'>(%= item %)</div>",
         contentWhenEmpty: "The dark side"
       });
@@ -62,10 +62,13 @@ describe("Core.Views", function() {
 
     it("should add the onElementClick listener to each el with class item", function(done) {
       // wrapping done in anon fn b/c it doesn't like being called w/ non-err args
-      view.onElementClick = function() { done() };
+      view.onElementClick = function(clickEvent) {  
+        //would like to assert something about the argument here.
+        done() 
+      };
       view.getArrayFn = function() { return ["Han Solo"] };
       view.render();
-      $(".array-view > .item").trigger("click");
+      $("div.array-view > .item").trigger("click");
     })
   })
 
@@ -84,7 +87,7 @@ describe("Core.Views", function() {
     })
 
     it("renders", function() {
-      assert.equal(1, $("#sandbox .ui-slider").length)
+      assert.equal(1, $("div#sandbox .ui-slider").length)
     })
   })
 
@@ -106,7 +109,7 @@ describe("Core.Views", function() {
       ]);
       collection.prettyModelName = function() { return "Family Member"; };
       viewOptions = {
-        el: "#sandbox",
+        el: "div#sandbox",
         collection: collection,
         collection_name: "The Lannisters"
       }
@@ -120,12 +123,14 @@ describe("Core.Views", function() {
 
     it("should trigger an event by default when a button is selected", function(done) {
       renderView();
-      view.on("element:chosen", done);
+      //Refactor to have the arg passed to the function be the chosen element as discussed.
+      view.on("element:chosen", done);  
       $("label.radio:first input").trigger("click");
       view.off("element:chosen");
     })
 
     it("should call onChoose when defined and a button is selected", function(done) {
+      //assert that onChoose method's var is the chosen element.
       viewOptions.onChoose = function() { done() };
       renderView(viewOptions);
       $("label.radio:first input").trigger("click");
@@ -144,7 +149,7 @@ describe("Core.Views", function() {
   describe("Dynamo.ShowUserView", function() {
     beforeEach(function() {
       var view = new Dynamo.ShowUserView({
-        el: "#sandbox",
+        el: "div#sandbox",
         model: new Backbone.Model({ username: "lola", guid: 123 })
       });
       view.render();
@@ -190,7 +195,7 @@ describe("Core.Views", function() {
       mockModel.set_field_values = function(object, options) {};
       view = new Dynamo.ModelBackoutView({
         model: mockModel,
-        el: "#sandbox",
+        el: "div#sandbox",
         knockoutTemplate: DIT["dynamo/activity_tracker/edit_event"],
         arrayDefaults: {},
         computedAtts: {
@@ -265,7 +270,7 @@ describe("Core.Views", function() {
       collection.codeModelName = function() { return "Sprocket"; };
       collection.prettyModelName = function() { return "Sprocket"; };
       viewOptions = {
-        el: "#sandbox",
+        el: "div#sandbox",
         collection: collection,
         viewClass: TestView,
         editViewClass: TestEditView,
