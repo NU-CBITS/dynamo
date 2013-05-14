@@ -3,7 +3,7 @@
 # Recursively searches the 'templates/' directory, reads in and minifies each template,
 # then writes it to the TEMPLATE_FILE as JavaScript.
 
-TEMPLATE_FILE = 'AppTemplates.js'
+TEMPLATE_FILE = '_templates.js'
 JS_TEMPLATE_OBJ = 'DIT'
 
 # Strip out whitespace indentation, newlines, and condense whitespace between tags.
