@@ -78,14 +78,22 @@ Dynamo.loginRequired = function() {
   return Dynamo._loginRequired;
 };
 
+Dynamo.changeLocation = function(newLocation) {
+  window.location.href = newLocation;
+};
+
+Dynamo.replaceLocation = function(newLocation) {
+  window.location.replace(newLocation);
+};
+
 Dynamo.redirectTo = function(fileName, options) {
   var path = location.pathname.split("/")
   path[path.length - 1] = fileName;
   if (options && options.as && options.as == "link") {
-    window.location.href = path.join("/")
+    Dynamo.changeLocation( path.join("/") );
   } else {
-    window.location.replace(path.join("/"))
-  };
+    Dynamo.replaceLocation( path.join("/") );
+  }
 };
 
 // Authenticating User

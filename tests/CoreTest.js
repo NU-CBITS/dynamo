@@ -67,13 +67,12 @@ describe("Core", function() {
               USERS = new Dynamo.UserCollection([otherUser]);
             })
 
-            //Don't know if stubbing window.location.href will work...?
             beforeEach(function() {
-              sinon.stub(window.location, "href", function(fileName) { return fileName });
+              sinon.stub(Dynamo, "replaceLocation", function(fileName) { return fileName });
             })
 
             afterEach(function() {
-              window.location.href.restore();
+              Dynamo.replaceLocation.restore();
             })            
             
             //Mind writing these two, Eric? you'll do it faster than I will. -gs.
