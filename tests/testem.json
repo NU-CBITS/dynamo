@@ -15,7 +15,7 @@
     "tests/Config.js",
     "Questions.Models.js",
     "Questions.Collections.js",
-    "AppTemplates.js",
+    "_templates.js",
     "tests/sinon-1.6.0.js",
     "tests/fixtures/UnitaryXelementAttributes.js",
     "tests/fixtures/XELEMENT_BASE.js",
