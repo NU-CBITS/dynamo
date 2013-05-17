@@ -540,7 +540,7 @@ Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
   
   events: {
 
-    "click div.assessment.navigation button.finish" : "finish"
+    "click div.navigation button#finish" : "finish"
 
   },
 
@@ -586,7 +586,7 @@ Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
     );
 
     // render questions
-    var $questions = this.$el.children('div#current-question:first');
+    var $questions = this.$el.children('div#questions');
     $questions.empty();
     this.questionViews = [];
     var self = this;
@@ -596,7 +596,7 @@ Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
         userResponseModel: self.userResponseData
       });
       $questions.append(qView.render().$el);
-      qView.on("response:chosen", self.saveSaveableModel );
+      qView.on("response:chosen", self.saveIfChanges );
       self.questionViews.push(qView);
     });
 

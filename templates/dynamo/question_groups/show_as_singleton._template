@@ -1,4 +1,4 @@
-<h1><span class="title">(%=title%)</span></h1>
+<h1><span class="title">(%= title %)</span></h1>
 
 (% if (typeof(directions) !== "undefined") { %)
 	<h2>Directions</h2>
@@ -18,5 +18,5 @@
 (% }; %)
 
 <div class="navigation">
-  <button class="btn finish"></button>
+  <button id="finish" class="btn">Finish</button>
 </div>
