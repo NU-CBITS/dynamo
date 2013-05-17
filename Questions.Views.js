@@ -517,6 +517,101 @@ editResponseValueView = Backbone.View.extend({
   }
 });
 
+// CompleteAssessmentAsSingleton
+// Allows a question group to be viewed and responded to by a user,
+// storing all the questions as part of a single data object.
+// 
+// Expects:
+// 1) a QuestionGroup as its model.
+// 2) userResponseData - 
+//      A Dynamo.Data object representing the user's already existing answers;
+//      if passed in, then the view will edit this set of answers as opposed to
+//      creating a new Data object to store.
+Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
+  
+  initialize: function() {
+
+    _.bindAll(this);
+    this.template = this.options.template || DIT["dynamo/question_groups/show_as_singleton"];
+    this.userResponseData = this.options.userResponseData;
+    this.initializeAsSaveable(this.userResponseData);
+
+  },
+  
+  events: {
+
+    "click div.assessment.navigation button.finish" : "finish"
+
+  },
+
+  finish: function() {
+
+    this.saveSaveableModel();
+    this.trigger('finished');
+
+  },
+
+  saveIfChanges: function() {
+
+    if  ( this.userResponseData.hasUnsavedChanges() ) {
+      this.saveSaveableModel();
+    }
+
+  },
+
+  _template: function(data, settings) {
+
+    if (!this.compiled_template) {
+      if (!this.template) { throw new Error("No valid template found") };
+      this.compiled_template = _.template(this.template);
+    };
+    return this.compiled_template(data, settings)
+
+  },  
+
+  initialRender: function() {
+
+    // render initial template
+    this.$el.html(
+      this._template({
+        title: this.model.get_field_value('title'),
+        start_content: null,
+        no_navigation: false,
+        next_button: { text : false },
+        previous_button: { text : false },
+        current_save_state: this.userResponseData.currentSaveState(),
+        current_save_text: this.userResponseData.currentSaveText(),
+        end_content: null
+      })
+    );
+
+    // render questions
+    var $questions = this.$el.children('div#current-question:first');
+    $questions.empty();
+    this.questionViews = [];
+    var self = this;
+    this.model.questions.each(function(question) {
+      var qView = new Dynamo.showQuestionView({
+        model: question,
+        userResponseModel: self.userResponseData
+      });
+      $questions.append(qView.render().$el);
+      qView.on("response:chosen", self.saveSaveableModel );
+      self.questionViews.push(qView);
+    });
+
+    this._initialRender = true;
+
+  },
+
+  render: function() {
+    var self = this;
+    if (!this._initialRender) { this.initialRender() };
+
+    return this;
+  }  
+
+});
 
 // TakeAssessmentView
 // Allows the question group to be viewed and responded to by a user, actually storing data.
@@ -838,8 +933,6 @@ TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend
     this.current_question = this.presentedQuestions.at(this.current_index);
     this.current_response = this.questionResponses.at(this.current_index);
 
-    debugger;
-
     this.current_response.on('change', this.updateUserResponseData);
 
     if (!this._initialRender) { this.initialRender() };
@@ -1031,17 +1124,15 @@ showQuestionView = Dynamo.showQuestionView = protoQuestionView.extend({
 });
 
 
-
-
-//showResponseView
-//On instantiation, this view expects:
-//1) a model of class Response from which it renders
-//2) a userResponseModel key whose value is
-//   expected to be a model onto which it will save
-//   a user's response as the value of
-//   the-attribute-of-that-model-with-the-name-of-
-//   the-name-of-this-response-object.
-//   (if not passed, it throws an error).
+//  showResponseView
+//    On instantiation, this view expects:
+//      1) a model of class Response from which it renders
+//      2) a userResponseModel key whose value is
+//         expected to be a model onto which it will save
+//         a user's response as the value of
+//         the-attribute-of-that-model-with-the-name-of-
+//         the-name-of-this-response-object.
+//         (if not passed, it throws an error).
 
 var opensAndClosesWithChevron = {
 

@@ -15,8 +15,10 @@ dynamo_dir = File.join(File.dirname(__FILE__), '..')
 File.open(File.join(dynamo_dir, TEMPLATE_FILE), 'w') do |f|
   f.write "#{JS_TEMPLATE_OBJ} = {};\n"
   template_dir = File.expand_path(File.join(dynamo_dir, 'templates'))
+  puts "Reading from #{template_dir}"
   Dir[File.join(template_dir, '**/*._template')].each do |t|
     path = t.gsub(/#{template_dir}\//, '').gsub(/\._template$/, '')
+    puts "writing "+t.split("/").last(2).to_s
     f.write "#{JS_TEMPLATE_OBJ}[\"#{path}\"] = '#{minify(IO.read(t))}';\n"
   end
 end

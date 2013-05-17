@@ -1,0 +1,22 @@
+<h1><span class="title">(%=title%)</span></h1>
+
+(% if (typeof(directions) !== "undefined") { %)
+	<h2>Directions</h2>
+	<div id="directions">
+	  (%= directions %)
+	</div>
+(% }; %)
+
+(% if (typeof(start_content) !== "undefined") { %)
+	<div class="start">(%= start_content %)</div>
+(% }; %)
+
+<div id="questions"></div>
+
+(% if (typeof(end_content) !== "undefined") { %)
+	<div class="end">(%= end_content %)</div>
+(% }; %)
+
+<div class="navigation">
+  <button class="btn finish"></button>
+</div>
