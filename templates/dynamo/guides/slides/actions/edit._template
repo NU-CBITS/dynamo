@@ -1,0 +1,28 @@
+<div class="action">
+  <span class="cell attribute"> (%= action.label %) </span>
+
+  <span class="cell attribute effect">
+    <select name="effect" class="input-small">
+    (% var selected_clause; _.each(actionsAvailable, function(effect_name) { ; %)
+      <option value="(%= effect_name %)" (% if (action.effect == effect_name) { %) selected="selected" (% } %)> (%= effect_name %) </option>
+    (% }); %)
+    </select>
+  </span>
+
+  <span class="cell attribute target">
+    <option (% if (!_.contains(actionTargets, action.target)) { %) selected="selected" (% }; %)> </option>
+    <select name="target">
+    (% _.each(actionTargets, function(selector) { %)
+      <option value="(%= selector %)" (% if (action.target == selector) { %) selected="selected" (% } %)>(%= selector %)</option>
+    (% }); %)
+    </select>
+  </span>
+
+  <span class="cell attribute duration">
+    <input class="input-small" type="text" name="duration" data-attribute-name="duration" value="(%= action.duration %)" /> ms
+  </span>
+
+  <span class="cell attribute action_attributes"> </span>
+
+  <span class="cell test-action btn"> (%= action.label %) </span>
+</div>

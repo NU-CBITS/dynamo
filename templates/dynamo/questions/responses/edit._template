@@ -1,0 +1,13 @@
+<!-- type of question select -->
+<div class="responseType attribute edit"></div>
+
+<!-- Name -->
+<div class="name attribute edit">
+  <label class="name_value"></label>
+</div>
+
+<!-- Label -->
+<div class="typeSpecificAttributesContainer"></div>
+
+<!-- future fields based on what type of specific attr container -->
+<div class="responseValuesContainer"></div>

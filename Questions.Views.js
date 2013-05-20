@@ -517,30 +517,131 @@ editResponseValueView = Backbone.View.extend({
   }
 });
 
+// CompleteAssessmentAsSingleton
+// Allows a question group to be viewed and responded to by a user,
+// storing all the questions as part of a single data object.
+// 
+// Expects:
+// 1) a QuestionGroup as its model.
+// 2) userResponseData - 
+//      A Dynamo.Data object representing the user's already existing answers;
+//      if passed in, then the view will edit this set of answers as opposed to
+//      creating a new Data object to store.
+Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
+  
+  initialize: function() {
+
+    _.bindAll(this);
+    this.template = this.options.template || DIT["dynamo/question_groups/show_as_singleton"];
+    this.userResponseData = this.options.userResponseData;
+    this.initializeAsSaveable(this.userResponseData);
+
+  },
+  
+  events: {
+
+    "click div.navigation button#finish" : "finish"
+
+  },
+
+  finish: function() {
+
+    this.saveSaveableModel();
+    this.trigger('finished');
+
+  },
+
+  saveIfChanges: function() {
+
+    if  ( this.userResponseData.hasUnsavedChanges() ) {
+      this.saveSaveableModel();
+    }
+
+  },
+
+  _template: function(data, settings) {
+
+    if (!this.compiled_template) {
+      if (!this.template) { throw new Error("No valid template found") };
+      this.compiled_template = _.template(this.template);
+    };
+    return this.compiled_template(data, settings)
+
+  },  
+
+  initialRender: function() {
+
+    // render initial template
+    this.$el.html(
+      this._template({
+        title: this.model.get_field_value('title'),
+        start_content: null,
+        no_navigation: false,
+        next_button: { text : false },
+        previous_button: { text : false },
+        current_save_state: this.userResponseData.currentSaveState(),
+        current_save_text: this.userResponseData.currentSaveText(),
+        end_content: null
+      })
+    );
+
+    // render questions
+    var $questions = this.$el.children('div#questions');
+    $questions.empty();
+    this.questionViews = [];
+    var self = this;
+    this.model.questions.each(function(question) {
+      var qView = new Dynamo.showQuestionView({
+        model: question,
+        userResponseModel: self.userResponseData
+      });
+      $questions.append(qView.render().$el);
+      qView.on("response:chosen", self.saveIfChanges );
+      self.questionViews.push(qView);
+    });
+
+    this._initialRender = true;
+
+  },
+
+  render: function() {
+    var self = this;
+    if (!this._initialRender) { this.initialRender() };
+
+    return this;
+  }  
+
+});
 
 // TakeAssessmentView
-//
+// Allows the question group to be viewed and responded to by a user, actually storing data.
+// to a Trireme endpoint.
+// 
+// Expects:
 // 1) Expects a QuestionGroup as its model.
 // 2) Expects a User model to be passed in as the 'responder' option.
 //
-// Allows the question group to be viewed and responded to by a user,
-// actually storing the data if necessary options are passed in
+// Optionally:
+// userResponseData - a Dynamo.Data object representing the user's already existing answers;
+//                    if passed in, then the view will edit this set of answers as opposed to
+//                    creating a new Data object to store.
 //
-// lays the groundwork for a Computer Adaptive Testing (CAT) algorithm
-// to be defined in a Question Group's metacontent.
 //
-// Defaults to a method which simply shows the next question based upon
-// the order of the questions as they are in the Question Group's 'questions' collection.
-TakeAssessmentView = Dynamo.SaveableModelView.extend({
+// Implementation currently has laid groundwork for a Computer Adaptive Testing (CAT) algorithm
+// to be defined in a Question Group's metacontent.  Without any sort of algo present, it simply defaults 
+// to a method which simply shows the next question based upon the order of the questions as they are 
+// in the Question Group's 'questions' collection.
+TakeAssessmentView = Dynamo.TakeAssessmentView = Dynamo.SaveableModelView.extend({
+  
   initialize: function() {
     _.bindAll(this);
 
-    this.template = this.options.template || templates.take_assessment;
+    this.template = this.options.template || DIT["dynamo/question_groups/show"];
 
-    //the user taking the assessment:
+    // The user taking the assessment:
     this.responder = this.options.responder;
 
-    //Organize questions, laying groundwork for CAT:
+    // Organize questions, laying groundwork for CAT:
     this.maximumNumberOfQuestions = this.model.questions.length
     this.unpresentedQuestions = new QuestionCollection(this.model.questions.models);
     this.presentedQuestions = new QuestionCollection();
@@ -565,25 +666,22 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
     this.current_index = 0;
     this.current_question = null;
 
-    //CAT groundwork related:
-    //define the function by which we will decide the next question shown;
-    //and choose an initial question to be presented.
-    //defaults to a function which simply shows the next question.
+    // CAT groundwork related:
+    // define the function by which we will decide the next question shown;
+    // and choose an initial question to be presented.
+    // defaults to a function which simply shows the next question.
     this.setSelectNextFunction();
     this.addToPresentedQuestions();
-
-    $('select,input,textarea', this.el).live('change', this.saveSaveableModel);
-    // setInterval(this.saveIfChanges, 2000);
 
   },
 
   initializeResponseData: function() {
 
-    //you can pass in a data object,
+    // You can pass in a data object,
     if (this.options.userResponseData) {
       this.userResponseData = this.options.userResponseData;
-      
-      this.questionResponses = new DataCollection(null, {
+            
+      this.questionResponses = new Dynamo.DataCollection(null, {
         server_url: this.userResponseData.get('server_url'),
         user_id: this.userResponseData.get('user_id'),
         group_id: this.userResponseData.get('group_id')
@@ -593,7 +691,7 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
 
     }
 
-    //or pass in sufficient options to define a new data object,
+    // or pass in sufficient options to define a new data object,
     if ( this.options.server_url && ( this.options.group_id ) ) {
 
       this.userResponseData = new Dynamo.Data ({
@@ -613,7 +711,7 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
     };
 
     //or do neither and not actually store data
-    console.warn("TakeAssessmentView: Insufficient options passed to Data actually save data");
+    console.warn("TakeAssessmentView: Insufficient options passed to actually save data");
     alert("Warning: Entered data is not being saved!");
 
     this.userResponseData = new Dynamo.TempData();
@@ -641,16 +739,20 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
   attributes: { class: "Assessment" },
 
   events: {
+
     "click div.assessment.navigation button.previous" : "showPrevious",
     "click div.assessment.navigation button.next"     : "showNext",
     "click div.assessment.navigation button.finish"   : "finishAssessment"
+    
   },
 
   finishAssessment: function() {
-    var self = this;
-    self.$el.empty();
+
+    this.current_index = 0;
+    this.$el.empty();
     this.saveSaveableModel();
-    self.trigger('finished');
+    this.trigger('finished');
+
   },
 
   remove: function() {
@@ -673,7 +775,7 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
       // Required b/c sometimes callback will be the click event,
       // and in that case, it will cause an error.
       if ( _.isFunction(callback) ) {
-        self.userResponseData.save(null, { success: callback, remote: SERVER_CONNECTIVITY.exists() });
+        self.userResponseData.save(null, { success: callback, remote: true });
       }
       else {
         self.userResponseData.save();
@@ -734,12 +836,12 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
   saveResponses: function(callback) {
     var self = this;
 
-    //only begin saving all responses
-    //if we're not in the process of doing so already...
+    //  only begin saving all responses
+    //  if we're not in the process of doing so already...
     if (self.numResponsesSaved === null) {
       console.log("AssesmentSaveCycle - saveResponses: BEGIN CYCLE ");
       self.numResponsesSaved = 0;
-      this.questionResponses.invoke('save', null, { success: function() { self.onResponseSaved(callback) }, remote: SERVER_CONNECTIVITY.exists() });
+      this.questionResponses.invoke('save', null, { success: function() { self.onResponseSaved(callback) }, remote: true });
     }
     else {
       console.log("AssesmentSaveCycle - saveResponses: numResponsesSaved !== null ");
@@ -835,15 +937,20 @@ TakeAssessmentView = Dynamo.SaveableModelView.extend({
 
     if (!this._initialRender) { this.initialRender() };
 
-    this.currentQuestionView = null; //BSTS: Avoid memory leak (i think) -gs;
-    this.currentQuestionView = new showQuestionView({
+    if (this.currentQuestionView) { this.currentQuestionView.remove() }; //Avoid zombies -gs;
+    this.currentQuestionView = new Dynamo.showQuestionView({
       model: this.current_question,
       userResponseModel: this.current_response
     });
+    this.currentQuestionView.on("rendered", function() { self.trigger("current_question:rendered") });
 
-    this.$el.children('div.question:first').html(this.currentQuestionView.$el);
+    var $questions = this.$el.children('div#current-question:first');
+    $questions.empty().append(this.currentQuestionView.render().$el);
     this.currentQuestionView.render();
 
+    this.currentQuestionView.on("response:chosen", this.saveSaveableModel );
+
+    return this;
   }
 
 });
@@ -909,13 +1016,13 @@ protoQuestionView = Dynamo.protoQuestionView = Dynamo.BaseUnitaryXelementView.ex
 //   a model onto which it saves
 //   a user's response to this question's responses.
 //   if this key is ommitted, it will create it's own.
-showQuestionView = protoQuestionView.extend({
+showQuestionView = Dynamo.showQuestionView = protoQuestionView.extend({
 
   initialize: function() {
 
     _.bindAll(this);
     _.extend(this, Backbone.Events);
-    this.cid = _.uniqueId('showQuestionView-');
+    this.cid = _.uniqueId('showQ-');
     this.subViews = [];
     this.position = this.options.position;
 
@@ -1010,23 +1117,22 @@ showQuestionView = protoQuestionView.extend({
     this.$el.find('div.instructions:first').html(this.model.metaContent.get('instructions'));
     this.$el.find('.content:first').html(this.model.get_field_value('content'));
     // Do not worry about subView rendering; they can re-render themselves as necessary.
+    this.trigger("rendered");
     return this;
   }
 
 });
 
 
-
-
-//showResponseView
-//On instantiation, this view expects:
-//1) a model of class Response from which it renders
-//2) a userResponseModel key whose value is
-//   expected to be a model onto which it will save
-//   a user's response as the value of
-//   the-attribute-of-that-model-with-the-name-of-
-//   the-name-of-this-response-object.
-//   (if not passed, it throws an error).
+//  showResponseView
+//    On instantiation, this view expects:
+//      1) a model of class Response from which it renders
+//      2) a userResponseModel key whose value is
+//         expected to be a model onto which it will save
+//         a user's response as the value of
+//         the-attribute-of-that-model-with-the-name-of-
+//         the-name-of-this-response-object.
+//         (if not passed, it throws an error).
 
 var opensAndClosesWithChevron = {
 
@@ -1100,10 +1206,10 @@ showResponseView = srvWithChevrons.extend({
     var self, view_class, view_options;
     self = this;
 
-    //Fetch the View Class for this type of response:
+    //  Fetch the View Class for this type of response:
     view_class = viewClassForInputType( self.model.get('responseType') );
 
-    //Build the appropriate options to pass into this view on instantiation:
+    //  Build the appropriate options to pass into this view on instantiation:
     view_options = this.model.pick( view_class.optionsAttributes ) //pick method in Dynamo core.
     view_options.getValue = function() {
       return self.userResponseModel.get_field_value(self.model.get('name'));
@@ -1115,7 +1221,7 @@ showResponseView = srvWithChevrons.extend({
     };
     view_options.form_id = this.cid;
 
-    //Instantiate and render
+    //  Instantiate and render
     this.internal_view = null; //BSTS: Avoid circ-ref memory leak (i think) -gs;
     this.internal_view = new view_class(view_options);
     this.$el.html(this.internal_view.$el);

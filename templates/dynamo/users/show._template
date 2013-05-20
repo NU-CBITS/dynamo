@@ -1,0 +1,3 @@
+<div class="user" data-position="(%= position %)">
+  <span class="attribute username">(%= user.username %)</span> <span class="attribute guid">((%= user.guid %))</span>
+</div>

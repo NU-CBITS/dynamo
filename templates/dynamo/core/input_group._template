@@ -1,0 +1,11 @@
+<div class="(%= type %)_group" id="(%= id %)">
+(% if (type == "select") { %)
+  (%= t.label(label) %)
+  <select name="(%= name %)"></select>
+(% }; %)
+
+(% if (type == "radio" || type == "checkbox") { %)
+  (% var numberOfOptions = 1 %)
+  (% _.each(options, function(o, index) { var html_atts = { name: name, value: o.value, numberOfOptions: numberOfOptions}; if (selected_value == o.value) { html_atts.checked = "checked" }; print( t.formInput(type, o.label, html_atts) ); numberOfOptions++ }); %)
+(% }; %)
+</div>

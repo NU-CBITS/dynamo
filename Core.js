@@ -15,7 +15,7 @@
 // Dynamo is split up into core files and domain-specific files.
 //
 // The Core Specifies a set of Backbone-based Models, Views, and Collections
-// for interaction with a Trireme-based Xelements-schema server endpoint as well as classes 
+// for interaction with a Trireme-based Xelements-schema server endpoint as well as classes
 // that handle the core xelements-schema classes of xelements, users, groups, and data.
 //
 // Domain-specific files specify a set of additional Model, View and Collection Backbone-based classes for Xelements
@@ -23,7 +23,7 @@
 // (ITLR: Users, Groups, Data as well? for the moment, unlikely.)
 //
 // Separating Dynamo into these two sections is part of a design that allows selection of
-// Dynamo 'core' attributes that can then later affect the definition of classes in the domain-specific files.  
+// Dynamo 'core' attributes that can then later affect the definition of classes in the domain-specific files.
 //
 // That is, the way that domain-specific classes operate can be altered based upon how Dynamo is configured after the
 // inclusion of Dynamo Core files.
@@ -36,17 +36,17 @@
 // <script type="text/javascript" src="JS/Dynamo/Dynamo.Core.Models.js"></script>
 // <script type="text/javascript" src="JS/Dynamo/Dynamo.Core.Collections.js"></script>
 // <script type="text/javascript" src="JS/Dynamo/Dynamo.Core.Views.js"></script>
-// <script>  
+// <script>
 //    Dynamo.XelementClass = Dynamo.UnitaryXelement; // Define the Xelement Model Class to be used in the mantle classes.
 // </script>
 //
 // Free to include additional domain-specific files, such as "Guides.Views"
 //
 
-// Due to the way that we initialize any Global Templates, 
+// Due to the way that we initialize any Global Templates,
 // We change underscore Template Settings!
 // We Define:
-// - an interpolate regex to match expressions that should be interpolated verbatim, 
+// - an interpolate regex to match expressions that should be interpolated verbatim,
 // - an escape regex to match expressions that should be inserted after being HTML escaped,
 // - an evaluate regex to match expressions that should be evaluated without insertion into the resulting string.
 
@@ -65,7 +65,7 @@ Dynamo.initialize = function(options) {
   Dynamo.loadTemplates(options);
 }
 
-// A page using dynamo can require that a 
+// A page using dynamo can require that a
 // user be logged in.
 Dynamo._loginRequired = false
 // require a log in by the user
@@ -78,14 +78,22 @@ Dynamo.loginRequired = function() {
   return Dynamo._loginRequired;
 };
 
+Dynamo.changeLocation = function(newLocation) {
+  window.location.href = newLocation;
+};
+
+Dynamo.replaceLocation = function(newLocation) {
+  window.location.replace(newLocation);
+};
+
 Dynamo.redirectTo = function(fileName, options) {
   var path = location.pathname.split("/")
   path[path.length - 1] = fileName;
   if (options && options.as && options.as == "link") {
-    window.location.href = path.join("/")
+    Dynamo.changeLocation( path.join("/") );
   } else {
-    window.location.replace(path.join("/"))  
-  };
+    Dynamo.replaceLocation( path.join("/") );
+  }
 };
 
 // Authenticating User
@@ -99,7 +107,7 @@ Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 // Function which returns the currently authenticated user,
 // or redirects to the login page.
 Dynamo.CurrentUser = function() {
-  
+
   // If already defined.
   if (Dynamo._CurrentUser) {
     return Dynamo._CurrentUser;
@@ -116,13 +124,13 @@ Dynamo.CurrentUser = function() {
 
   // If there's a param in local storage
   if ( localStorage.getItem("CurrentUser") ) {
-    
+
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
     //USERS is expected to be the globally defined and available of collection of users.
     if (typeof(USERS) !== "undefined") {
       Dynamo._CurrentUser = USERS.get(user_atts.guid);
 
-      // Having a CurrentUser Item in LS, but having it not be part of available users = 
+      // Having a CurrentUser Item in LS, but having it not be part of available users =
       // particular / uncommon situation more likely related to admins w/ different envs for same app;
       if (!Dynamo._CurrentUser) {
         localStorage.removeItem("CurrentUser");
@@ -158,7 +166,7 @@ Dynamo.CurrentUser = function() {
         localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
       }
     });
-    
+
     return Dynamo._CurrentUser;
   }
 
@@ -169,7 +177,7 @@ Dynamo.CurrentGroup = function() {
   if (typeof (USER_GROUPS) == "undefined") {
     new Error("CurrentGroupMembers expects a global variable, USER_GROUPS, which contains all available groups.")
   };
-  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) )  
+  return ( USER_GROUPS.get(Dynamo.CurrentUser().get('group_id') ) )
 }
 
 Dynamo.CurrentGroupMembers = function() {
@@ -182,7 +190,7 @@ Dynamo.CurrentGroupMembers = function() {
 // For interaction with phonegap; will return the phone's ID if it has one.
 Dynamo.deviceID = function() {
 
-  if ( (typeof(device) != "undefined") && _.isObject(device) && device.uuid) { 
+  if ( (typeof(device) != "undefined") && _.isObject(device) && device.uuid) {
     return device.uuid;
   }
   else {
@@ -219,12 +227,12 @@ Dynamo.isCoreStable = function() {
 // If we are currently on:
 //   http://www.somedomain.com/index.html
 // dynamo's templates.html are expected to be at:
-//   http://www.somedomain.com/dynamo/templates.html      
+//   http://www.somedomain.com/dynamo/templates.html
 // an application's templates are expected to be at:
 //   http://www.somedomain.com/app_templates.html
 Dynamo.loadTemplates = function(options) {
 
-  if (DIT) { 
+  if (DIT) {
     Dynamo.DIT = DIT;
     //If the DIT variable exists here, then it assumes you have defined DIT in a javascript file that defines all necessary templates;
     return;
@@ -237,7 +245,7 @@ Dynamo.loadTemplates = function(options) {
   if (!DIT) { //redirect.
 
     var path = window.location.href.split("/");
-        
+
     if (options && options.load_app_templates) {
 
       path[path.length - 1] = "app_templates.html";
@@ -246,7 +254,7 @@ Dynamo.loadTemplates = function(options) {
 
     }
     else {
-      
+
       localStorage.setItem("AFTER_DYNAMO_TEMPLATE_LOAD_URL", window.location.href);
 
     };
@@ -261,7 +269,7 @@ Dynamo.loadTemplates = function(options) {
       localStorage.removeItem("DYNAMO_TEMPLATES");
       localStorage.removeItem("APPLICATION_TEMPLATES");
     });
-    
+
     DIT = Dynamo.DIT = JSON.parse(DIT);
 
   };
@@ -276,7 +284,7 @@ Dynamo.loadAppTemplates = function() {
     window.location.href = templatesLocation;
   } else {
     $(window).on("unload", function() {
-      
+
     });
     DAT = JSON.parse(DAT);
   };
@@ -302,28 +310,17 @@ _.each(methods, function(method) {
 Dynamo._previousSync = Backbone.sync;
 
 Dynamo.AuthenticatedSync = function (method, model, options) {
-
   // Default options, unless specified.
   options || (options = {});
-  console.log("");
-  console.log("In AuthenticatedSync: ", method, model, options);
 
   // Ensure appropriate session variables for authentication.
   options.beforeSend = function(jqXHR, settings) {
-    console.log("In BeforeSend (jqXHR, settings):", jqXHR, settings);
-    var new_data;
-    if (!settings.url) {
-      console.warn("No settings.url in beforeSend??");
-    };
     settings.url = addSessionVarsToUrl(settings.url);
-    console.log("final URL: ", settings.url);
     if (settings.data) {
-      console.log("adding transmitted_at as data", settings.data);
-      new_data = JSON.parse(settings.data);
+      var new_data = JSON.parse(settings.data);
       new_data.transmitted_at = (new Date()).toString();
       settings.data = JSON.stringify(new_data);
     };
-    console.log("---------------");
   };
 
   return Dynamo._previousSync(method, model, options);
@@ -376,7 +373,7 @@ PseudoSync = function (method, model, options) {
       default:
         throw new Error("PsuedoSync: Unexpected value for argument, 'method': '"+method+"'");
     };
-}; 
+};
 
 
 // ************************************************
@@ -388,7 +385,7 @@ PseudoSync = function (method, model, options) {
 addQueryVarToUrl = function(name, value, url) {
   var new_url;
   new_url = url;
-  if (new_url.indexOf(name) === -1) {
+  if (new_url.search(new RegExp("(?:\\?|&)" + name + "=")) === -1) {
     if (new_url.indexOf("?") === -1) {
       new_url = new_url + "?";
     } else {

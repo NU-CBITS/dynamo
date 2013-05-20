@@ -9,15 +9,15 @@
 // ************************************************
 // GLOBAL TEMPLATES
 // ----------------
-// 
+//
 // Global templates are defined in templates.html
-// and are loaded on Dynamo.initialize into a Global object, DIT 
+// and are loaded on Dynamo.initialize into a Global object, DIT
 // (the acronym for the silly name, Dynamo Instant Templates);
 //
-// Each Dynamo view has a default template in templates.html 
+// Each Dynamo view has a default template in templates.html
 // for which the id of the template is the key in the DIT object.
 //
-// Instead of using the default template loaded into the DIT object 
+// Instead of using the default template loaded into the DIT object
 // from templates.html, users can pass in their own template as an option
 // to a view.
 // See Core.js and the loadTemplates function for deeper grokking.
@@ -106,19 +106,18 @@ function HTMLizeJSON(obj) {
 }
 
 
-// 
 // Fundamental Type Views
-// 
+//
 
 // showArrayView
 // a view (simplified in comparison to Backbone.View),
-// which will perform only the very core functions of rendering an Array (instead of a full Backbone.Model instance) 
+// which will perform only the very core functions of rendering an Array (instead of a full Backbone.Model instance)
 // requires the following options:
 // container: DOM element string identifier, inside of which showArrayView will render;
 // getArrayFn: function which, when called, will return the array to render
-// elementTemplate: underscore.js template string which will be passed each array element successively 
+// elementTemplate: underscore.js template string which will be passed each array element successively
 ShowArrayView = Dynamo.ShowArrayView = (function() {
-  
+
   function showArrayView(options) {
     options = options || {};
     this.container = options.container || "<div></div>";
@@ -130,9 +129,9 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     this.contentWhenEmpty = options.contentWhenEmpty;
     this.elementTemplate = options.elementTemplate;
     this.onElementClick = options.onElementClick;
-    this.title = options.title; 
+    this.title = options.title;
   };
-  
+
   showArrayView.prototype._elementTemplate = function(data, settings) {
     if (!this.compiled_template) {
       if (!this.elementTemplate) { throw new Error("should define Element Template for showArrayView") }
@@ -154,19 +153,20 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     if (elements.length > 0) {
       _.each(elements, function(element) {
         self.$el.append( self._elementTemplate({item: element}) );
-      });      
+      });
     } else {
       self.$el.html((self.contentWhenEmpty || "<div>None</div>"));
     }
 
 
     $('div.item', this.$el).on('click', this.onElementClick);
-  
+
   };
-  
+
   return showArrayView
 
 }) ();
+
 
 /**************************************
 //
@@ -364,7 +364,7 @@ Dynamo.InputGroupView = Backbone.View.extend(
     },
     _template: function(data, settings) {
       if (!this.compiled_template) {
-        if (!this.template) { 
+        if (!this.template) {
           this.template = this.options.template || DIT["dynamo/core/input_group"];
         };
         this.compiled_template = _.template(this.template);
@@ -709,7 +709,7 @@ Dynamo.InputSliderView = Backbone.View.extend(
 //      Defaults to 'title'
 //    - modelHTML: function that returns what HTML should be displayed for an element. Defaults to
 //      a span containing the value of the xelement's 'chooseOn' attribute.
-//    - groupBy: a function or string that will group the choices for selection by the return value 
+//    - groupBy: a function or string that will group the choices for selection by the return value
 //        of calling the function on each element in the collection or accessing that property of the element.
 Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   initialize: function() {
@@ -752,12 +752,12 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   render: function() {
     var self = this;
     var elements;
-    if (self.options.groupBy) { 
+    if (self.options.groupBy) {
       elements = self.collection.chain().map(function(m) {
-        var el = { 
-          id: m.id, 
-          cid: m.cid, 
-          html: self.modelHTML(m), 
+        var el = {
+          id: m.id,
+          cid: m.cid,
+          html: self.modelHTML(m),
           checkedInput: self.checkedInput(m)
         };
         if (_.isString(self.options.groupBy) ) {
@@ -770,10 +770,10 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     }
     else {
       elements = self.collection.map(function(m) {
-        var el = { 
-          id: m.id, 
-          cid: m.cid, 
-          html: self.modelHTML(m), 
+        var el = {
+          id: m.id,
+          cid: m.cid,
+          html: self.modelHTML(m),
           checkedInput: self.checkedInput(m)
         };
         return el;
@@ -799,7 +799,8 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
 //  can inherit from this view which provides a set of functions
 //  related to viewing the current save state,
 //  or setting up periodic saving and triggering a save
-Dynamo.SaveableModelView = Backbone.View.extend({
+SaveableModelView = Dynamo.SaveableModelView = Backbone.View.extend({
+
   initializeAsSaveable: function(saveableModel) {
     this.saveableModel = saveableModel;
     this.saveableModel.initializeAsSaveable();
@@ -911,13 +912,13 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
     }
     // If arguments are not empty, then we assume it is being called after a 'sync' event.
     // The Three arguments would be: (model, resp, options).
-    // The response will always return at least a new version_id and the received_at time (b/c 
-    // of the xelements schema and the Backbone.sync specification that the server return only 
-    // attributes changed by the server).  
+    // The response will always return at least a new version_id and the received_at time (b/c
+    // of the xelements schema and the Backbone.sync specification that the server return only
+    // attributes changed by the server).
     // Since we would not have need to update the view in this case, only update it in other cases:
     if (arguments[1] && _.keys(arguments[1]).length > 2 ) {
       this.clearInitialRender();
-      return this.render();      
+      return this.render();
     };
   }
 
@@ -968,24 +969,24 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   },
 
   addNew: function(clickEvent) {
-    
-    if (this.options.addNewHandler) { 
-      return this.options.addNewHandler(clickEvent) 
+
+    if (this.options.addNewHandler) {
+      return this.options.addNewHandler(clickEvent)
     };
-    
+
     return this.addNewAtIndex( $(clickEvent.currentTarget).data("collection-index") );
 
   },
 
   addExisting: function(clickEvent) {
-    
-    if (this.options.enableAddExisting) { 
-      
+
+    if (this.options.enableAddExisting) {
+
       if (this.options.addExistingHandler) {
         return this.options.addExistingHandler( $(clickEvent.currentTarget).data("collection-index") )
       }
-      return this.chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );  
-    
+      return this.chooseExistingToAddAtIndex( $(clickEvent.currentTarget).data("collection-index") );
+
     };
 
   },
@@ -1237,14 +1238,14 @@ Dynamo.ShowGroupView = Dynamo.BaseUnitaryXelementView.extend({
     console.log('-> ShowGroupView render');
 
     self = this;
-    self.$el.html( self.template({
+    self.$el.html( self._template({
         position: this.position,
         group: this.model.toJSON()
       })
     );
 
     if (!self.usersView) {
-      $groups = this.$el.find('div.groups:first');
+      var $groups = this.$el.find('div.groups:first');
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
         enableAddExisting: true,
@@ -1331,14 +1332,14 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
     var self, view_class, view;
 
     self = this;
-    
+
     self.$el.html( self._template({
         group: this.model.toFormValues(),
         position: this.position
       })
     );
 
-    $users = this.$el.find('div.users:first');
+    var $users = this.$el.find('div.users:first');
     if ( $users.length !== 0 ) {
       self.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
@@ -1377,8 +1378,8 @@ Dynamo.ShowXelementSimpleView =  Dynamo.BaseUnitaryXelementView.extend({
 
   _template: function(data, settings) {
     if (!this.compiled_template) {
-      if (!this.template) { 
-        this.template = this.options.template || DIT["dynamo/xelements/show"]; 
+      if (!this.template) {
+        this.template = this.options.template || DIT["dynamo/xelements/show"];
       };
       this.compiled_template = _.template(this.template);
     };
@@ -1452,68 +1453,20 @@ Dynamo.ShowUserView = Dynamo.BaseUnitaryXelementView.extend({
 
 });
 
-Dynamo.EditUserView = Dynamo.BaseUnitaryXelementView.extend({
-
-  initialize: function() {
-
-    _.bindAll(this);
-    this.cid = _.uniqueId('ShowUserView-');
-    this.position = this.options.position
-    this.model.on("change",   this.render);
-    this.model.on("destroy",  this.remove);
-
-  },
-
-  attributes: function() {
-    return {
-      id: "user-"+this.model.cid,
-      class: "user"
-    }
-  },
-
-  _template: function(data, settings) {
-    if (!this.compiled_template) {
-      if (!this.template) { this.template = this.options.template || DIT["dynamo/users/edit"] }
-      this.compiled_template = _.template(this.template);
-    };
-    return this.compiled_template(data, settings);
-  },
-
-  render: function() {
-
-    //render template
-    var self, view_class, view;
-
-    console.log('in ShowUserView render');
-
-    self = this;
-    self.$el.html( self._template({
-        position: this.position,
-        user: this.model.toJSON()
-      })
-    );
-
-    return this;
-  }
-
-});
-
-
-
 //  The purpose of this view is to allow programming that still
 //  uses backbone for what it is good at:
-//  separating concerns related to a model and view, 
+//  separating concerns related to a model and view,
 //  and to allow continued use of backbone collections
 //
-//  But to then allow you to seemlessly use Knockout 
-//  at what it is good at: declarative binding of 
+//  But to then allow you to seemlessly use Knockout
+//  at what it is good at: declarative binding of
 //  dom elements to model attributes, with integrated dom manipulation.
 ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
   initialize: function() {
     _.extend(this, Backbone.Events);
     _.bindAll(this);
-    // Because Knockout will sync between model values & DOM elements, 
+    // Because Knockout will sync between model values & DOM elements,
     // no need to re-render on model change.
   },
 
@@ -1539,31 +1492,31 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     //in case you ever want to force a re-computation of a computed,
     //you can place a call to the value of this dummyObservable in the computed,
     //and then call self.knockoutModel.dummyObservable.notifySubscribers();
-    //when you want to trigger a recomputation: 
-    self.knockoutModel.dummyObservable = ko.observable(null); 
+    //when you want to trigger a recomputation:
+    self.knockoutModel.dummyObservable = ko.observable(null);
 
     _.each(this.modelAtts(), function(value, attr_name) {
-      
-      // Ignore attributes which come from computedAtts, 
+
+      // Ignore attributes which come from computedAtts,
       // as those will be handled separately.
       if ( !self.options.computedAtts || !self.options.computedAtts[attr_name]) {
-        self.createKnockoutModelAttribute(attr_name, value)  
-        self.setBackboneAndKnockoutBindings(attr_name);        
+        self.createKnockoutModelAttribute(attr_name, value)
+        self.setBackboneAndKnockoutBindings(attr_name);
       };
 
     });
 
     if (self.options.computedAtts) {
       _.each(self.options.computedAtts, function(computeObj, attr_name) {
-        
+
         if (!computeObj.owner) { computeObj.owner = self.knockoutModel };
         self.knockoutModel[attr_name] = ko.computed(computeObj);
         if (computeObj.write) {
           self.setBackboneAndKnockoutBindings(attr_name);
         };
-        
+
       });
-    };    
+    };
 
     self.knockoutModel.save = function() {
       self.triggerSave();
@@ -1571,7 +1524,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     self.knockoutModel.destroy = function() {
       self.triggerDelete();
-    };    
+    };
 
     this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
       console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
@@ -1583,9 +1536,9 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   createKnockoutModelAttribute: function(attr, value) {
     var self = this;
     //maybe in the future?
-    if ( !_.isArray(value) && 
+    if ( !_.isArray(value) &&
          !_.isDate(value) &&
-          _.isObject(value) ) { 
+          _.isObject(value) ) {
       throw new Error("Unhandled case: attribute '"+attr+"'\'s value is an object.")
     };
 
@@ -1600,19 +1553,19 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
       self.knockoutModel[attr] = ko.computed({
         read: function() {
           var s = this;
-          return ( new Date(s[attr+"_year"](), 
-                            s[attr+"_month"](), 
-                            s[attr+"_date"](), 
-                            s[attr+"_hour"](), 
-                            s[attr+"_minute"]() ) 
-                  );                
+          return ( new Date(s[attr+"_year"](),
+                            s[attr+"_month"](),
+                            s[attr+"_date"](),
+                            s[attr+"_hour"](),
+                            s[attr+"_minute"]() )
+                  );
         },
         write: function(new_time) {
           self.knockoutModel[attr+"_year"](new_time.getFullYear());
           self.knockoutModel[attr+"_month"](new_time.getMonth());
           self.knockoutModel[attr+"_date"](new_time.getDate());
           self.knockoutModel[attr+"_hour"](new_time.getHours());
-          self.knockoutModel[attr+"_minute"](new_time.getMinutes());          
+          self.knockoutModel[attr+"_minute"](new_time.getMinutes());
         },
         owner: self.knockoutModel
       });
@@ -1622,7 +1575,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     // An array will benefit from having available add and remove functions.
     if ( _.isArray(value) ) {
 
-      // The default value of an element of the array can be 
+      // The default value of an element of the array can be
       // (and probably should) be passed in as an option.
       var defaultElValue = self.options.arrayDefaults[attr],
 
@@ -1631,23 +1584,23 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
           elConstructor = function(element_value) {
             return {
               value: ko.observable(element_value),
-              remove: function() { 
+              remove: function() {
                 self.knockoutModel[attr].remove(this)
               }
             }
           };
 
-      // Define each element in the array to be composed of 
+      // Define each element in the array to be composed of
       // an instance of the above constructor
       self.knockoutModel[attr] = ko.observableArray(
         _.map(value, function(el) { return new elConstructor(el) })
       );
-      
+
       // Define an add element function for this attribute;
       self.knockoutModel[attr+"_addElement"] = function() {
         var newEl = new elConstructor(defaultElValue)
         self.knockoutModel[attr].push( newEl );
-        
+
         //when this new element changes value,
         //notify subscribers of the array that the value of the array has changed.
         newEl.value.subscribe(function(newElementValue) {
@@ -1666,16 +1619,16 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
       return self.knockoutModel[attr];
     };
 
-    if (  _.isString(value) || 
-          _.isFinite(value) ||  
-          _.isBoolean(value) 
+    if (  _.isString(value) ||
+          _.isFinite(value) ||
+          _.isBoolean(value)
        ) {
       console.log("setting "+attr+" to "+value);
       this.knockoutModel[attr] = ko.observable(value);
       return self.knockoutModel[attr];
     };
 
-    if ( _.isNull(value) || 
+    if ( _.isNull(value) ||
          _.isUndefined(value)
        ) {
       this.knockoutModel[attr] = ko.observable(false);
@@ -1687,7 +1640,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   setBackboneAndKnockoutBindings: function(attr_name) {
     var self = this;
 
-    //If any change is made to a model attribute (in backbone), 
+    //If any change is made to a model attribute (in backbone),
     //the knockout model needs to be updated accordingly.
     this.model.on('change:'+attr_name, function() { self.updateKnockoutModelAttribute(attr_name) } )
 
@@ -1696,13 +1649,13 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     //HOWEVER, we cannot trigger a normal change event on the backbone model,
     //or we will enter an infinite loop due to the needed on-change
     //code above.
-    //So, instead, we call set with {silent:true} and 
+    //So, instead, we call set with {silent:true} and
     //trigger a different event on the backbone model - 'change:fromKnockout';
     this.knockoutModel[attr_name].subscribe(function(newValueFromKnockout) {
       if (typeof(newValueFromKnockout) !== "undefined") {
         var set_obj = {};
         console.log("updating "+attr_name, newValueFromKnockout);
-        
+
         if (_.isArray(newValueFromKnockout)) {
           // Array elements have been wrapped in an object
           // as detailed in the createKnockoutModelAttribute method.
@@ -1710,17 +1663,17 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
           set_obj[attr_name] =  _.compact(_.map(newValueFromKnockout, function(el) { return el.value() }));
         }
         else {
-          set_obj[attr_name] = newValueFromKnockout; 
+          set_obj[attr_name] = newValueFromKnockout;
         };
-         
+
         self.model.set_field_values(set_obj, { silent:true });
         self.model.trigger("change:fromKnockout");
-        self.model.trigger("change:fromKnockout:"+attr_name);        
+        self.model.trigger("change:fromKnockout:"+attr_name);
       };
     });
   },
 
-  //a knockout Template is required to 
+  //a knockout Template is required to
   //be either passed into the view
   //or defined by the model.
   knockoutTemplate: function() {
@@ -1735,15 +1688,17 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   //use the correct Knockout method to make a change
   //to an attribute on the knockout model.
   updateKnockoutModelAttribute: function(attr, value) {
-    if (typeof(value) == undefined) { value = this.model.get_field_value(attr) };
+    if (typeof(value) == "undefined") {
+      value = this.model.get_field_value(attr)
+    };
     var observableFunction = this.knockoutModel[attr];
     if ( ko.isWriteableObservable(observableFunction) ) {
-      observableFunction(value);  
+      observableFunction(value);
     }
     else {
       console.warn("tried to update non-writeable knockout attr: ", attr, value);
     };
-    
+
   },
 
   //although rare, it is conceivable we may want to update
@@ -1756,7 +1711,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   },
 
   //render function is greatly simplified
-  //as the supplied template will do all the 
+  //as the supplied template will do all the
   //heavy lifting!
   render: function() {
     this.$el.html( this.knockoutTemplate() );
@@ -1811,7 +1766,7 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   setToCompleted: function() {
     this.currentStatusToDisplay = "completed";
     this.render();
-  },  
+  },
 
   setToIgnored: function() {
     this.currentStatusToDisplay = "ignored";
@@ -1869,7 +1824,7 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
     var ul = self.$el.find('ul#goals')
     ActivityCalGoals.each(function(goal_xel) {
       var relevantData = ActivityCalGoalData.find(function(ud) {
-        return (ud.get("xelement_id") == goal_xel.id) 
+        return (ud.get("xelement_id") == goal_xel.id)
       });
       switch (self.currentStatusToDisplay) {
         case "unanswered":
@@ -1960,9 +1915,9 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
       var target = $(event.currentTarget);
       var xelementID = target.data('xelement-id')
       console.log("xelement", xelementID)
-      
+
       var data = ActivityCalGoalData.find(function(goalData) {
-        return (goalData.get("xelement_id") == xelementID) 
+        return (goalData.get("xelement_id") == xelementID)
       });
 
       if (target.hasClass('ignore')) {
@@ -1979,11 +1934,11 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
 
   }
 
-  // Setup Thought Goals  
+  // Setup Thought Goals
 
   // ThoughtsToolGoals = new XelementCollection(XELEMENTS.filter(function(xel) {
   //   return (xel.get_field_value("title") == "Thought  Goal")
-  // })); 
+  // }));
 
   // ThoughtsToolGoalData = new DataCollection(null);
 
@@ -1994,7 +1949,7 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   //   var dc = new DataCollection(null, {
   //     xelement_id: goal_xel.id,
   //     user_id: Dynamo.CurrentUser().id,
-  //     group_id: Dynamo.CurrentUser().get("group_id")      
+  //     group_id: Dynamo.CurrentUser().get("group_id")
   //   });
   //   dc.fetch({async: false});
 
@@ -2007,11 +1962,11 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   //       server_url: Dynamo.TriremeURL,
   //       xelement_id: goal_xel.id,
   //       user_id: Dynamo.CurrentUser().id,
-  //       group_id: Dynamo.CurrentUser().get("group_id")       
+  //       group_id: Dynamo.CurrentUser().get("group_id")
   //     });
   //   };
-    
-  //   ThoughtsToolGoalData.add(data); 
+
+  //   ThoughtsToolGoalData.add(data);
   //   //either way, it gets added to the collection of user data about calendar goals.
   // });
 

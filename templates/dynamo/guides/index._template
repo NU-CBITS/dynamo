@@ -1,0 +1,13 @@
+<div class="row-fluid">
+  <h3>Guides <small id="current-guide-title"></small></h3>
+  <ul id="guide-select" class="accordion-header nav pull-right" style="margin: inherit 0">
+    <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
+      <ul id="guides-list" class="dropdown-menu">
+      (% _.each(elements, function(e) { %)
+        <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
+      (% }) %)
+      </ul>
+    </li>
+    <li class="caret-icons"><a><i class="icon-caret-down"></i></a></li>
+  </ul>
+</div>
