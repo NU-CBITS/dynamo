@@ -1137,7 +1137,7 @@ showQuestionView = Dynamo.showQuestionView = protoQuestionView.extend({
 var opensAndClosesWithChevron = {
 
   events: {
-    "click .accordion-header li.caret-icons": "displayWidgetContent"
+    "click .accordion-header": "displayWidgetContent"
   },
 
   displayWidgetContent: function() {

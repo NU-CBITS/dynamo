@@ -1,13 +1,9 @@
-<div class="widget-header orange navbar" id="edit-event-toggle-bar">
+<div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
   <h3>Event Editor</h3>
 
-  <ul class="nav pull-right accordion-header">
+  <ul class="nav pull-right">
     <li class="caret-icons">
-      <a><em class="icon-caret-right"></em></a>
-    </li>
-
-    <li style="list-style: none; display: inline">
-      <ul></ul>
+      <a><i class="icon-caret-right"></i></a>
     </li>
   </ul>
 </div>
@@ -19,10 +15,6 @@
 
       <div class="controls">
         <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Description" type="text">
-
-        <div class="inline text-prog-gray" id="title-attribute-question-icon" style="font-size: 24.5px;">
-          <em class="icon-question-sign"></em>
-        </div>
       </div>
     </div>
   </div><!-- Start and End Times -->
@@ -360,11 +352,11 @@
       </div>
 
       <div class="row-fluid">
-        <div class="span11">
+        <div class="slider-bar">
           <div class="slider" data-bind="slider: predicted_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-pleasure-predict-slider" style="margin-top: 3px;"></div>
         </div>
 
-        <div class="span1">
+        <div class="slider-number text-right">
           <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
@@ -376,22 +368,22 @@
       </div>
 
       <div class="row-fluid">
-        <div class="span11">
+        <div class="slider-bar">
           <div class="slider" data-bind="slider: actual_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-pleasure-actual-slider" style="margin-top: 3px;"></div>
         </div>
 
-        <div class="span1">
+        <div class="slider-number text-right">
           <strong data-bind="text: actual_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
     </div><!-- PLEASURE - PREVIOUSLY PREDICTED -->
 
     <div class="row-fluid text-prof-blue" data-bind="if: inReviewing" id="pleasure-previously-predicted-container">
-      <div class="span11">
+      <div class="slider-bar">
         <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Pleasure:</strong>
       </div>
 
-      <div class="span1">
+      <div class="slider-number text-right">
         <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
       </div>
     </div>
@@ -406,11 +398,11 @@
       </div>
 
       <div class="row-fluid">
-        <div class="span11">
+        <div class="slider-bar">
           <div class="slider" data-bind="slider: predicted_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-accomplishment-predicted-slider" style="margin-top: 3px;"></div>
         </div>
 
-        <div class="span1">
+        <div class="slider-number text-right">
           <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
@@ -422,22 +414,22 @@
       </div>
 
       <div class="row-fluid">
-        <div class="span11">
+        <div class="slider-bar">
           <div class="slider" data-bind="slider: actual_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-accomplishment-actual-slider" style="margin-top: 3px;"></div>
         </div>
 
-        <div class="span1">
+        <div class="slider-number text-right">
           <strong data-bind="text: actual_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
     </div><!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
 
     <div class="row-fluid text-prof-blue" data-bind="if: inReviewing" id="accomplishment-previously-predicted-container">
-      <div class="span11">
+      <div class="slider-bar">
         <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Accomplishment:</strong>
       </div>
 
-      <div class="span1">
+      <div class="slider-number text-right">
         <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
       </div>
     </div>
@@ -469,11 +461,11 @@
     </div>
 
     <div class="row-fluid" id="edit-emotion-intensity-attribute-container">
-      <div class="span11">
+      <div class="slider-bar">
         <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}" id="edit-emotion-intensity-slider"></div>
       </div>
 
-      <div class="span1">
+      <div class="slider-number text-right">
         <strong data-bind="text: emotion_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
       </div>
     </div>
@@ -505,7 +497,7 @@
 
   <div id="event-form-save-delete-buttons-container">
     <div class="btn-toolbar pull-right">
-      <button class="save btn btn-primary" data-bind="click: save" id="event-save-button">Save Event</button> <button class="del btn btn-danger" data-bind="click: destroy" id="event-delete-button"><em class="icon-trash"></em> Delete Event</button>
+      <button class="save btn btn-primary btn-large" data-bind="click: save" id="event-save-button">Save Event</button> <button class="del btn btn-danger btn-large" data-bind="click: destroy" id="event-delete-button"><em class="icon-trash"></em> Delete Event</button>
     </div>
 
     <div class="clearfix"></div>
