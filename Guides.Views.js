@@ -41,7 +41,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
     "click .guide-action" : "performAction",
-    "click .accordion-header li.caret-icons": "displayWidgetContent",
+    "click .accordion-header": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
   },
 
@@ -54,15 +54,18 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.rotateArrowDown();
   },
 
-  displayWidgetContent: function() {
-    var body = this.$el.find(".accordion-body");
-    if (body.is(":visible")) {
-      body.hide();
-      this.rotateArrowRight();
-    } else {
-      body.show();
-      this.toggleChevronArrow();
-    } 
+  displayWidgetContent: function(event) {
+    var target = $(event.target);
+    if (target.closest('.dropdown').length == 0) {
+      var body = this.$el.find(".accordion-body");
+      if (body.is(":visible")) {
+        body.hide();
+        this.rotateArrowRight();
+      } else {
+        body.show();
+        this.toggleChevronArrow();
+      }
+    };
   },
 
   moveBack: function() {
@@ -110,7 +113,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   render: function() {
     this.$el.html( this._template({}) );
     this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
-
     return this;
   },    
 
