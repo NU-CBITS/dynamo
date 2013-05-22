@@ -164,7 +164,7 @@ SlideModel = Dynamo.SlideModel = Dynamo.XelementClass.extend({
     var d = this.defaultsFor('static_html');
     d.title = d.xel_data_values.title = "Slide ";
     if (this.collection) { 
-      d.title = d.xel_data_values.title = d.title + (this.collection.length() + 1);
+      d.title = d.xel_data_values.title = d.title + (this.collection.length + 1);
     }
     return d;
   },
