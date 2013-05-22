@@ -1,4 +1,4 @@
-<div id="guides-selector-title-bar" class="widget-header orange navbar">
+<div id="guides-selector-title-bar" class="widget-header orange navbar accordion-header">
   <div id="guide-select-nav"></div>
 </div>
 

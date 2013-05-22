@@ -1,7 +1,7 @@
 <div class="widget-header navbar" style="margin-bottom: 0px;">
   <h3>(% if (position) { print(position+".") } else { print("Question)") }; %)</h3>
 
-  <ul class="nav pull-right accordion-header">
+  <ul class="nav pull-right">
     <li>
       <h3 class="pull-right label save_status (%= current_save_state %)">(%= current_save_text %)</h3>
     </li>
