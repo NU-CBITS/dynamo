@@ -60,6 +60,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   displayLessonIndex: function() {
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
+    // Set height so the buttons stay in the same place! #Matches guide 'show' view
+    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 93) )
     self.guideSelect.delegateEvents()
   },
 
@@ -128,6 +130,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
       this.$el.html( this._template({}) );
     };
+    // Set height so the buttons stay in the same place!
+    this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )
     var $slide_content = this.$el.find("div#current-guide-slide-content");
 
     //  Place current Guide title into correct spot in the title bar.
@@ -139,8 +143,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     //render the current slide normally
     this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
     $slide_content.html( this.currentSlide.get_field_value("content") );
-
-    // $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
     return this;
   },
 

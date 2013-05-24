@@ -1,5 +1,5 @@
 <div class="row-fluid">
-  <div class="widget-content" style="padding:0px 15px 15px 15px;">
+  <div class="widget-content guide-view">
     <h4>Guides <small id="current-guide-title"></small></h4>
     <ul id="guides-list">
     (% _.each(elements, function(e) { %)
