@@ -1,8 +1,10 @@
 <div class="row-fluid">
-  <h3>Guides <small id="current-guide-title"></small></h3>
-  <ul id="guides-list">
-  (% _.each(elements, function(e) { %)
-    <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
-  (% }) %)
-  </ul>
+  <div class="widget-content" style="padding:0px 15px 15px 15px;">
+    <h4>Guides <small id="current-guide-title"></small></h4>
+    <ul id="guides-list">
+    (% _.each(elements, function(e) { %)
+      <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
+    (% }) %)
+    </ul>
+  </div>
 </div>
