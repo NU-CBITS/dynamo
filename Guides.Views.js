@@ -30,16 +30,19 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       template: DIT["dynamo/guides/index"],
       collection: this.collection
     });
+
     this.guideSelect.on("element:chosen", function() {
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
-    
+
     this.collection.on("all", this.render);
   },
 
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
+    "click .finished" : "displayLessonIndex",
+    "click .lesson-index" : "displayLessonIndex",
     "click .guide-action" : "performAction",
     "click .accordion-header": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
@@ -52,6 +55,25 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   displayDropdownAndWidgetContent: function() {
     this.$el.find(".accordion-body").show();
     this.rotateArrowDown();
+  },
+
+  displayLessonIndex: function() {
+    var self = this;
+    //display all elements of the collection;
+    this.$el.html(self.guideSelect.render().$el);
+    // var guidesIndex = new Dynamo.ChooseOneXelementFromCollectionView({
+    //   // template: DIT["dynamo/guides/index_in_navbar"],
+    //   collection: this.collection
+    // });
+    // $('#guides-container').html(guidesIndex.render().$el);
+
+    // guidesIndex.on("element:chosen", function() {
+    // });
+
+    //when one is selected, 
+    //set this view's current guide to be the chosen element. (setAsCurrentGuide)
+    //trigger element:chosen ??
+
   },
 
   displayWidgetContent: function(event) {
@@ -112,18 +134,40 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
   render: function() {
     this.$el.html( this._template({}) );
-    this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
+    // this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
     return this;
   },    
 
   renderSlide: function() {
-    var $slide_content = this.$el.find("div#current-guide-slide-content");
+    debugger;
+
+// <div id="current-guide-slide-container" class="accordion-body widget-content">
+//   <div style="padding: 20px 15px 15px;">
+//     <div id="current-guide-slide-content">
+//       <div style="margin:0 auto;" class="text-center">
+//         <h3> Choose a Guide using the dropdown menu above</h3>
+//       </div>
+//     </div>
+
+//     <div id="current-guide-slide-actions"></div>
+//   </div>
+
+//   <ul id="current-guide-navigation-buttons" class="pager">
+//     <li><button class="previous">&larr; Previous</button></li>
+//     <li><button class="next">Next &rarr;</button></li>
+//   </ul>
+// </div>
+
+    if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
+      var $slide_content =  this.$el.html( this._template({}) );
+    } else {
+      var $slide_content = this.$el.find("div#current-guide-slide-content");
+    };
 
     //  Place current Guide title into correct spot in the title bar.
     this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
-    
     if (this.currentSlideIndex() === this.currentGuide.slides.length) {
       
       //We have reached the end of the guide.
@@ -131,10 +175,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
         // lead is currently being overwritten
         '<p class="lead" style="font-size: 21px;font-weight: 200;line-height: 30px;">You have reached the end of this guide</p>'
       );
-    
+      // In the end, this might not be the best place to put this code, but at the moment it seems to be the simplest
+      this.$el.find('ul#current-guide-navigation-buttons button.next').removeClass("next").addClass('finished').html("Finished <i class='icon-flag-checkered'></i>")
     } else {
+      // This occurs if the user gets to the end and then goes backwards
+      if (this.$el.find('ul#current-guide-navigation-buttons button.finished').length == 1) {
+        this.$el.find('ul#current-guide-navigation-buttons button.finished').removeClass("finished").addClass('next').html("Next &rarr;")
+      }
       //render the current slide normally
-
       this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
       $slide_content.html( this.currentSlide.get_field_value("content") );
     
