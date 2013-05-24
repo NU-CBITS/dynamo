@@ -41,8 +41,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
-    "click .finished" : "displayLessonIndex",
-    "click .lesson-index" : "displayLessonIndex",
+    "click .finished" : "displayGuideIndex",
+    "click .lesson-index" : "displayGuideIndex",
     "click .guide-action" : "performAction",
     "click .accordion-header": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
@@ -57,7 +57,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.rotateArrowDown();
   },
 
-  displayLessonIndex: function() {
+  displayGuideIndex: function() {
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
     // Set height so the buttons stay in the same place! #Matches guide 'show' view

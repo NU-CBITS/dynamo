@@ -1,5 +1,11 @@
 <div id="current-guide-slide-container" class="accordion-body widget-content" style="display:block;">
-  <h4 style="padding-left:15px;" id="current-guide-title"></h4>
+
+  <div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
+
+    <h3 style="padding-left:15px;" id="current-guide-title"></h3>
+
+  </div>
+
   <div class="guide-view">
     <div id="current-guide-slide-content">
       <div style="margin:0 auto;" class="text-center">
