@@ -1,6 +1,5 @@
 <div class="row-fluid">
   <h3>Guides <small id="current-guide-title"></small></h3>
-
   <ul id="guide-select" class="nav pull-right" style="margin: inherit 0">
     <li class="caret-icons"><a><i class="icon-caret-right"></i></a></li>
   </ul>

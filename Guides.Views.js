@@ -30,16 +30,19 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       template: DIT["dynamo/guides/index"],
       collection: this.collection
     });
+
     this.guideSelect.on("element:chosen", function() {
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
-    
+
     this.collection.on("all", this.render);
   },
 
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
+    "click .finished" : "displayLessonIndex",
+    "click .lesson-index" : "displayLessonIndex",
     "click .guide-action" : "performAction",
     "click .accordion-header": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
@@ -52,6 +55,12 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   displayDropdownAndWidgetContent: function() {
     this.$el.find(".accordion-body").show();
     this.rotateArrowDown();
+  },
+
+  displayLessonIndex: function() {
+    var self = this;
+    this.$el.html(self.guideSelect.render().$el);
+    self.guideSelect.delegateEvents()
   },
 
   displayWidgetContent: function(event) {
@@ -111,37 +120,44 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-    this.$el.html( this._template({}) );
-    this.$el.find("div#guide-select-nav").append(this.guideSelect.render().$el);
+    this.$el.html( this._template() );
     return this;
   },    
 
   renderSlide: function() {
+    if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
+      this.$el.html( this._template({}) );
+    };
     var $slide_content = this.$el.find("div#current-guide-slide-content");
 
     //  Place current Guide title into correct spot in the title bar.
     this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
 
     $slide_content.empty();
-    
-    if (this.currentSlideIndex() === this.currentGuide.slides.length) {
-      
-      //We have reached the end of the guide.
-      $slide_content.html(""+
-        // lead is currently being overwritten
-        '<p class="lead" style="font-size: 21px;font-weight: 200;line-height: 30px;">You have reached the end of this guide</p>'
-      );
-    
-    } else {
-      //render the current slide normally
 
-      this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
-      $slide_content.html( this.currentSlide.get_field_value("content") );
-    
-    }
-  
+    this.renderNavigationButtons();
+    //render the current slide normally
+    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
+    $slide_content.html( this.currentSlide.get_field_value("content") );
+
     // $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
     return this;
+  },
+
+  renderNavigationButtons: function() {
+    var navButtons = this.$el.find('ul#current-guide-navigation-buttons')
+    if (this.currentSlideIndex() === (this.currentGuide.slides.length - 1)) {
+      navButtons.find('button.next').removeClass("next").addClass('finished').html("Finished <i class='icon-flag-checkered'></i>")        
+    } else {
+      // This occurs if the user gets to the end and wants to go backwards
+      navButtons.find('button.finished').removeClass("finished").addClass('next').html("Next &rarr;")
+    }
+    // if on first slide
+    if (this.currentSlideIndex() === 0) {
+      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> Lessons");;
+    } else {
+      navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
+    }
   },
 
   rotateArrowRight: function() {
