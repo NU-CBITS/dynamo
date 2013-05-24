@@ -1,14 +1,4 @@
 <div class="row-fluid navbar">
   <h1 class="text-prog-blue"><i class="icon-lightbulb"></i> Learn <small class="text-prog-blue">Today&#39;s Lesson</small></h1>
-
-  <ul id="guide-select" class="nav pull-right" style="margin: inherit 0">
-    <li class="dropdown">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Choose Guide <b class="caret"></b></a>
-      <ul id="guides-list" class="dropdown-menu">
-      (% _.each(elements, function(e) { %)
-        <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
-      (% }) %)
-      </ul>
-    </li>
-  </ul>
+  <button id="guide-select" class="lesson-index btn btn-info pull-right">Lessons</button>
 </div>
