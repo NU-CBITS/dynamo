@@ -63,6 +63,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
     this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer
     self.guideSelect.delegateEvents()
+    // remove comments etcs
   },
 
   displayWidgetContent: function(event) {
@@ -118,13 +119,30 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.currentGuideData = this.guideData.filter(function(g) { return g.xelement_id == guide.id });
     this.resetCurrentSlide();
     this.renderSlide();
-    this.trigger("guide:selected");    
+    this.renderLikesAndComments(app, guide)
+    this.trigger("guide:selected");
   },
 
   render: function() {
     this.$el.html( this._template() );
     return this;
   },    
+
+  renderNavigationButtons: function() {
+    var navButtons = this.$el.find('ul#current-guide-navigation-buttons')
+    if (this.currentSlideIndex() === (this.currentGuide.slides.length - 1)) {
+      navButtons.find('button.next').removeClass("next").addClass('finished').html("Finished <i class='icon-flag-checkered'></i>")        
+    } else {
+      // This occurs if the user gets to the end and wants to go backwards
+      navButtons.find('button.finished').removeClass("finished").addClass('next').html("Next &rarr;")
+    }
+    // if on first slide
+    if (this.currentSlideIndex() === 0) {
+      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> Lessons");;
+    } else {
+      navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
+    }
+  },
 
   renderSlide: function() {
     if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
@@ -146,20 +164,58 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     return this;
   },
 
-  renderNavigationButtons: function() {
-    var navButtons = this.$el.find('ul#current-guide-navigation-buttons')
-    if (this.currentSlideIndex() === (this.currentGuide.slides.length - 1)) {
-      navButtons.find('button.next').removeClass("next").addClass('finished').html("Finished <i class='icon-flag-checkered'></i>")        
-    } else {
-      // This occurs if the user gets to the end and wants to go backwards
-      navButtons.find('button.finished').removeClass("finished").addClass('next').html("Next &rarr;")
-    }
-    // if on first slide
-    if (this.currentSlideIndex() === 0) {
-      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> Lessons");;
-    } else {
-      navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
-    }
+  renderComments: function(app, guide) {
+    lessonComments = app.Comments.where(function(comment) {
+      return ( comment.get_field_value("commented_on_id") == guide.id )
+    }, { 
+     comparator: function(c) { return (new Date(c.get("created_at") )); }
+    });
+
+    // lessonComments.comparator = reverseSortBy(lessonComments.comparator);
+    lessonComments.sort();
+
+    lessonCommentsView = new CommentsView({
+      el: "div#lesson-comments",
+      collection: lessonComments,
+      collectionAtts: {
+        xelement_id: guide.id
+      },
+      knockoutTemplate: app.templates["partial/comments"],
+      knockoutElementTemplate: app.templates["partial/comment"]
+    });
+    lessonCommentsView.render();
+  },
+
+  renderLikes: function(app, guide) {
+    guideLikes = app.Likes.where(function(like) {
+      return (like.get_field_value("item_liked_id") == guide.id )
+    });
+
+    guideLikesView = new LikesView({
+      el: "div#guide-likes",
+      collection: guideLikes,
+      collectionAtts: {
+        xelement_id: guide.id
+      },
+      knockoutTemplate: app.templates["partial/likes"]
+    });
+    guideLikesView.render();
+  },
+
+  renderLikesAndComments: function(app, guide) {
+    LogSessionEvent("page_view", { 
+      page_id: ["string", "lesson_selected"], 
+      lesson_selected_id: ["string", guide.id] 
+    });
+
+    //Once a guide is selected we can load comments and likes for the guide.
+    if (app.Likes !== undefined ) {
+      this.renderLikes(app, guide)
+    };
+
+    if (app.Comments !== undefined ) {
+      this.renderComments(app, guide)
+    };
   },
 
   rotateArrowRight: function() {
