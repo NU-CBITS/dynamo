@@ -61,7 +61,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 93) )
+    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer
     self.guideSelect.delegateEvents()
   },
 
