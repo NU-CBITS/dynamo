@@ -119,7 +119,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.currentGuideData = this.guideData.filter(function(g) { return g.xelement_id == guide.id });
     this.resetCurrentSlide();
     this.renderSlide();
-    this.renderLikesAndComments(app, guide)
     this.trigger("guide:selected");
   },
 
@@ -207,15 +206,9 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       page_id: ["string", "lesson_selected"], 
       lesson_selected_id: ["string", guide.id] 
     });
-
     //Once a guide is selected we can load comments and likes for the guide.
-    if (app.Likes !== undefined ) {
-      this.renderLikes(app, guide)
-    };
-
-    if (app.Comments !== undefined ) {
-      this.renderComments(app, guide)
-    };
+    if ( app.Likes ) { this.renderLikes(app, guide) };
+    if ( app.Comments ) { this.renderComments(app, guide) };
   },
 
   rotateArrowRight: function() {
