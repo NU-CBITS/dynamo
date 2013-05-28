@@ -14,7 +14,7 @@
 
 <div id="current-question"></div>
 
-(% if (!no_navigation) { %)
+(% if ((typeof(no_navigation) !== "undefined") && !no_navigation) { %)
 <div class="assessment navigation">
   <button class="btn previous">previous</button>
   <button class="btn next">next</button>
