@@ -13,9 +13,21 @@
     <div>
       <legend>Choose One:</legend>
       (% var timeSecondsForRadioGroup = new Date().getTime() %)
-      (% _.each(elements, function(e) { %)
-        <label class="radio"><input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %) </label>
-      (% }); %)
+      (% if (typeof(groupBy) !== "undefined" && groupBy) { %)
+        (% _.each(elements, function(element_array, groupedByValue) { %)
+          <h3>(%= groupedByValue %)</h3>
+          (% _.each(element_array, function(e) { %)
+            <label class="radio"><input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)</label>
+          (% }); %)
+        (% }); %)
+        
+      (% } else { %)  
+
+        (% _.each(elements, function(e) { %)
+          <label class="radio"><input type="radio" name="guide-radio-buttons-(%= timeSecondsForRadioGroup %)" class="choose_element" data-cid="(%= e.cid %)">(%= e.html %)</label>
+        (% }); %)
+
+      (% }; %)
     </div>
   </div>
 </div>

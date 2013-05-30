@@ -764,7 +764,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
           el.groupBy = m[self.options.groupBy]
         } else {
           el.groupBy = self.options.groupBy(m);
-        }
+        };
         return el;
       }).groupBy("groupBy").value();
     }

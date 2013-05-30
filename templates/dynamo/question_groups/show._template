@@ -8,15 +8,19 @@
 </div>
 (% }; %)
 
-<div class="start">(%= start_content %)</div>
+(% if (typeof(start_content) !== "undefined") { %)
+	<div class="start">(%= start_content %)</div>
+(% }; %)
 
 <div id="current-question"></div>
 
-(% if (!no_navigation) { %)
+(% if ((typeof(no_navigation) !== "undefined") && !no_navigation) { %)
 <div class="assessment navigation">
   <button class="btn previous">previous</button>
   <button class="btn next">next</button>
 </div>
 (% }; %)
 
-<div class="end">(%= end_content %)</div>
+(% if (typeof(end_content) !== "undefined") { %)
+	<div class="end">(%= end_content %)</div>
+(% }; %)

@@ -41,8 +41,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   events: {
     "click .next" : "moveForward",
     "click .previous" : "moveBack",
-    "click .finished" : "displayLessonIndex",
-    "click .lesson-index" : "displayLessonIndex",
+    "click .finished" : "displayGuideIndex",
+    "click .lesson-index" : "displayGuideIndex",
     "click .guide-action" : "performAction",
     "click .accordion-header": "displayWidgetContent",
     "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
@@ -57,10 +57,13 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.rotateArrowDown();
   },
 
-  displayLessonIndex: function() {
+  displayGuideIndex: function() {
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
+    // Set height so the buttons stay in the same place! #Matches guide 'show' view
+    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer
     self.guideSelect.delegateEvents()
+    // remove comments etcs
   },
 
   displayWidgetContent: function(event) {
@@ -116,33 +119,13 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.currentGuideData = this.guideData.filter(function(g) { return g.xelement_id == guide.id });
     this.resetCurrentSlide();
     this.renderSlide();
-    this.trigger("guide:selected");    
+    this.trigger("guide:selected");
   },
 
   render: function() {
     this.$el.html( this._template() );
     return this;
   },    
-
-  renderSlide: function() {
-    if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
-      this.$el.html( this._template({}) );
-    };
-    var $slide_content = this.$el.find("div#current-guide-slide-content");
-
-    //  Place current Guide title into correct spot in the title bar.
-    this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
-
-    $slide_content.empty();
-
-    this.renderNavigationButtons();
-    //render the current slide normally
-    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
-    $slide_content.html( this.currentSlide.get_field_value("content") );
-
-    // $slide_content.prepend( t.tag("h3",this.currentGuide.get_field_value("title") ) );
-    return this;
-  },
 
   renderNavigationButtons: function() {
     var navButtons = this.$el.find('ul#current-guide-navigation-buttons')
@@ -158,6 +141,74 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     } else {
       navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
     }
+  },
+
+  renderSlide: function() {
+    if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
+      this.$el.html( this._template({}) );
+    };
+    // Set height so the buttons stay in the same place!
+    this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )
+    var $slide_content = this.$el.find("div#current-guide-slide-content");
+
+    //  Place current Guide title into correct spot in the title bar.
+    this.$el.find("#current-guide-title").html(this.currentGuide.get_field_value("title"));
+
+    $slide_content.empty();
+
+    this.renderNavigationButtons();
+    //render the current slide normally
+    this.currentSlide = this.currentGuide.slides.at( this.currentSlideIndex() );  
+    $slide_content.html( this.currentSlide.get_field_value("content") );
+    return this;
+  },
+
+  renderComments: function(app, guide) {
+    lessonComments = app.Comments.where(function(comment) {
+      return ( comment.get_field_value("commented_on_id") == guide.id )
+    }, { 
+     comparator: function(c) { return (new Date(c.get("created_at") )); }
+    });
+
+    // lessonComments.comparator = reverseSortBy(lessonComments.comparator);
+    lessonComments.sort();
+
+    lessonCommentsView = new CommentsView({
+      el: "div#lesson-comments",
+      collection: lessonComments,
+      collectionAtts: {
+        xelement_id: guide.id
+      },
+      knockoutTemplate: app.templates["partial/comments"],
+      knockoutElementTemplate: app.templates["partial/comment"]
+    });
+    lessonCommentsView.render();
+  },
+
+  renderLikes: function(app, guide) {
+    guideLikes = app.Likes.where(function(like) {
+      return (like.get_field_value("item_liked_id") == guide.id )
+    });
+
+    guideLikesView = new LikesView({
+      el: "div#guide-likes",
+      collection: guideLikes,
+      collectionAtts: {
+        xelement_id: guide.id
+      },
+      knockoutTemplate: app.templates["partial/likes"]
+    });
+    guideLikesView.render();
+  },
+
+  renderLikesAndComments: function(app, guide) {
+    LogSessionEvent("page_view", { 
+      page_id: ["string", "lesson_selected"], 
+      lesson_selected_id: ["string", guide.id] 
+    });
+    //Once a guide is selected we can load comments and likes for the guide.
+    if ( app.Likes ) { this.renderLikes(app, guide) };
+    if ( app.Comments ) { this.renderComments(app, guide) };
   },
 
   rotateArrowRight: function() {
