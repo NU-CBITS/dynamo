@@ -12,11 +12,12 @@
     <h3> Guided Page </h3>
 
     <div>
-      <p> Specify the current version of the page for which this guide is being
-      developed. If you are only developing content and do not have a page that
-      this guide is guiding, click "skip". If you <strong>do not know</strong>
-      what page you are developing this guide for, you may have <strong>larger
-      problems than I am able to help you with.</strong> </p>
+      <ul> 
+        <li>Specify the current version of the page for which this guide is being
+      developed.</li>
+        <li>If you are only developing content and do not have a page that
+      this guide is guiding, click "skip".</li>
+      </ul>
     </div>
 
     <label class="text" for="guided_page_url">URL
@@ -40,10 +41,9 @@
     </div>
     (% }; %)
 
-    <div class="on-slide-edit" style="(% if (guidedPageState === "blank") { %) display:none; (%} else { %) display:block; (% }; %)">
-      <hr>
-
-      <div id="slides"></div>
+    <div class="on-slide-edit">
+    <hr>
+    <div id="slides"></div>      
     </div>
 
     <hr>

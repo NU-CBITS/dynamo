@@ -231,7 +231,6 @@ Dynamo.isCoreStable = function() {
 // an application's templates are expected to be at:
 //   http://www.somedomain.com/app_templates.html
 Dynamo.loadTemplates = function(options) {
-
   if (DIT) {
     Dynamo.DIT = DIT;
     //If the DIT variable exists here, then it assumes you have defined DIT in a javascript file that defines all necessary templates;
