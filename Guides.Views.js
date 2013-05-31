@@ -28,17 +28,18 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.cid = _.uniqueId('c');
     
     this.guideData = this.options.guideData;
-    
+
+    this.collection_name = this.options.collection_name || "Guides";
+
     this.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
       template: DIT["dynamo/guides/index"],
+      collection_name: this.collection_name,
       collection: this.collection
     });
 
     this.guideSelect.on("element:chosen", function() {
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
-
-    this.collection_name = this.options.collection_name || "Guides";
 
     if (this.options.$launchButtonContainer) {
       this.asModal = true;
@@ -142,6 +143,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   openInModal: function() {
     this.$guideContainer.dialog("open");
     this.$guideContainer.html(this.render().$el);
+    this.delegateEvents();
     this.displayGuideIndex();
   },
 
@@ -164,7 +166,9 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-    this.$el.html( this._template() );
+    this.$el.html( this._template({
+      collection_name: this.collection_name
+    }) );
     return this;
   },    
 

@@ -1,7 +1,7 @@
 <div class="row-fluid">
 
   <div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
-    <h3 id="current-guide-title">Guides</h3>
+    <h3 id="current-guide-title">(%= (collection_name || "Guides") %)</h3>
   </div>
 
   <div class="widget-content guide-view">
