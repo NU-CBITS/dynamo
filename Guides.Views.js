@@ -21,8 +21,11 @@
 
 GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
 
+  // _launchButton: "<button id='guide_launcher' class='btn btn-info'>Launch Guides</button>",
+
   initialize: function() {
     var self = this;
+    this.cid = _.uniqueId('c');
     
     this.guideData = this.options.guideData;
     
@@ -34,6 +37,31 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     this.guideSelect.on("element:chosen", function() {
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
+
+    if (this.options.$launchButtonContainer) {
+      this.asModal = true;
+      this.$launchButtonContainer = this.options.$launchButtonContainer;
+
+      this.$launchButtonContainer.prepend(
+        t.button("Launch Guides", { 
+          id: "guide_launcher", 
+          class: "btn btn-info", 
+          style: (this.options.launchButtonStyle || "") 
+        }));
+      this.$launchButtonContainer.find('button#guide_launcher').click(function() { 
+        self.openInModal();
+      });
+      this.$guideContainer = $("<div id='guide_player_container-"+this.cid+"'></div>");
+      $('body').append(this.$guideContainer);
+      this.$guideContainer.dialog({
+        autoOpen: false,
+        width: 610,
+        height: 360
+      });
+    }
+    else {
+      this.asModal = false;
+    }
 
     this.collection.on("all", this.render);
   },
@@ -61,7 +89,10 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer
+    if (!this.asModal) {
+      this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer      
+    };
+    
     self.guideSelect.delegateEvents()
     // remove comments etcs
   },
@@ -102,6 +133,12 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     catch (e) {
       console.warn("Error when clicking next: ", e);
     }
+  },
+
+  openInModal: function() {
+    this.$guideContainer.dialog("open");
+    this.$guideContainer.html(this.render().$el);
+    this.displayGuideIndex();
   },
 
   resetCurrentSlide: function() {
@@ -147,8 +184,12 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
       this.$el.html( this._template({}) );
     };
-    // Set height so the buttons stay in the same place!
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )
+    
+    if (!this.asModal) {
+      // Set height so the buttons stay in the same place!
+      this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )      
+    };
+
     var $slide_content = this.$el.find("div#current-guide-slide-content");
 
     //  Place current Guide title into correct spot in the title bar.
