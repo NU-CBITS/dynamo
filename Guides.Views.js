@@ -577,12 +577,19 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   destroySlide: function() {
-    delete this.editor;
+
+    //b/c CKEditor has a bug:
     this.actionsView.remove();
     this.actionsView = null;
-    this.model.destroy();
-    this.clearInitialRender();
-    this.$el.remove();   
+    this.model.destroy({async: false});
+    this.$el.remove();
+
+    // // Once ckeditor is fixed:
+    // this.actionsView.remove();
+    // this.actionsView = null;
+    // this.model.destroy();
+    // this.$el.remove();   
+    // this.clearInitialRender();
   },
 
   events: function() {
@@ -686,7 +693,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
       editViewClass: editActionView
     });
     
-    this.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
+    self.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
   },
 
