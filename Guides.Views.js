@@ -38,12 +38,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
 
+    this.collection_name = this.options.collection_name || "Guides";
+
     if (this.options.$launchButtonContainer) {
       this.asModal = true;
       this.$launchButtonContainer = this.options.$launchButtonContainer;
 
       this.$launchButtonContainer.prepend(
-        t.button("Launch Guides", { 
+        t.button("Launch "+this.collection_name, { 
           id: "guide_launcher", 
           class: "btn btn-info", 
           style: (this.options.launchButtonStyle || "") 
@@ -61,7 +63,9 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     }
     else {
       this.asModal = false;
-    }
+    };
+
+
 
     this.collection.on("all", this.render);
   },
@@ -174,7 +178,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     }
     // if on first slide
     if (this.currentSlideIndex() === 0) {
-      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> Lessons");;
+      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> "+this.collection_name);;
     } else {
       navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
     }
