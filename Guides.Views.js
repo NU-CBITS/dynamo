@@ -21,19 +21,52 @@
 
 GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
 
+  // _launchButton: "<button id='guide_launcher' class='btn btn-info'>Launch Guides</button>",
+
   initialize: function() {
     var self = this;
+    this.cid = _.uniqueId('c');
     
     this.guideData = this.options.guideData;
-    
+
+    this.collection_name = this.options.collection_name || "Guides";
+
     this.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
       template: DIT["dynamo/guides/index"],
+      collection_name: this.collection_name,
       collection: this.collection
     });
 
     this.guideSelect.on("element:chosen", function() {
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
+
+    if (this.options.$launchButtonContainer) {
+      this.asModal = true;
+      this.$launchButtonContainer = this.options.$launchButtonContainer;
+
+      this.$launchButtonContainer.prepend(
+        t.button("Launch "+this.collection_name, { 
+          id: "guide_launcher", 
+          class: "btn btn-info", 
+          style: (this.options.launchButtonStyle || "") 
+        }));
+      this.$launchButtonContainer.find('button#guide_launcher').click(function() { 
+        self.openInModal();
+      });
+      this.$guideContainer = $("<div id='guide_player_container-"+this.cid+"'></div>");
+      $('body').append(this.$guideContainer);
+      this.$guideContainer.dialog({
+        autoOpen: false,
+        width: 610,
+        height: 360
+      });
+    }
+    else {
+      this.asModal = false;
+    };
+
+
 
     this.collection.on("all", this.render);
   },
@@ -61,7 +94,10 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer
+    if (!this.asModal) {
+      this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer      
+    };
+    
     self.guideSelect.delegateEvents()
     // remove comments etcs
   },
@@ -104,6 +140,13 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     }
   },
 
+  openInModal: function() {
+    this.$guideContainer.dialog("open");
+    this.$guideContainer.html(this.render().$el);
+    this.delegateEvents();
+    this.displayGuideIndex();
+  },
+
   resetCurrentSlide: function() {
     this._currentSlideIndex = 0;
   },
@@ -123,7 +166,9 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-    this.$el.html( this._template() );
+    this.$el.html( this._template({
+      collection_name: this.collection_name
+    }) );
     return this;
   },    
 
@@ -137,7 +182,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     }
     // if on first slide
     if (this.currentSlideIndex() === 0) {
-      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> Lessons");;
+      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> "+this.collection_name);;
     } else {
       navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
     }
@@ -147,8 +192,12 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
       this.$el.html( this._template({}) );
     };
-    // Set height so the buttons stay in the same place!
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )
+    
+    if (!this.asModal) {
+      // Set height so the buttons stay in the same place!
+      this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )      
+    };
+
     var $slide_content = this.$el.find("div#current-guide-slide-content");
 
     //  Place current Guide title into correct spot in the title bar.

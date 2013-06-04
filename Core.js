@@ -288,7 +288,6 @@ Dynamo.isCoreStable = function() {
 // an application's templates are expected to be at:
 //   http://www.somedomain.com/app_templates.html
 Dynamo.loadTemplates = function(options) {
-
   if (DIT) {
     Dynamo.DIT = DIT;
     //If the DIT variable exists here, then it assumes you have defined DIT in a javascript file that defines all necessary templates;
@@ -372,7 +371,7 @@ Dynamo.AuthenticatedSync = function (method, model, options) {
 
   // Ensure appropriate session variables for authentication.
   options.beforeSend = function(jqXHR, settings) {
-    settings.url = addSessionVarsToUrl(settings.url);
+    settings.url = Dynamo.addSessionVarsToUrl(settings.url);
     if (settings.data) {
       var new_data = JSON.parse(settings.data);
       new_data.transmitted_at = (new Date()).toString();
@@ -439,6 +438,25 @@ PseudoSync = function (method, model, options) {
 //
 // ************************************************
 
+Dynamo.s4 = function() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+             .toString(16)
+             .substring(1);
+};
+
+Dynamo.guid = function() {
+  return Dynamo.s4() + Dynamo.s4() + '-' + Dynamo.s4() + '-' + Dynamo.s4() + '-' +
+         Dynamo.s4() + '-' + Dynamo.s4() + Dynamo.s4() + Dynamo.s4();
+}
+
+//copied out of Backhand.js
+Dynamo.addSessionVarsToUrl = function(url) {
+  var new_url;
+  new_url = addQueryVarToUrl("user_id", Dynamo.AUTHENTICATING_USER_ID(), url);
+  new_url = addQueryVarToUrl("session_id", "YO-IMA-SESSION-ID", new_url);
+  return new_url;
+};
+
 addQueryVarToUrl = function(name, value, url) {
   var new_url;
   new_url = url;
@@ -450,14 +468,6 @@ addQueryVarToUrl = function(name, value, url) {
     }
     new_url = new_url + ("" + name + "=" + value);
   }
-  return new_url;
-};
-
-//copied out of Backhand.js
-addSessionVarsToUrl = function(url) {
-  var new_url;
-  new_url = addQueryVarToUrl("user_id", Dynamo.AUTHENTICATING_USER_ID(), url);
-  new_url = addQueryVarToUrl("session_id", "YO-IMA-SESSION-ID", new_url);
   return new_url;
 };
 
