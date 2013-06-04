@@ -103,6 +103,63 @@ Dynamo.redirectTo = function(fileName, options) {
 Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
 
+
+Dynamo.ApplicationAuthorization = function(appXel) {
+
+  function coerceToNumber(maybeNum) {
+    return typeof(maybeNum) == "number" ? maybeNum : 1;
+  };
+
+  this.authProperties = appXel.authorizingProperties || [];
+  this.propTypes = appXel.authorizingPropertyTypes || {};
+  this.propDefaults = appXel.authorizingPropertyDefaults || {};
+  this.propValues = appXel.authorizingPropertyValues || { self: {}, sub_elements: {} };
+  
+  this.propDefault = function(property) {
+    if ( ! _.contains(this.authProperties, property) ) {
+      throw (new Error("property '"+property+"' is not valid for authorization") );
+    }
+    return this.propDefaults[property];
+  };
+
+  this.getElementPropValue = function(elementId, property) {
+    Dynamo.strToType(this.propValues[elementId].self[property], property)
+  };
+
+  this.getNestedElementPropValue = function(parentId, elementId, property) {
+    Dynamo.strToType(this.propValues[parentId].sub_elements[elementId].self[property], property)
+  };
+
+  this.authPropVal = function(property, elementId, parentElementId) {
+    var default_value =  this.propDefault(property);
+
+    if (parentElementId) {
+
+      var parentAuthValue = this.getElementPropValue(parentElementId, property) || default_value;
+
+      return [ parentAuthValue, this.getNestedElementPropValue(parentelementId, elementId, property) ];
+
+    };
+
+    return this.getElementPropValue(elementId, property) || default_value;
+
+  };
+
+  this.usableNumDaysIn = function(elementId, parentElementId) {
+    var firstAvailability = this.authPropVal("firstAvailability", elementId, parentElementId);
+    return _.max(coerceToNumber(firstAvailability[0]), coerceToNumber(firstAvailability[1]));
+  };
+
+};
+
+Dynamo.initializeApplicationAuthorization = function(appXelement) {
+  if (! Dynamo._currentAuthorization ) {
+    Dynamo._currentAuthorization = new Dynamo.ApplicationAuthorization(appXelement);
+  }
+};
+
+
+
 // CurrentUser
 // Function which returns the currently authenticated user,
 // or redirects to the login page.
