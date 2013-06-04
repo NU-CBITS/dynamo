@@ -108,10 +108,11 @@ Dynamo.ApplicationAuthorization = function(appXel) {
     return typeof(maybeNum) == "number" ? maybeNum : 1;
   };
 
+  _.bindAll(this);
   this.authProperties = appXel.authorizingProperties || [];
   this.propTypes = appXel.authorizingPropertyTypes || {};
   this.propDefaults = appXel.authorizingPropertyDefaults || {};
-  this.propValues = appXel.authorizingPropertyValues || { self: {}, sub_elements: {} };
+  this.propValues = appXel.metacontent().authorizingPropertyValues || { self: {}, sub_elements: {} };
   
   this.propDefault = function(property) {
     if ( ! _.contains(this.authProperties, property) ) {
@@ -121,11 +122,11 @@ Dynamo.ApplicationAuthorization = function(appXel) {
   };
 
   this.getElementPropValue = function(elementId, property) {
-    Dynamo.strToType(this.propValues[elementId].self[property], property)
+    Dynamo.strToType(this.propTypes[property], this.propValues[elementId].self[property])
   };
 
   this.getNestedElementPropValue = function(parentId, elementId, property) {
-    Dynamo.strToType(this.propValues[parentId].sub_elements[elementId].self[property], property)
+    Dynamo.strToType(this.propTypes[property], this.propValues[parentId].sub_elements[elementId].self[property])
   };
 
   this.authPropVal = function(property, elementId, parentElementId) {
@@ -135,7 +136,7 @@ Dynamo.ApplicationAuthorization = function(appXel) {
 
       var parentAuthValue = this.getElementPropValue(parentElementId, property) || default_value;
 
-      return [ parentAuthValue, this.getNestedElementPropValue(parentelementId, elementId, property) ];
+      return [ parentAuthValue, this.getNestedElementPropValue(parentElementId, elementId, property) ];
 
     };
 
@@ -628,6 +629,7 @@ Dynamo.strToType = function(type, maybeString) {
     case "function":
       if ( _.isFunction(maybeString) ) { return maybeString }
       return (emaybeString(maybeString));
+      break;
     case 'html':
     case 'string':
       try {

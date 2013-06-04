@@ -61,7 +61,7 @@ ApplicationModel = Dynamo.ApplicationModel = Dynamo.XelementClass.extend({
   },
 
   _toPropertyType : function(val, authProperty) {
-    return Dynamo.strToType(val, this.authorizingPropertyTypes[authProperty]);
+    return Dynamo.strToType(this.authorizingPropertyTypes[authProperty], val);
   },
 
   // Values:
