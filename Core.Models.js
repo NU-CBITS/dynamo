@@ -297,29 +297,6 @@ XelementRoot = Dynamo.XelementRoot = {
 
 };
 
-Dynamo.XelementAvailability = function(availabilityObject, elementId) {
-  this.availability = availabilityObject || {};
-
-  this.elementId = elementId;
-
-  this.usableNumDaysIn = function(parentXelementId) {
-    if (parentXelementId) {
-      var parentAvailability = this.availability[parentXelementId] || {};
-
-      return _.max([
-        coerceNum(parentAvailability.self),
-        coerceNum(((parentAvailability.sub_elements || {})[this.elementId] || {}).self)
-      ]);
-    }
-
-    return coerceNum((this.availability[this.elementId] || {}).self);
-  }
-
-  function coerceNum(maybeNum) {
-    return typeof(maybeNum) == "number" ? maybeNum : 1;
-  }
-}
-
 UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend({}, Dynamo.XelementRoot, {
 
   codeName: 'unitary_xelement',
@@ -331,27 +308,14 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
     console.log(this.get_field_value("title"));
   },
 
-  // The availability object is expected to have the format
-  // of the availability object that is created by the application_builder tool:
-  // {
-  //   "[xelement_id]": {
-  //     self: [num-days-into-trial-accessible],
-  //     sub_elements: {
-  //       "[child_xelement_id]": {
-  //         self: [num-days-into-trial-accessible],
-  //         ...
-  //       }
-  //     }
-  //   },
-  //   "[another_xelement_id]": {
-  //     ...
-  //   }
-  // }
-  // if an element is nested within another, then pass in the parent's id as an option.
-  // Also the availability of the nested resource is available no-sooner than its parent.
-  usableNumDaysIn: function(availability, options) {
-    return (new Dynamo.XelementAvailability(availability, this.id))
-      .usableNumDaysIn((options || {}).parent);
+  //uses Authorization - refer to purple_application_builder
+  usableNumDaysIn: function(options) {
+    if (! Dynamo._currentAuthorization) {
+      throw "currentAuthorization object not defined"
+    }
+    else {
+      return Dynamo._currentAuthorization.usableNumDaysIn(this.id, options.parent);
+    }
   },
 
   get_field_type: function(attribute) {

@@ -102,8 +102,6 @@ Dynamo.redirectTo = function(fileName, options) {
 // we can override the Authenticating User and leave the CurrentUser as is.
 Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
-
-
 Dynamo.ApplicationAuthorization = function(appXel) {
 
   function coerceToNumber(maybeNum) {
@@ -157,7 +155,6 @@ Dynamo.initializeApplicationAuthorization = function(appXelement) {
     Dynamo._currentAuthorization = new Dynamo.ApplicationAuthorization(appXelement);
   }
 };
-
 
 
 // CurrentUser
@@ -578,3 +575,74 @@ stringToXelementType = function(type, value) {
     return null;
   };
 }
+
+// stringToBoolean
+// I would love to be able to write:
+// Object.defineProperty(String.prototype, "to_bool", {
+//     get : function() {
+//         return (/^(true|1)$/i).test(this);
+//     }
+// });
+// but this doesn't work in Firefox b/c of a bug in their Javascript engine:
+// https://bugzilla.mozilla.org/show_bug.cgi?id=720760
+// so instead:
+Dynamo.strToBool = function(str) {
+  if (str === true || str === false) {
+    return str;
+  };
+  return (/^(true|1)$/i).test(str);
+};
+
+Dynamo.strToType = function(type, maybeString) {
+  switch (type) {
+    case "bool":
+    case "boolean": 
+      return Dynamo.strToBool(maybeString);
+      break;
+    case "date":
+    case "Date": 
+      return ( new Date(maybeString) );
+      break;
+    case "int": 
+    case "integer": 
+    case "number": 
+      if ( _.isNumber(maybeString) ) { return maybeString }
+      return parseInt(maybeString);
+      break;
+    case "array":
+    case "object":
+    case "json":
+    case 'xelementGuidArray':
+      if ( _.isArray(maybeString) ||  _.isObject(maybeString) ) { return maybeString }
+      try {
+        return JSON.parse(maybeString);
+      }
+      catch (error) {
+         if (type == 'json') {
+          return {}
+         } else {
+          return []
+        }
+      }      
+      break;
+    case "function":
+      if ( _.isFunction(maybeString) ) { return maybeString }
+      return (emaybeString(maybeString));
+    case 'html':
+    case 'string':
+      try {
+        return maybeString.toString();
+      }
+      catch (e) {
+        console.warn("conversion to string failed for: "+maybeString);
+        return "";  
+      }        
+      break;
+    case 'javascript':
+      return eval(maybeString);
+      break;      
+    default: 
+      console.warn("type does not match any expected value! (type, val)", type, maybeString);
+      return maybeString;
+  }
+};
