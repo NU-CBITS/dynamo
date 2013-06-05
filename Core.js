@@ -126,7 +126,11 @@ Dynamo.ApplicationAuthorization = function(appXel) {
   };
 
   this.getNestedElementPropValue = function(parentId, elementId, property) {
-    Dynamo.strToType(this.propTypes[property], this.propValues[parentId].sub_elements[elementId].self[property])
+    subElementAuth = this.propValues[parentId].sub_elements[elementId];
+    if (subElementAuth) {
+     return Dynamo.strToType(this.propTypes[property], subElementAuth.self[property]);
+    }
+    return void 0;
   };
 
   this.authPropVal = function(property, elementId, parentElementId) {
@@ -146,7 +150,8 @@ Dynamo.ApplicationAuthorization = function(appXel) {
 
   this.usableNumDaysIn = function(elementId, parentElementId) {
     var firstAvailability = this.authPropVal("firstAvailability", elementId, parentElementId);
-    return _.max(coerceToNumber(firstAvailability[0]), coerceToNumber(firstAvailability[1]));
+    console.log("usableNumDaysIn: ", [coerceToNumber(firstAvailability[0]), coerceToNumber(firstAvailability[1])]);
+    return _.max([coerceToNumber(firstAvailability[0]), coerceToNumber(firstAvailability[1])]);
   };
 
 };
