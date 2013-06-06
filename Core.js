@@ -139,8 +139,11 @@ Dynamo.ApplicationAuthorization = function(appXel) {
   };
 
   this.getNestedElementPropValue = function(parentId, elementId, property) {
-    return this.propValues[parentId].sub_elements[elementId].self[property]
-    // return Dynamo.strToType(this.propTypes[property], this.propValues[parentId].sub_elements[elementId].self[property])
+    subElementAuth = this.propValues[parentId].sub_elements[elementId];
+    if (subElementAuth) {
+     return Dynamo.strToType(this.propTypes[property], subElementAuth.self[property]);
+    }
+    return void 0;
   };
 
   this.authPropVal = function(property, elementId, parentElementId) {
