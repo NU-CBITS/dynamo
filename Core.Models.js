@@ -310,12 +310,14 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
 
   //uses Authorization - refer to purple_application_builder
   usableNumDaysIn: function(options) {
+    options = options || {};
     if (! Dynamo._currentAuthorization) {
       throw "currentAuthorization object not defined"
     }
     else {
-      return Dynamo._currentAuthorization.usableNumDaysIn(this.id, options.parent);
-    }
+      var p = options.parent || null;
+      return Dynamo._currentAuthorization.usableNumDaysIn(this.id, p);  
+    };
   },
 
   get_field_type: function(attribute) {

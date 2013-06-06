@@ -76,23 +76,38 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     "click .previous" : "moveBack",
     "click .finished" : "displayGuideIndex",
     "click .lesson-index" : "displayGuideIndex",
-    "click .guide-action" : "performAction",
-    "click .accordion-header": "displayWidgetContent",
-    "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
+    "click .guide-action" : "performAction" //,
+    // "click .accordion-header": "displayWidgetContent",
+    // "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
   },
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
   },
 
-  displayDropdownAndWidgetContent: function() {
-    this.$el.find(".accordion-body").show();
-    this.rotateArrowDown();
-  },
+  // displayDropdownAndWidgetContent: function() {
+  //   this.$el.find(".accordion-body").show();
+  //   this.rotateArrowDown();
+  // },
+
+  // displayWidgetContent: function(event) {
+  //   var target = $(event.target);
+  //   if (target.closest('.dropdown').length == 0) {
+  //     var body = this.$el.find(".accordion-body");
+  //     if (body.is(":visible")) {
+  //       body.hide();
+  //       this.rotateArrowRight();
+  //     } else {
+  //       body.show();
+  //       this.toggleChevronArrow();
+  //     }
+  //   };
+  // },
 
   displayGuideIndex: function() {
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
+    self.guideSelect.render();
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
     if (!this.asModal) {
       this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer      
@@ -100,20 +115,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     
     self.guideSelect.delegateEvents()
     // remove comments etcs
-  },
-
-  displayWidgetContent: function(event) {
-    var target = $(event.target);
-    if (target.closest('.dropdown').length == 0) {
-      var body = this.$el.find(".accordion-body");
-      if (body.is(":visible")) {
-        body.hide();
-        this.rotateArrowRight();
-      } else {
-        body.show();
-        this.toggleChevronArrow();
-      }
-    };
   },
 
   moveBack: function() {

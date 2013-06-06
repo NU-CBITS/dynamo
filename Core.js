@@ -122,11 +122,25 @@ Dynamo.ApplicationAuthorization = function(appXel) {
   };
 
   this.getElementPropValue = function(elementId, property) {
-    Dynamo.strToType(this.propTypes[property], this.propValues[elementId].self[property])
+    console.log("(elementId, property):", elementId, property);
+    if ( this.propValues[elementId] && this.propValues[elementId].self ) {
+      console.log("(this.propValues[elementId], this.propValues[elementId].self, this.propValues[elementId].self[property]) : ", 
+                  this.propValues[elementId], 
+                  this.propValues[elementId].self, 
+                  this.propValues[elementId].self[property]//,
+                  // Dynamo.strToType(this.propTypes[property], this.propValues[elementId].self[property])
+      );
+      return this.propValues[elementId].self[property]
+      // return Dynamo.strToType(this.propTypes[property], this.propValues[elementId].self[property]);
+    }
+    else {
+      return null;
+    }
   };
 
   this.getNestedElementPropValue = function(parentId, elementId, property) {
-    Dynamo.strToType(this.propTypes[property], this.propValues[parentId].sub_elements[elementId].self[property])
+    return this.propValues[parentId].sub_elements[elementId].self[property]
+    // return Dynamo.strToType(this.propTypes[property], this.propValues[parentId].sub_elements[elementId].self[property])
   };
 
   this.authPropVal = function(property, elementId, parentElementId) {
@@ -140,13 +154,20 @@ Dynamo.ApplicationAuthorization = function(appXel) {
 
     };
 
-    return this.getElementPropValue(elementId, property) || default_value;
+    if ( this.getElementPropValue(elementId, property) ) {
+      return [ this.getElementPropValue(elementId, property) ]
+    }
+    else {
+      return [ default_value ]
+    }
 
   };
 
   this.usableNumDaysIn = function(elementId, parentElementId) {
-    var firstAvailability = this.authPropVal("firstAvailability", elementId, parentElementId);
-    return _.max(coerceToNumber(firstAvailability[0]), coerceToNumber(firstAvailability[1]));
+    var firstAvailabilityArray = this.authPropVal("firstAvailability", elementId, parentElementId);
+    var usableOnDay = _.max(_.compact(firstAvailabilityArray));
+    console.log("In AppAuth usableNumDaysIn (elementId, parentId), array, usableOnDay)", elementId, parentElementId, firstAvailabilityArray, usableOnDay );
+    return usableOnDay;
   };
 
 };
