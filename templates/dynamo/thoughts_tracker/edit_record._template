@@ -212,6 +212,7 @@
                <label class="control-label">Thought Distortion</label> 
                <div class="controls">
                   <select class="input" data-bind="value: distortion">
+                     <option value=""></option>
                      <option title="We are continually on trial to prove that our opinions and actions are correct. Being wrong is unthinkable and we will go to any length to demonstrate our rightness." value="always_right"> Always Being Right </option>
                      <option title="We hold other people responsible for our pain, or take the other track and blame ourselves for every problem." value="blaming"> Blaming </option>
                      <option title="We expect disaster to strike, no matter what. This is also referred to as “magnifying or minimizing.” We hear about a problem and use what if questions (e.g., “What if tragedy strikes?” “What if it happens to me?”). For example, a person might exaggerate the importance of insignificant events (such as their mistake, or someone else’s achievement). Or they may inappropriately shrink the magnitude of significant events until they appear tiny (for example, a person’s own desirable qualities or someone else’s imperfections)." value="catastrophizing"> Catastrophizing </option>
