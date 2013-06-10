@@ -67,25 +67,33 @@ launchInModal = function(viewInstance, options) {
 
   // Initalize view container as dialog
   var modalOpts = _.extend({
-    autoOpen: false,
-    width: 610,
-    height: 360
+    autoOpen: false
   }, options.jqModalOptions);
   this.$viewContainer.dialog( modalOpts );  
 
-  // Trigger open on button click
-  var self = this;
-  this.$launchButton.click(function() { 
-    self.modalOpen();
-  });
+  // Set up the on-button-click trigger
+  if (options.onLaunchButtonClick) {
+    this.onLaunchButtonClick = options.onLaunchButtonClick;
+    _.bindAll(this, 'onLaunchButtonClick');
+    this.$launchButton.on("click", this.onLaunchButtonClick);
+  }
+  else {
+    this.$launchButton.on("click", this.openModal);
+  }
 
-  this.modalOpen = function() {
+  this.openModal = function() {
     this.$viewContainer.dialog("open");
     this.$viewContainer.html(this.viewInstance.render().$el);
     this.viewInstance.delegateEvents();
     this.trigger('opened');
   };
-  _.bindAll(this, 'modalOpen');
+  _.bindAll(this, 'openModal');
+
+  this.closeModal = function() {
+    this.$viewContainer.dialog("close");
+    this.trigger('closed');
+  };
+  _.bindAll(this, 'closeModal');  
 
   return this;
 };
