@@ -1,11 +1,8 @@
-<div class="widget-header purple">
-   <div class="pull-left"> Form </div>
-</div>
 <div class="widget-content">
    <form class="form-horizontal form-condensed">
       <div class="row-fluid">
          <div class="control-group">
-            <label class="control-label"> Situation </label> 
+            <label class="control-label">Situation</label> 
             <div class="controls"> <textarea id="situation-field" type="text" rows="4" class="span12" placeholder="Describe what happened" data-bind="value: situation"
             data-title="Writing Situations"
             data-content="Please describe WHAT happened, don’t write a lot, but try to be specific. For example, &ldquo;talking on the phone with John.&rdquo; is better than &ldquo;talking on the phone.&rdquo;"
@@ -14,7 +11,7 @@
       </div>
       <!-- Start and End Times --> 
       <div class="control-group">
-         <label class="control-label"> Starts </label> 
+         <label class="control-label">Starts</label> 
          <div class="controls">
             <select data-bind="value: start_month" class="input-mini">
                <option value="0"> Jan </option>
@@ -61,7 +58,7 @@
          </div>
       </div>
       <div class="control-group">
-         <label class="control-label"> Ends </label> 
+         <label class="control-label">Ends</label> 
          <div class="controls">
             <select data-bind="value: end_month" class="input-mini">
                <option value="0"> Jan </option>
@@ -109,7 +106,7 @@
       </div>
       <!-- Tags --> 
       <div class="control-group">
-         <label class="control-label"> Tags ( <span data-bind="text: tags().length"> </span> ) </label> 
+         <label class="control-label">Tags (<span data-bind="text: tags().length"> </span>)</label> 
          <div class="controls">
             <ul data-bind="foreach: { data: tags, as: \'tag\' }">
                <li>
@@ -122,7 +119,7 @@
       <!-- Thought --> 
       <div class="row-fluid">
          <div class="control-group span12">
-            <label class="control-label"> Your Thought </label> 
+            <label class="control-label">Your Thought</label> 
             <div class="controls"> 
                <input 
                   id="thought-field" 
@@ -136,9 +133,9 @@
       </div>
       <!-- Emotion --> 
       <div class="row-fluid">
-         <div class="span5">
+         <div class="span12">
             <div class="control-group">
-               <label class="control-label"> Emotion </label> 
+               <label class="control-label">Initial Emotion</label> 
                <div class="controls">
                   <select class="input-small" data-bind="value: emotion">
                      <option value="sad"> Sad </option>
@@ -149,19 +146,24 @@
                </div>
             </div>
          </div>
-         <div class="span7">
-            <div style="text-align:center;"> <label> Intensity </label> </div>
-            <div class="clearfix"> </div>
-            <div class="slider-container">
-               <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 1, max: 10, value: 1, range: \'min\', step: 1}"> </div>
-               <strong class="pull-right intensity-value" data-bind="text: emotion_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"> </strong> 
+      </div>
+      <div class="row-fluid">
+         <div class="span10">
+            <div class="control-group">
+               <div class="control-label"><label>Emotion Intensity</label></div>
+               <div class="controls slider-container"> 
+                  <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 1, max: 10, value: 1, range: \'min\', step: 1}"> </div>
+               </div>
             </div>
+         </div>
+         <div class="span2">
+            <strong class="pull-right intensity-value" data-bind="text: emotion_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"> </strong> 
          </div>
       </div>
       <!-- Alternative Thought --> 
       <div class="row-fluid">
          <div class="control-group span12">
-            <label class="control-label"> Alternative Thought </label> 
+            <label class="control-label">Alternative Thought</label> 
             <div class="controls"> 
                <textarea 
                   id="alt-thought-field" 
@@ -176,9 +178,9 @@
       </div>
       <!-- Outcome Emotion --> 
       <div class="row-fluid">
-         <div class="span5">
+         <div class="span12">
             <div class="control-group">
-               <label class="control-label"> Outcome </label> 
+               <label class="control-label">Outcome Emotion</label> 
                <div class="controls">
                   <select class="input-small" data-bind="value: outcome">
                      <option value="sad"> Sad </option>
@@ -189,22 +191,25 @@
                </div>
             </div>
          </div>
-         <div class="span7">
-            <div style="text-align:center;"> <label> Intensity </label> </div>
-            <div class="clearfix"> </div>
-            <div class="row-fluid">
-               <div class="slider-container">
+      </div>
+      <div class="row-fluid">
+         <div class="span10">
+            <div class="control-group">
+               <div class="control-label"> <label>Emotion Intensity</label> </div>
+               <div class="controls slider-container">
                   <div class="slider" data-bind="slider: outcome_intensity, sliderOptions: {min: 1, max: 10, value: 1, range: \'min\', step: 1}"> </div>
-                  <strong class="pull-right intensity-value" data-bind="text: outcome_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"> </strong> 
                </div>
             </div>
+         </div>
+         <div class="span2">
+            <strong class="pull-right intensity-value" data-bind="text: outcome_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"> </strong> 
          </div>
       </div>
       <!-- Thought Distortion --> 
       <div class="row-fluid">
          <div class="span12">
             <div class="control-group">
-               <label class="control-label"> Thought Distortion </label> 
+               <label class="control-label">Thought Distortion</label> 
                <div class="controls">
                   <select class="input" data-bind="value: distortion">
                      <option title="We are continually on trial to prove that our opinions and actions are correct. Being wrong is unthinkable and we will go to any length to demonstrate our rightness." value="always_right"> Always Being Right </option>
@@ -229,8 +234,7 @@
       </div>
       <div> 
          <button class="del btn btn-danger" data-bind="click: destroy">Delete</button>
-         <button class="btn btn-primary save" data-bind="click: save">Save Thought Record</button> 
-
+         <button class="btn btn-primary save" data-bind="click: save">Save Thought Record</button>
       </div>
    </form>
 </div>
