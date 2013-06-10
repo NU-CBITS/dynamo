@@ -19,6 +19,78 @@
 //   }
 // });
 
+
+// launchInModal
+// Following the decorator pattern, wraps a view instance
+// so that it is properly rendered within a modal dialog
+// currently relies on jQuery UI.
+launchInModal = function(viewInstance, options) {
+  
+  _.extend(this, Backbone.Events);
+  this.cid = _.uniqueId('c');
+  this.viewInstance = viewInstance;
+
+  // Setup launch button
+  if (options.$launchButton) {
+    this.$launchButton = options.$launchButton;
+  }
+  else if (options.$launchButtonContainer) {
+
+    var buttonId = "launch-"+this.cid
+
+    options.$launchButtonContainer.prepend(
+      t.button(options.launchButtonText, { 
+        id: buttonId, 
+        class: "btn btn-info", 
+        style: (options.launchButtonStyle || "") 
+      }));
+    this.$launchButton = $(options.$launchButtonContainer.find(("button#"+buttonId+":first")));
+
+  }
+  else {
+    throw "requires a $launchButton or $launchButtonContainer option"
+  }
+
+  // Set view container.
+  if (options.$viewContainer) {
+
+    this.$viewContainer = options.$viewContainer;
+
+  }
+  else {
+
+    var dialogId = 'dialog-'+this.cid;
+    this.$viewContainer = $('<div id="'+dialogId+'"></div>');
+    $('body').append(this.$viewContainer);
+
+  }
+
+  // Initalize view container as dialog
+  var modalOpts = _.extend({
+    autoOpen: false,
+    width: 610,
+    height: 360
+  }, options.jqModalOptions);
+  this.$viewContainer.dialog( modalOpts );  
+
+  // Trigger open on button click
+  var self = this;
+  this.$launchButton.click(function() { 
+    self.modalOpen();
+  });
+
+  this.modalOpen = function() {
+    this.$viewContainer.dialog("open");
+    this.$viewContainer.html(this.viewInstance.render().$el);
+    this.viewInstance.delegateEvents();
+    this.trigger('opened')
+  };
+  _.bindAll(this, 'modalOpen');
+
+  return this;
+};
+
+
 GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
 
   // _launchButton: "<button id='guide_launcher' class='btn btn-info'>Launch Guides</button>",
@@ -85,6 +157,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     return this._currentSlideIndex;
   },
 
+  //
   // displayDropdownAndWidgetContent: function() {
   //   this.$el.find(".accordion-body").show();
   //   this.rotateArrowDown();
@@ -103,6 +176,24 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   //     }
   //   };
   // },
+  //
+
+  // rotateArrowRight: function() {
+  //   this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
+  // },
+
+  // rotateArrowDown: function() {
+  //   this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
+  // },
+
+  // toggleChevronArrow: function() {
+  //   if (this.$el.find('i.icon-caret-right').length === 1) {
+  //     this.rotateArrowDown();
+  //   } else {
+  //     this.rotateArrowRight();
+  //   }
+  // }
+  //    
 
   displayGuideIndex: function() {
     var self = this;
@@ -259,22 +350,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     //Once a guide is selected we can load comments and likes for the guide.
     if ( app.Likes ) { this.renderLikes(app, guide) };
     if ( app.Comments ) { this.renderComments(app, guide) };
-  },
-
-  rotateArrowRight: function() {
-    this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
-  },
-
-  rotateArrowDown: function() {
-    this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
-  },
-
-  toggleChevronArrow: function() {
-    if (this.$el.find('i.icon-caret-right').length === 1) {
-      this.rotateArrowDown();
-    } else {
-      this.rotateArrowRight();
-    }
   }
 
 });

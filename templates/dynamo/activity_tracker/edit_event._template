@@ -14,7 +14,7 @@
       <label class="control-label" id="title-attribute-label">Title</label>
 
       <div class="controls">
-        <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Description" type="text">
+        <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Situation" type="text">
       </div>
     </div>
   </div><!-- Start and End Times -->

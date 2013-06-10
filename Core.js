@@ -205,7 +205,7 @@ Dynamo.CurrentUser = function() {
   if ( localStorage.getItem("CurrentUser") ) {
 
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
-    //USERS is expected to be the globally defined and available of collection of users.
+    // USERS is expected to be the globally defined and available of collection of users.
     if (typeof(USERS) !== "undefined") {
       Dynamo._CurrentUser = USERS.get(user_atts.guid);
 
@@ -218,7 +218,8 @@ Dynamo.CurrentUser = function() {
       };
 
     } else {
-      //must not matter too much; create a dummy user.
+
+      // Must not matter too much; Create a Dummy user.
       Dynamo._CurrentUser = new Dynamo.User(user_atts)
 
     };
@@ -227,14 +228,18 @@ Dynamo.CurrentUser = function() {
   };
 
   if (Dynamo.loginRequired()) {
+
     Dynamo.redirectTo("login.html");
+
   }
   else {
+    
     Dynamo._CurrentUser = new Dynamo.User({
       phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
       username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
       group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
     });
+
     Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
     localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
     localStorage.setItem("CurrentUserSaved", "false");
@@ -247,8 +252,7 @@ Dynamo.CurrentUser = function() {
     });
 
     return Dynamo._CurrentUser;
-  }
-
+  };
 
 };
 
