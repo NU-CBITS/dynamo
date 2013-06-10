@@ -1710,13 +1710,14 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     });
   },
 
-  //render function is greatly simplified
-  //as the supplied template will do all the
-  //heavy lifting!
+  // Render function is greatly simplified
+  // as the supplied template will do all the
+  // heavy lifting!
   render: function() {
     this.$el.html( this.knockoutTemplate() );
     this.createKnockoutModel();
     ko.applyBindings(this.knockoutModel, this.$el.get(0));
+    this.trigger("rendered");
     return this;
   },
 

@@ -83,7 +83,7 @@ launchInModal = function(viewInstance, options) {
     this.$viewContainer.dialog("open");
     this.$viewContainer.html(this.viewInstance.render().$el);
     this.viewInstance.delegateEvents();
-    this.trigger('opened')
+    this.trigger('opened');
   };
   _.bindAll(this, 'modalOpen');
 
