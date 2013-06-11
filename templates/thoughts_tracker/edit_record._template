@@ -1,0 +1,241 @@
+<div class="widget-content">
+   <form class="form-horizontal form-condensed">
+      <div class="row-fluid">
+         <div class="control-group">
+            <label class="control-label">Situation</label> 
+            <div class="controls"> <textarea id="situation-field" type="text" rows="4" class="span12" placeholder="Describe what happened" data-bind="value: situation"
+            data-title="Writing Situations"
+            data-content="Please describe WHAT happened, don’t write a lot, but try to be specific. For example, &ldquo;talking on the phone with John.&rdquo; is better than &ldquo;talking on the phone.&rdquo;"
+            > </textarea> </div>
+         </div>
+      </div>
+      <!-- Start and End Times --> 
+      <div class="control-group">
+         <label class="control-label">Starts</label> 
+         <div class="controls">
+            <select data-bind="value: start_month" class="input-mini">
+               <option value="0"> Jan </option>
+               <option value="1"> Feb </option>
+               <option value="2"> Mar </option>
+               <option value="3"> Apr </option>
+               <option value="4"> May </option>
+               <option value="5"> June </option>
+               <option value="6"> July </option>
+               <option value="7"> Aug </option>
+               <option value="8"> Sept </option>
+               <option value="9"> Oct </option>
+               <option value="10"> Nov </option>
+               <option value="11"> Dec </option>
+            </select>
+            <input type="text" placeholder="dd" class="input-xmini" data-bind="value: start_date"> <input type="text" placeholder="yyyy" class="input-xmini" data-bind="value: start_year"> 
+            <select data-bind="value: start_hour" class="input-small">
+               <option value="0"> 12 am </option>
+               <option value="1"> 1 am </option>
+               <option value="2"> 2 am </option>
+               <option value="3"> 3 am </option>
+               <option value="4"> 4 am </option>
+               <option value="5"> 5 am </option>
+               <option value="6"> 6 am </option>
+               <option value="7"> 7 am </option>
+               <option value="8"> 8 am </option>
+               <option value="9"> 9 am </option>
+               <option value="10"> 10 am </option>
+               <option value="11"> 11 am </option>
+               <option value="12"> 12 pm </option>
+               <option value="13"> 1 pm </option>
+               <option value="14"> 2 pm </option>
+               <option value="15"> 3 pm </option>
+               <option value="16"> 4 pm </option>
+               <option value="17"> 5 pm </option>
+               <option value="18"> 6 pm </option>
+               <option value="19"> 7 pm </option>
+               <option value="20"> 8 pm </option>
+               <option value="21"> 9 pm </option>
+               <option value="22"> 10 pm </option>
+               <option value="23"> 11 pm </option>
+            </select>
+            <input type="text" placeholder="min" class="input-xmini" data-bind="value: start_minute"> 
+         </div>
+      </div>
+      <div class="control-group">
+         <label class="control-label">Ends</label> 
+         <div class="controls">
+            <select data-bind="value: end_month" class="input-mini">
+               <option value="0"> Jan </option>
+               <option value="1"> Feb </option>
+               <option value="2"> Mar </option>
+               <option value="3"> Apr </option>
+               <option value="4"> May </option>
+               <option value="5"> June </option>
+               <option value="6"> July </option>
+               <option value="7"> Aug </option>
+               <option value="8"> Sept </option>
+               <option value="9"> Oct </option>
+               <option value="10"> Nov </option>
+               <option value="11"> Dec </option>
+            </select>
+            <input type="text" placeholder="dd" class="input-xmini" data-bind="value: end_date"> <input type="text" placeholder="yyyy" class="input-xmini" data-bind="value: end_year"> 
+            <select data-bind="value: end_hour" class="input-small">
+               <option value="0"> 12 am </option>
+               <option value="1"> 1 am </option>
+               <option value="2"> 2 am </option>
+               <option value="3"> 3 am </option>
+               <option value="4"> 4 am </option>
+               <option value="5"> 5 am </option>
+               <option value="6"> 6 am </option>
+               <option value="7"> 7 am </option>
+               <option value="8"> 8 am </option>
+               <option value="9"> 9 am </option>
+               <option value="10"> 10 am </option>
+               <option value="11"> 11 am </option>
+               <option value="12"> 12 pm </option>
+               <option value="13"> 1 pm </option>
+               <option value="14"> 2 pm </option>
+               <option value="15"> 3 pm </option>
+               <option value="16"> 4 pm </option>
+               <option value="17"> 5 pm </option>
+               <option value="18"> 6 pm </option>
+               <option value="19"> 7 pm </option>
+               <option value="20"> 8 pm </option>
+               <option value="21"> 9 pm </option>
+               <option value="22"> 10 pm </option>
+               <option value="23"> 11 pm </option>
+            </select>
+            <input type="text" placeholder="min" class="input-xmini" data-bind="value: end_minute"> 
+         </div>
+      </div>
+      <!-- Tags --> 
+      <div class="control-group">
+         <label class="control-label">Tags (<span data-bind="text: tags().length"> </span>)</label> 
+         <div class="controls">
+            <ul data-bind="foreach: { data: tags, as: \'tag\' }">
+               <li>
+                  <div class="input-tag"> <input type="text" data-bind="value: tag.value, valueUpdate: \'afterkeydown\'" /> <button class="btn" data-bind="click: tag.remove"> Remove </button> </div>
+               </li>
+            </ul>
+            <button class="btn" data-bind="click: tags_addElement"> <i class="icon-plus"> </i> Add Tag </button> 
+         </div>
+      </div>
+      <!-- Emotion --> 
+      <div class="row-fluid">
+         <div class="span12">
+            <div class="control-group">
+               <label class="control-label">Initial Emotion</label> 
+               <div class="controls">
+                  <select class="input-small" data-bind="value: emotion">
+                     <option value="sad"> Sad </option>
+                     <option value="happy"> Happy </option>
+                     <option value="angry"> Angry </option>
+                     <option value="anxious"> Anxious </option>
+                  </select>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="row-fluid">
+         <div class="span10">
+            <div class="control-group">
+               <div class="control-label"><label>Emotion Intensity</label></div>
+               <div class="controls slider-container"> 
+                  <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 1, max: 10, value: 1, range: \'min\', step: 1}"> </div>
+               </div>
+            </div>
+         </div>
+         <div class="span2">
+            <strong class="pull-right intensity-value" data-bind="text: emotion_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"> </strong> 
+         </div>
+      </div>      
+      <!-- Thought --> 
+      <div class="row-fluid">
+         <div class="control-group span12">
+            <label class="control-label">Your Thought</label> 
+            <div class="controls"> 
+               <input 
+                  id="thought-field" 
+                  type="text" 
+                  placeholder="What did you first think in this situation?" class="span12" 
+                  data-bind="value: thought"
+                  data-content="Thoughts are the sentences we tell ourselves. By thoughts, we mean the EXACT words that go through your mind. Imagine you had a tape recorder in your head, what words would it hear?" 
+               /> 
+            </div>
+         </div>
+      </div>
+      <!-- Thought Distortion --> 
+      <div class="row-fluid">
+         <div class="span12">
+            <div class="control-group">
+               <label class="control-label">Thought Distortion</label> 
+               <div class="controls">
+                  <select class="input" data-bind="value: distortion">
+                     <option value=""></option>
+                     <option title="We are continually on trial to prove that our opinions and actions are correct. Being wrong is unthinkable and we will go to any length to demonstrate our rightness." value="always_right"> Always Being Right </option>
+                     <option title="We hold other people responsible for our pain, or take the other track and blame ourselves for every problem." value="blaming"> Blaming </option>
+                     <option title="We expect disaster to strike, no matter what. This is also referred to as “magnifying or minimizing.” We hear about a problem and use what if questions (e.g., “What if tragedy strikes?” “What if it happens to me?”). For example, a person might exaggerate the importance of insignificant events (such as their mistake, or someone else’s achievement). Or they may inappropriately shrink the magnitude of significant events until they appear tiny (for example, a person’s own desirable qualities or someone else’s imperfections)." value="catastrophizing"> Catastrophizing </option>
+                     <option title="We expect that other people will change to suit us if we just pressure or cajole them enough. We need to change people because our hopes for happiness seem to depend entirely on them." value="change_fallacy"> Change Fallacy </option>
+                     <option title="If we feel externally controlled, we see ourselves as helpless a victim of fate. For example, “I can’t help it if the quality of the work is poor, my boss demanded I work overtime on it.” The fallacy of internal control has us assuming responsibility for the pain and happiness of everyone around us." value="control_fallacy"> Control Fallacy </option>
+                     <option title="We believe that what we feel must be true automatically. If we feel stupid and boring, then we must be stupid and boring. You assume that your unhealthy emotions reflect he way things really are" value="emotional_reasoning"> Emotional Reasoning </option>
+                     <option title="We feel resentful because we think we know what is fair, but other people won’t agree with us." value="fairness_fallacy"> Fairness Fallacy </option>
+                     <option title="We take the negative details and magnify them while filtering out all positive aspects of a situation. For instance, a person may pick out a single, unpleasant detail and dwell on it exclusively so that their vision of reality becomes darkened or distorted." value="filtering"> Filtering </option>
+                     <option title="Without individuals saying so, we know what they are feeling and why they act the way they do. In particular, we are able to determine how people are feeling toward us. For example, a person may conclude that someone is reacting negatively toward them but doesn’t actually bother to find out if they are correct. Another example is a person may anticipate that things will turn out badly, and will feel convinced that their prediction is already an established fact." value="conclusion_jumping"> Jumping to Conclusions </option>
+                     <option title="We generalize one or two qualities into a negative global judgment. Instead of describing an error in context of a specific situation, a person will attach an unhealthy label to themselves." value="mislabeling"> Mislabeling </option>
+                     <option title="In this cognitive distortion, we come to a general conclusion based on a single incident or a single piece of evidence. If something bad happens only once, we expect it to happen over and over again. A person may see a single, unpleasant event as part of a never-ending pattern of defeat." value="overgeneralization"> Overgeneralization </option>
+                     <option title="Personalization is a distortion where a person believes that everything others do or say is some kind of direct, personal reaction to the person. We also compare ourselves to others trying to determine who is smarter, better looking, etc. A person engaging in personalization may also see themselves as the cause of some unhealthy external event that they were not responsible for." value="personalization"> Personalization </option>
+                     <option title="In polarized thinking, things are either “black-or-white.” We have to be perfect or we’re a failure — there is no middle ground. You place people or situations in “either/or” categories, with no shades of gray or allowing for the complexity of most people and situations. If your performance falls short of perfect, you see yourself as a total failure." value="polarized_thinking"> Polarized Thinking </option>
+                     <option title="We expect our sacrifice and self-denial to pay off, as if someone is keeping score. We feel bitter when the reward doesn’t come." value="sacrifice_fallacy"> Sacrificial Reward Fallacy </option>
+                     <option title="We have a list of ironclad rules about how others and we should behave. People who break the rules make us angry, and we feel guilty when we violate these rules. A person may often believe they are trying to motivate themselves with shoulds and shouldn’ts, as if they have to be punished before they can do anything." value="shoulds"> Shoulds </option>
+                  </select>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- Alternative Thought --> 
+      <div class="row-fluid">
+         <div class="control-group span12">
+            <label class="control-label">Alternative Thought</label> 
+            <div class="controls"> 
+               <textarea 
+                  id="alt-thought-field" 
+                  class="span12"
+                  rows="3"
+                  placeholder="What is another more helpful thought about this situation?" 
+                  data-bind="value: alternative_thought"
+                  data-content="The first thought that comes to your mind is just one perspective. What is a different thought you could have had that would have made you feel better?  Use the following questions to help you:<ol><li> What’s the evidence the thought is true?</li><li> Is there an alternative explanation?</li><li> What’s the worst that could happen? The best? What’s the most realistic outcome?</li><li> What would you tell a friend in the same situation who had this thought?</li><li> Is thinking that thought useful? How would you feel or act if you thought something different?</li></ol>"> 
+               </textarea> 
+            </div>
+         </div>
+      </div>
+      <!-- Outcome Emotion --> 
+      <div class="row-fluid">
+         <div class="span12">
+            <div class="control-group">
+               <label class="control-label">Outcome Emotion</label> 
+               <div class="controls">
+                  <select class="input-small" data-bind="value: outcome">
+                     <option value="sad"> Sad </option>
+                     <option value="happy"> Happy </option>
+                     <option value="angry"> Angry </option>
+                     <option value="anxious"> Anxious </option>
+                  </select>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="row-fluid">
+         <div class="span10">
+            <div class="control-group">
+               <div class="control-label"> <label>Emotion Intensity</label> </div>
+               <div class="controls slider-container">
+                  <div class="slider" data-bind="slider: outcome_intensity, sliderOptions: {min: 1, max: 10, value: 1, range: \'min\', step: 1}"> </div>
+               </div>
+            </div>
+         </div>
+         <div class="span2">
+            <strong class="pull-right intensity-value" data-bind="text: outcome_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"> </strong> 
+         </div>
+      </div>
+      <div> 
+         <button class="del btn btn-danger" data-bind="click: destroy">Delete</button>
+         <button class="btn btn-primary save" data-bind="click: save">Save Thought Record</button>
+      </div>
+   </form>
+</div>
