@@ -79,8 +79,9 @@ launchInModal = function(viewInstance, options) {
   }
   else {
     this.$launchButton.on("click", this.openModal);
-  }
-
+  
+  };
+  
   this.openModal = function() {
     this.$viewContainer.dialog("open");
     this.$viewContainer.html(this.viewInstance.render().$el);

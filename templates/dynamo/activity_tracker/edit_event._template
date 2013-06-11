@@ -1,13 +1,3 @@
-<div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
-  <h3>Event Editor</h3>
-
-  <ul class="nav pull-right">
-    <li class="caret-icons">
-      <a><i class="icon-caret-right"></i></a>
-    </li>
-  </ul>
-</div>
-
 <form class="form-horizontal widget-content form-condensed accordion-body" id="edit-event" name="edit-event">
   <div class="row-fluid">
     <div class="control-group span12" id="edit-title-attribute-container">
