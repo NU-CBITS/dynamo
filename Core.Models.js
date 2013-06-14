@@ -814,6 +814,31 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return self._attributeNames
   },
 
+  all: function() {
+    
+    var clnProps = _.extend({
+          xelement_id: function() { 
+            new Error("xelement_id called for abstract collection");
+          },
+          user_id:  function() { 
+            new Error("user_id called for abstract collection");
+          },
+          group_id: function() { 
+            new Error("group_id called for abstract collection");
+          },
+    }, (this.get("collectionProperties") || {}) );
+
+
+    var allModels = this.collections.reduce(function(memo, collection) { 
+      return collection.models.concat(memo)
+    }, []);
+
+    var cln = new Dynamo.DataCollection(allModels, clnProps);
+    cln.sort();
+    return cln;
+
+  },
+
   add: function(modelToAdd) {
     var user_id = modelToAdd.get("user_id");
     this.userCollectionFor(user_id).add(modelToAdd);
@@ -897,8 +922,9 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 });
 
 // Underscore methods that we want to implement on GroupWideData.
+// If you want to override one of these methods, remember to remove it from here!!
 var methods = ['forEach', 'each', 'map', 'reduce', 'reduceRight', 'find',
-  'detect', 'filter',  'select', 'reject', 'every', 'all', 'some', 'any',
+  'detect', 'filter',  'select', 'reject', 'every', 'some', 'any',
   'include', 'contains', 'invoke', 'max', 'min', 'sortBy', 'sortedIndex',
   'toArray', 'size', 'first', 'initial', 'rest', 'last', 'without', 'indexOf',
   'shuffle', 'lastIndexOf', 'isEmpty', 'groupBy'];
@@ -909,6 +935,9 @@ _.each(methods, function(method) {
     return _[method].apply(_, [this.collections].concat(_.toArray(arguments)));
   };
 });
+
+
+
 
 // Same as Data, but doesn't save to a server.
 Dynamo.TempData = Dynamo.Data.extend({
