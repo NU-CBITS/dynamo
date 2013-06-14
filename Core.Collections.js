@@ -48,15 +48,15 @@ DataCollection = Dynamo.DataCollection = Dynamo.Collection.extend({
   },
 
   group_id: function() {
-    return this.options.group_id
+    return _.result(this.options, 'group_id')
   },
 
   server_url: function() {
-    return this.options.server_url || Dynamo.TriremeURL
+    return _.result(this.options, 'server_url') || Dynamo.TriremeURL
   },
 
   user_id: function() {
-    return this.options.user_id
+    return _.result(this.options, 'user_id')
   },
 
   url: function() {
@@ -67,7 +67,7 @@ DataCollection = Dynamo.DataCollection = Dynamo.Collection.extend({
   },
 
   xelement_id: function() {
-    return this.options.xelement_id
+    return _.result(this.options, 'xelement_id')
   }
 
 });
