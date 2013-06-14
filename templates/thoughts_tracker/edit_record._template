@@ -239,11 +239,42 @@
             <div class="control-group">
                <label class="control-label">Sharing</label> 
                <div class="controls">
-                  <input name="share" type="checkbox" value="1" /> Share this
-                  <div>
-                     <input name="share-empathy"     type="checkbox" value="1">Anybody else feel this way?
-                     <input name="share-suggestions" type="checkbox" value="1">Any Suggestions?
-                     <input name="share-pride"       type="checkbox" value="1">I feel proud!
+                  <div class="well well-small">
+                     <div class="control-group">
+                        <div>
+                           <label class="checkbox">
+                              <input   type="checkbox"
+                                        data-bind="checked: shared"
+                                        />
+                              Share this
+                           </label>
+                        </div>
+                     </div>
+                     <div class="control-group">
+                        <div class="controls">
+                           <label class="checkbox">
+                              <input type="checkbox" 
+                                    data-bind="checked: share_empathy" >
+                              Anybody else feel this way?
+                           </label>
+                        </div>
+                     </div>
+                     <div class="control-group">
+                        <div class="controls">
+                           <label class="checkbox">
+                           <input type="checkbox" data-bind="checked: share_suggestions">
+                              Any suggestions?
+                           </label>
+                        </div>
+                     </div>
+                     <div class="control-group">
+                        <div class="controls">
+                           <label class="checkbox">
+                              <input type="checkbox" data-bind="checked: share_pride">
+                              I feel proud!
+                           </label>
+                        </div>
+                     </div>
                   </div>
                </div>
             </div>

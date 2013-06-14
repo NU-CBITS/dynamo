@@ -547,13 +547,12 @@ Dynamo.getDataFieldsAsObject = function(dataModel) {
   return _.extend(fields, _.object(dataModel.get('names'), _.map(dataModel.get('names'), dataModel.get_field_value )));
 };
 
-//Data
-//modified from Data class in Backhand.js
-//expects:
-//- a trireme_root_url
-//- an xelement_id //
-//- a user_id //
-//- a group_id
+// Data
+// expects:
+//  - a trireme_root_url
+//  - an xelement_id //
+//  - a user_id //
+//  - a group_id
 Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   codeName: 'data',
@@ -817,7 +816,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   add: function(modelToAdd) {
     var user_id = modelToAdd.get("user_id");
-    this.userCollectionFor(user_id).add(modelToAdd)
+    this.userCollectionFor(user_id).add(modelToAdd);
   },
 
   buildUserCollections: function() {
