@@ -1,25 +1,25 @@
 <div class="widget-content">
 	<div class="thought_record">
-		<p><strong>(%= username %)</strong> was in this situation:<p>
+		<p><strong>(%= username %)</strong> was in this situation:</p>
 		<p style="margin-left:10px;"><em>(%= situation %)</em></p>
-		<p><strong>Initially, they felt:</strong> (%= emotion %) ((%= emotion_intensity %)) </p>
+		<p><strong>Initially, they felt</strong> (%= emotion %) ((%= emotion_intensity %)) </p>
 		<p><strong>Because they were thinking</strong> (%= thought %)<p>
 		<p><strong>After reflection, they thought</strong>  (%= alternative_thought %)<p>
 		<p><strong>And afterwards felt</strong> (%= outcome %) ((%= outcome_intensity %))<p>
 	</div>
 	<div class="prompts">
 		<ul>
-			(% if (share_empathy) { %) <li>Anybody else feel this way?</li> (% )} %)
-			(% if (share_suggestions) { %) <li>Have any suggestions?</li> (% )} %)
-			(% if (share_pride) { %) <li>I&#39;m proud about this one!</li> (% ))} %)
+			(% if (share_empathy)			{ %)<li>Anybody else feel this way?</li>(% 		} %)
+			(% if (share_suggestions) { %)<li>Have any suggestions?</li>(% 					} %)
+			(% if (share_pride)				{ %)<li>I&#39;m proud about this one!</li>(% 	} %)
 		</ul>
 	</div>
-	<div class="row-fluid">
+	<div class="row-fluid" style="margin-top:20px;">
 		<div class="span4 hugs"></div>
 		<div class="span4 me-toos"></div>
 		<div class="span4 thumbs-up"></div>
 	</div>
-	<div class="row-fluid">
+	<div class="row-fluid" style="margin-top:10px;">
 		<div class="span12 comments"></div>
 	</div>
 </div>
