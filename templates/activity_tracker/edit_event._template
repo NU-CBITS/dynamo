@@ -506,6 +506,29 @@
     </div>
   </div>
 
+  <!-- Sharing --> 
+  <div class="row-fluid">
+     <div class="span12">
+        <div class="control-group">
+           <label class="control-label">Sharing</label> 
+           <div class="controls">
+              <div class="well well-small">
+                 <div class="control-group">
+                    <div>
+                       <label class="checkbox">
+                          <input   type="checkbox"
+                                    data-bind="checked: shared"
+                                    />
+                          Share this
+                       </label>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+     </div>
+  </div>  
+
   <div id="event-form-save-delete-buttons-container" style="margin-top:20px">
     <button class="del btn btn-danger btn-large" data-bind="click: destroy" id="event-delete-button"><em class="icon-trash"></em> Delete</button>
     <button class="save btn btn-primary btn-large" data-bind="click: save" id="event-save-button">Save</button> 
