@@ -1751,6 +1751,67 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 });
 
 
+// Abstract view for rendering an index view of a group-wide data set,
+// Expects: 
+//  - Expects to be subclassed with the modelViewClass attribute overwritten,
+//    or have the modelViewClass be passed in on instantiation.
+//  - The model passed in on instantion ot have an 'all' method which returns a
+//    collection of models to be rendered by the modelViewClass, as well as 'add' / 'remove'
+//    methods. 
+GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
+
+  modelViewClass: function() {
+    new Error("Abstract function, modelViewClass of GroupWideDataIndexView called!")
+  },
+
+  initialize: function() {
+    var self = this;
+    this.modelViewClass = this.options.modelViewClass || this.modelViewClass;
+    this.renderOrder = this.options.renderOrder || this.renderOrder;
+    
+    this.model.on("add", this.initialRender, this);
+    this.model.on("remove", this.initialRender, this);
+  },
+
+  initialRender: function() {
+
+    debugger;
+    
+    this.modelViews = null;
+    this.modelViews = [];
+
+    var self = this;
+    this.model.all().each(function(someModel) {
+      self.modelViews.push( (new self.modelViewClass({ model: someModel })) );
+    });
+
+    this.$el.empty();
+    _.each(this.modelViews, function(mView) {
+      if (self.renderOrder === 'reverse') {
+        self.$el.prepend(mView.render().$el);
+      }
+      else {
+        self.$el.append(mView.render().$el);  
+      };
+    });
+    this.initiallyRendered = true;
+
+  },
+
+  render: function() {
+  
+    if (!this.initiallyRendered) {
+      this.initialRender();
+    }  
+    else {
+      _.invoke(this.modelViews, 'render');
+    };
+
+    return this;
+  }
+
+});
+
 
 GoalsView = Dynamo.GoalsView = Backbone.View.extend({
 

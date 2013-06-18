@@ -1,4 +1,7 @@
 <div class="widget-content">
+	(% if (deletable) { %)
+		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
+	(% } %)
 	<div class="thought_record">
 		<p><strong>(%= username %)</strong> was in this situation:</p>
 		<p style="margin-left:10px;"><em>(%= situation %)</em></p>

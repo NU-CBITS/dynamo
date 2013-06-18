@@ -787,7 +787,9 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     if ( !this.get('group_id')      ) { throw new Error("no group_id");     };
 
     this.group = this.groupsCln.get( this.get('group_id') );
-    if (!this.group) { throw new Error( "no group found for group_id:"+this.get('group_id') ) };
+    if (!this.group) { 
+      throw new Error( "no group found for group_id:"+this.get('group_id') ); 
+    };
 
     this.buildUserCollections();
 
@@ -842,6 +844,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   add: function(modelToAdd) {
     var user_id = modelToAdd.get("user_id");
     this.userCollectionFor(user_id).add(modelToAdd);
+    this.trigger('add');
   },
 
   buildUserCollections: function() {
