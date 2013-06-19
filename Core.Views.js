@@ -1774,8 +1774,6 @@ GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
   },
 
   initialRender: function() {
-
-    debugger;
     
     this.modelViews = null;
     this.modelViews = [];
