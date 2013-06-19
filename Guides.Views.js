@@ -328,9 +328,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       collection: lessonComments,
       collectionAtts: {
         xelement_id: guide.id
-      },
-      knockoutTemplate: app.templates["partial/comments"],
-      knockoutElementTemplate: app.templates["partial/comment"]
+      }
     });
     lessonCommentsView.render();
   },
