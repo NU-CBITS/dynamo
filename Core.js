@@ -122,16 +122,8 @@ Dynamo.ApplicationAuthorization = function(appXel) {
   };
 
   this.getElementPropValue = function(elementId, property) {
-    console.log("(elementId, property):", elementId, property);
     if ( this.propValues[elementId] && this.propValues[elementId].self ) {
-      console.log("(this.propValues[elementId], this.propValues[elementId].self, this.propValues[elementId].self[property]) : ", 
-                  this.propValues[elementId], 
-                  this.propValues[elementId].self, 
-                  this.propValues[elementId].self[property]//,
-                  // Dynamo.strToType(this.propTypes[property], this.propValues[elementId].self[property])
-      );
       return this.propValues[elementId].self[property]
-      // return Dynamo.strToType(this.propTypes[property], this.propValues[elementId].self[property]);
     }
     else {
       return null;
@@ -169,7 +161,7 @@ Dynamo.ApplicationAuthorization = function(appXel) {
   this.usableNumDaysIn = function(elementId, parentElementId) {
     var firstAvailabilityArray = this.authPropVal("firstAvailability", elementId, parentElementId);
     var usableOnDay = _.max(_.compact(firstAvailabilityArray));
-    console.log("In AppAuth usableNumDaysIn (elementId, parentId), array, usableOnDay)", elementId, parentElementId, firstAvailabilityArray, usableOnDay );
+    // console.log("In AppAuth usableNumDaysIn (elementId, parentId), array, usableOnDay)", elementId, parentElementId, firstAvailabilityArray, usableOnDay );
     return usableOnDay;
   };
 

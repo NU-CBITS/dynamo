@@ -31,7 +31,7 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   },
 
   logChange: function () {
-    console.log("Xelement<cid="+this.cid+"> - "+this.prettyName+" changed");
+    //console.log("Xelement<cid="+this.cid+"> - "+this.prettyName+" changed");
   },
 
   currentSaveState: function() {
@@ -305,7 +305,7 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   initAsXelement: function() {
     this.stringifyAllValues();
     this.initializeAsSaveable();
-    console.log(this.get_field_value("title"));
+    // console.log(this.get_field_value("title"));
   },
 
   //uses Authorization - refer to purple_application_builder
@@ -847,9 +847,15 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     this.trigger('add');
   },
 
+  debouncedChange: _.debounce(function() { 
+    console.log("debouncedChange triggered for", this);
+    this.trigger('change');
+  }, 500),
+
   buildUserCollections: function() {
     var self = this;
     this.collections = [];
+
     this.group.users.each(function(user) {
 
       var classProps = _.extend({
@@ -858,22 +864,72 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
           group_id: self.get('group_id')
         }, (self.get("collectionProperties") || {}) );
 
-      var UserData = new Dynamo.DataCollection(null, classProps);
-
-      UserData.fetch({ async:false });
-      UserData.on('add',    function() { self.trigger('change') });
-      UserData.on('remove', function() { self.trigger('change') });
-      UserData.on('reset',  function() { self.trigger('change') });
+      var UserData = new Dynamo.DataCollection([], classProps);
+      UserData.on('add', this.debouncedChange);
+      UserData.on('remove', this.debounceChange);
+      UserData.on('reset', this.debounceChange);
+      UserData.on('sync', this.debounceChange);
       self.collections.push(UserData);
+
     });
+
+  },
+
+  // successiveCollectionBuild: function(nthUser) {
+
+  //   var self = this;
+  //   var user = this.group.users.at(nthUser);
+  //   var nextUser = nthUser+1;
+
+  //   var classProps = _.extend({
+  //       xelement_id: self.get('xelement_id'),
+  //       user_id: user.id,
+  //       group_id: self.get('group_id')
+  //     }, (self.get("collectionProperties") || {}) );
+
+  //   var UserData = new Dynamo.DataCollection([], classProps);
+  //   UserData.once('sync', function(syncedCollection) {
+  //     console.log("UserData === syncedCollection", (UserData === syncedCollection));
+  //     syncedCollection.on('all', self.debouncedChange );
+  //     self.collections.push(syncedCollection);
+  //     self.debouncedChange();
+  //     if (nextUser < self.group.users.length) {
+  //       self.successiveCollectionBuild(nextUser);
+  //     }
+  //   });
+  //   UserData.fetch({ async: true});
+
+  // },
+
+  successiveFetch: function(nthCollection, fetch_options) {
+    var self = this;
+    var nextCollection = nthCollection+1;
+    var currentClxn = this.collections[nthCollection];
+    
+    console.log("in successiveFetch; clxn is ", currentClxn);
+
+    if (currentClxn) {
+
+      currentClxn.once("sync", function() {
+        if (nextCollection < self.group.users.length) {
+          self.successiveFetch(nextCollection);
+          self.debouncedChange();
+        }      
+      });
+      currentClxn.fetch(fetch_options);      
+
+    }
+
   },
 
   fetchUserCollections: function(fetch_options) {
-    if ( (!this.last_time_fetched) || (this.last_time_fetched < ( (30).seconds().ago() )) ) {
-      this.last_time_fetched = (new Date());
-      var options = _.extend({ async: false }, fetch_options);
-      _.each(this.collections, function(c) { c.fetch(options); });
-      this.trigger('change');
+    
+    if (  (!this.lastFetch) || 
+          (this.lastFetch < ( (30).seconds().ago() )) 
+        ) {
+      this.lastFetch = new Date();
+      var options = _.extend({}, fetch_options);
+      this.successiveFetch(0, options);
     }
 
   },
