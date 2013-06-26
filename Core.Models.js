@@ -902,27 +902,36 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   // },
 
   successiveFetch: function(nthCollection, fetch_options) {
-    var self = this;
-    var nextCollection = nthCollection+1;
-    var currentClxn = this.collections[nthCollection];
+    var self = this,
+        nextCollection = nthCollection+1,
+        currentClxn;
     
-    console.log("in successiveFetch; clxn is ", currentClxn);
+    fetch_options = fetch_options || {};
 
-    if (currentClxn) {
-
-      currentClxn.once("sync", function() {
-        if (nextCollection < self.group.users.length) {
-          self.successiveFetch(nextCollection);
-          self.debouncedChange();
-        }      
-      });
-      currentClxn.fetch(fetch_options);      
-
+    if (nthCollection < self.group.users.length) { 
+      currentClxn = this.collections[nthCollection];
+    }
+    else {
+      return;
     }
 
+    console.log("successiveFetch: (clxn, blockingFetch)", currentClxn, (fetch_options.async === false));
+
+    if (fetch_options.async === false) {
+      currentClxn.fetch(fetch_options);
+      return self.successiveFetch(nextCollection, fetch_options);
+    }
+    else {
+      currentClxn.once("sync", function() {
+        self.successiveFetch(nextCollection, fetch_options);
+        self.debouncedChange();
+      });
+      currentClxn.fetch(fetch_options);
+    }
+  
   },
 
-  fetchUserCollections: function(fetch_options) {
+  fetchAll: function(fetch_options) {
     
     if (  (!this.lastFetch) || 
           (this.lastFetch < ( (30).seconds().ago() )) 
