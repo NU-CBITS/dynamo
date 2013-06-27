@@ -377,13 +377,18 @@
     <div  data-bind="if: inReviewing" 
           id="pleasure-previously-predicted-container"
           class="row-fluid text-prof-blue"
-          title="What you previously rated as your expected pleasure; false means that you did&#apos;nt provide a rating">
+          title="What you previously rated as your expected pleasure.">
       <div class="slider-bar">
         <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Pleasure:</strong>
       </div>
 
       <div class="slider-number text-right">
-        <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
+        <span data-bind="ifnot: predicted_pleasure, valueUpdate: \'afterkeydown\'">
+          <strong>not entered</strong>
+        </span>
+        <span data-bind="if: predicted_pleasure", valueUpdate: \'afterkeydown\'">
+          <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
+        </span>
       </div>
     </div>
   </div>
@@ -438,7 +443,12 @@
       </div>
 
       <div class="slider-number text-right">
-        <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
+        <span data-bind="ifnot: predicted_accomplishment, valueUpdate: \'afterkeydown\'">
+          <strong>not entered</strong>
+        </span>
+        <span data-bind="if: predicted_accomplishment", valueUpdate: \'afterkeydown\'">
+          <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
+        </span>
       </div>
     </div>
   </div>
