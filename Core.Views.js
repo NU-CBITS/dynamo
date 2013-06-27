@@ -1555,7 +1555,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
       throw new Error("Unhandled case: attribute '"+attr+"'\'s value is an object.")
     };
 
-    console.log("Attr, Value:", attr, value);
+    // console.log("Attr, Value:", attr, value);
 
     if ( _.isDate(value) ) {
       self.knockoutModel[attr+"_year"] = ko.observable(value.getFullYear());

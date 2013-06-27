@@ -106,6 +106,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
   initialize: function() {
     var self = this;
+    _.extend(this, Backbone.Events);
+
     this.cid = _.uniqueId('c');
     
     this.guideData = this.options.guideData;
@@ -140,7 +142,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       this.$guideContainer.dialog({
         autoOpen: false,
         width: 610,
-        height: 360
+        height: 540
       });
     }
     else {
@@ -290,14 +292,20 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   renderSlide: function() {
+    this.trigger("guide:slide:render", this.currentSlideIndex());
+    
+    if (this.currentSlideIndex() === (this.currentGuide.slides.length - 1)) {
+      this.trigger("guide:finished");
+    }    
+
     if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
       this.$el.html( this._template({}) );
-    };
+    }
     
     if (!this.asModal) {
       // Set height so the buttons stay in the same place!
       this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )      
-    };
+    }
 
     var $slide_content = this.$el.find("div#current-guide-slide-content");
 
@@ -320,6 +328,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
      comparator: function(c) { return (new Date(c.get("created_at") )); }
     });
 
+    lessonComments.storyRoute = this.options.storyRoute;
     // lessonComments.comparator = reverseSortBy(lessonComments.comparator);
     lessonComments.sort();
 
@@ -337,6 +346,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     guideLikes = app.Likes.where(function(like) {
       return (like.get_field_value("item_liked_id") == guide.id )
     });
+    guideLikes.storyRoute = this.options.storyRoute;
 
     guideLikesView = new LikesView({
       el: "div#guide-likes",

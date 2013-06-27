@@ -915,7 +915,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
       return;
     }
 
-    console.log("successiveFetch: (clxn, blockingFetch)", currentClxn, (fetch_options.async === false));
+    // console.log("successiveFetch: (clxn, blockingFetch)", currentClxn, (fetch_options.async === false));
 
     if (fetch_options.async === false) {
       currentClxn.fetch(fetch_options);
