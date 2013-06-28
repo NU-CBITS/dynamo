@@ -3,10 +3,10 @@
 		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
 	(% } %)
 	<div class="shared_activity">
-		<p><strong>(%= username %)</strong></p>
 		(% if ( start > (new Date()) ) { %) 
-
+		
 			<div class="scheduled_activity">
+				<p><strong>(%= username %)</strong></p>
 				<p>Has scheduled:</p>
 				<p style="margin-left:10px;"><em>(%= title %)</em></p>
 				<p>
@@ -16,9 +16,11 @@
 				</p>
 			</div>
 
-		(% } else if (!!eventCompleted) { %)
+		(% } else { %)
 
 			<div class="past_activity">
+				<p>On (%= start.toString("ddd mmm, yyyy") %),</p>
+				<p><strong>(%= username %)</strong></p>
 				<p>Completed:</p>
 				<p style="margin-left:10px;"><em>(%= title %)</em></p>
 				<p>which was a <strong>(%= motivation %)</strong> activity<p>
