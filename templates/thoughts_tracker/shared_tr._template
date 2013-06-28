@@ -12,9 +12,19 @@
 	</div>
 	<div class="prompts">
 		<ul>
-			(% if (share_empathy)			{ %)<li>Anybody else feel this way?</li>(% 		} %)
-			(% if (share_suggestions) { %)<li>Have any suggestions?</li>(% 					} %)
-			(% if (share_pride)				{ %)<li>I&#39;m proud about this one!</li>(% 	} %)
+			(% if (typeof(share_empathy) !== "undefined" && (share_empathy == true) ) { %)
+				<li>Anybody else feel this way?</li>
+			(% 	} %)
+			(% if (	typeof(share_suggestions) !== "undefined" && 
+							(share_suggestions == true) 
+						) { %)
+						<li>Have any suggestions?</li>
+			(% } %)
+			(% if (	typeof(share_pride) !== "undefined" && 
+							(share_pride == true) 
+						) { %)
+				<li>I&#39;m proud about this one!</li>
+			(% 	} %)
 		</ul>
 	</div>
 	<div class="row-fluid" style="margin-top:20px;">
