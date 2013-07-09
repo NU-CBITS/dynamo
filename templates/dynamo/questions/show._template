@@ -5,7 +5,7 @@
 <div class="widget-content">
   <div class="instructions"></div>
 
-  <div class="content"></div>
+  <div class="content content-condensed"></div>
 
   <div class="responseGroup"></div>
 </div>
