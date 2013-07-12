@@ -3,12 +3,25 @@
 		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
 	(% } %)
 	<div class="thought_record">
-		<p><strong>(%= username %)</strong> was in this situation:</p>
-		<p style="margin-left:10px;"><em>(%= situation %)</em></p>
-		<p><strong>Initially, they felt</strong> (%= emotion %) ((%= emotion_intensity %)) </p>
-		<p><strong>Because they were thinking</strong> (%= thought %)<p>
-		<p><strong>After reflection, they thought</strong>  (%= alternative_thought %)<p>
-		<p><strong>And afterwards felt</strong> (%= outcome %) ((%= outcome_intensity %))<p>
+		<p class="lead"><strong>(%= username %)</strong> shared:</p>
+		<blockquote><em>(%= situation %)</em></blockquote>
+		<p>Initially, they felt 
+			<strong>
+			(%= emotion %) ((%= emotion_intensity %))
+			</strong>
+			because they were thinking:
+		</p> 
+		<blockquote><em>(%= thought %)</em></blockquote>
+		<p>After reflection, they thought:</p>
+		<blockquote><em>(%= alternative_thought %)</em></blockquote>
+		<p>And ended feeling
+			<strong>
+			(% if (outcome_intensity > emotion_intensity) { print("more")} %) 
+			(% if (outcome_intensity < emotion_intensity) { print("less")} %) 
+			(% if (outcome_intensity == emotion_intensity) { print("the same level of")} %) 
+			(%= emotion %) ((%= outcome_intensity %))
+			</strong>
+		</p>
 	</div>
 	<div class="prompts">
 		<ul>
