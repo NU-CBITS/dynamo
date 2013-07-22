@@ -314,18 +314,24 @@
         </option>
       </select> <input class="input-xmini" data-bind="value: end_minute" id="end-time-minute" placeholder="min" type="text">
     </div>
-  </div><!-- TAGS -->
+  </div>
 
-  <div class="control-group" id="edit-tags-attribute-container">
-    <label class="control-label" id="tags-attribute-label">Tags (<span data-bind="text: tags().length"></span>)</label>
-
-    <div class="controls">
-      <div data-bind="foreach: { data: tags }">
-        <div class="input-tag">
-          <input class="edit-tag-attribute" data-bind="value: $data.value, valueUpdate: \'afterkeydown\'" type="text"> <button class="btn remove-tag-attribute" data-bind="click: $data.remove"><em class="icon-remove">Remove</em></button>
-        </div>
-      </div><button class="btn add-tag-attribute" data-bind="click: tags_addElement"><em class="icon-plus"></em> Add Tag</button>
-    </div>
+  <!-- TAGS -->
+  <div class="control-group">
+     <label class="control-label">Tags (max 5)</label> 
+     <div class="controls">
+        <input type="text" class="input-large" 
+              data-bind="selectizeText: tags, selectizeOptions: {
+                openOnFocus: true, 
+                maxItems: 5,
+                create: function(input) { return { value: input, text: input } }, 
+                options: [
+                    {value: \'work\', text: \'work\'},
+                    {value: \'friends\', text: \'friends\'},
+                    {value: \'family\', text: \'family\'}
+                ]
+              }"></input>
+     </div>
   </div>
 
   <!-- ACTIVITY COMPLETION -->

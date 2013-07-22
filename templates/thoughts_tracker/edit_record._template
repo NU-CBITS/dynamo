@@ -67,14 +67,9 @@
       </div>
       <!-- Tags --> 
       <div class="control-group">
-         <label class="control-label">Tags (<span data-bind="text: tags().length"> </span>)</label> 
+         <label class="control-label">Tags (max 5)</label> 
          <div class="controls">
-            <ul data-bind="foreach: { data: tags, as: \'tag\' }">
-               <li>
-                  <div class="input-tag"> <input type="text" data-bind="value: tag.value, valueUpdate: \'afterkeydown\'" /> <button class="btn" data-bind="click: tag.remove"> Remove </button> </div>
-               </li>
-            </ul>
-            <button class="btn" data-bind="click: tags_addElement"> <i class="icon-plus"> </i> Add Tag </button> 
+            <input type="text" class="input-large" data-bind="selectizeText: tags, selectizeOptions: {create: true, maxItems: 5 }"></input>
          </div>
       </div>
       <!-- Emotion --> 
