@@ -12,7 +12,7 @@
                   data-bind="value: situation"
                   title="Writing Situations"
                   data-placement="bottom"
-                  data-content="Please describe WHAT happened, don’t write a lot, but try to be specific. For example, &ldquo;talking on the phone with John.&rdquo; is better than &ldquo;talking on the phone.&rdquo;"
+                  data-content="Please describe WHAT happened. Don&apos;t write a lot, but be specific. For example, &ldquo;talking on the phone with John.&rdquo; is better than &ldquo;talking on the phone.&rdquo;"
                ></textarea>
             </div>
          </div>
@@ -212,7 +212,7 @@
                title="Discovering Alternative Thoughts"
                data-placement="top"
                data-html="true"
-               data-content="The first thought that comes to your mind is just one perspective. What is a different thought you could have had that would have made you feel better?  Use the following questions to help you:<ol><li> What’s the evidence the thought is true?</li><li> Is there an alternative explanation?</li><li> What’s the worst that could happen? The best? What’s the most realistic outcome?</li><li> What would you tell a friend in the same situation who had this thought?</li><li> Is thinking that thought useful? How would you feel or act if you thought something different?</li></ol>" 
+               data-content="The first thought that comes to your mind is just one perspective. What is a different thought you could have had that would have made you feel better?  Use the following questions to help you:<ol><li> What&apos;s the evidence the thought is true?</li><li> Is there an alternative explanation?</li><li> What&apos;s the worst that could happen? The best? What&apos;s the most realistic outcome?</li><li> What would you tell a friend in the same situation who had this thought?</li><li> Is thinking that thought useful? How would you feel or act if you thought something different?</li></ol>"
                ></textarea> 
             </div>
          </div>
