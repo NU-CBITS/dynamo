@@ -3,33 +3,89 @@
 		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
 	(% } %)
 	<div class="shared_activity">
-		(% if ( start > (new Date()) ) { %) 
+		(% var dateFormat = "dddd, MMMM d, yyyy" %)
+
+		<p><strong>(%= username %)</strong></p>
+
+		(% if ( start > (new Date()) ) { %)
+			<p>Has scheduled:</p>
+		(% } else if (savedInState == "monitoring") { %)	
+			<p>Recorded:</p>
+		(% } else if (eventCompleted) { %)
+			<p>Completed:</p>
+		(% } else if (eventCompleted === null) { %)
+			<p>Has not yet reviewed:</p>
+		(% } else if (eventCompleted === false) { %)
+			<p>Did not complete:</p>
+		(% } %)
 		
-			<div class="scheduled_activity">
-				<p><strong>(%= username %)</strong></p>
-				<p>Has scheduled:</p>
-				<p style="margin-left:10px;"><em>(%= title %)</em></p>
-				<p>
-					<strong>Predicting</strong> 
-					a pleasure of (%= predicted_pleasure %) 
-					and an accomplishment of (%= predicted_accomplishment %)
-				</p>
-			</div>
+		<p style="margin-left:10px;"><em>(%= title %)</em></p>
+		<p style="margin-left:10px;"><em>(%= _.map(tags, function(tag) { "#"+tag }).join(" ") %)</em></p>
+		(% if (motivation) { %) 
+			<p>A <strong>(%= motivation %)</strong> activity<p>
+		(% } %)
 
+		(% if ( start > (new Date()) ) { %)
+			<p>For (%= start.toString(dateFormat) %)</p> 
+		(% } else if ( savedInState == "monitoring" || eventCompleted ) { %)	
+			<p>On (%= start.toString(dateFormat) %)</p>
+		(% } else if (eventCompleted === null) { %)
+			<p>Which was scheduled for (%= start.toString(dateFormat) %)</p> 
+		(% } else if (eventCompleted === false) { %)
+			<p>Which had been scheduled for (%= start.toString(dateFormat) %)</p> 
+		(% } %)
+
+		(% if ( start > (new Date()) ) { %)
+			(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
+				<p>
+					<strong>Predicting</strong>, <br />
+					<ul>
+						(% if ( predicted_pleasure ) { %)		
+							<li>A pleasure of (%= predicted_pleasure %)</li>
+						(% } %)
+						(% if ( predicted_accomplishment ) { %)		
+							<li>An accomplishment of (%= predicted_accomplishment %)</li>
+						(% } %)
+					<ul>
+				</p>
+			(% } %)
 		(% } else { %)
+			<div class="row-fluid">
+				(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
+					<div class="span6">
+						<p>They had <strong>predicted</strong>, <br />
+							<ul>
+								(% if ( predicted_pleasure ) { %)		
+									<li>A pleasure of (%= predicted_pleasure %)</li>
+								(% } %)
+								(% if ( predicted_accomplishment ) { %)		
+									<li>An accomplishment of (%= predicted_accomplishment %)</li>
+								(% } %)
+							</ul>
+						</p>
+					</div>
+				(% } %)
 
-			<div class="past_activity">
-				<p>On (%= start.toString("ddd mmm, yyyy") %),</p>
-				<p><strong>(%= username %)</strong></p>
-				<p>Completed:</p>
-				<p style="margin-left:10px;"><em>(%= title %)</em></p>
-				<p>which was a <strong>(%= motivation %)</strong> activity<p>
-				<p>
-					<strong>During which they experienced</strong> 
-					a pleasure of (%= actual_pleasure %),
-					an accomplishment of (%= actual_accomplishment %),
-					and a general emotion of (%= emotion %) ((%= emotion_intensity %))
-				</p>
+				(% if (	eventCompleted && 
+								(actual_pleasure || actual_accomplishment || emotion_intensity) 
+							) { %)
+					<div class="span6">
+						<p>They <strong>experienced</strong>, <br />
+							<ul>
+								(% if ( actual_pleasure ) { %)	
+									<li>A pleasure of (%= actual_pleasure %)</li>
+								(% } %)
+								(% if ( actual_accomplishment ) { %)	
+									<li>An accomplishment of (%= actual_accomplishment %)</li>
+								(% } %)
+								(% if ( emotion ) { %)	
+									<li>A general feeling of (%= emotion %) 
+											(% if (emotion_intensity) { print("("+emotion_intensity+")")} %)</li>
+								(% } %)
+							</ul>					
+						</p>
+					</div>
+				(% } %)
 			</div>
 
 		(% } %)

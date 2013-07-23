@@ -984,7 +984,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
                   .compact()
                   .value();
 
-    return ( new Backbone.Collection( result, collectionOptions ) );
+    return ( new Dynamo.DataCollection( result, collectionOptions ) );
   }
 
 });

@@ -524,6 +524,7 @@
 
   <!-- Sharing --> 
   <div class="row-fluid">
+    <input type="hidden" data-bind="value: currentState">
      <div class="span12">
         <div class="control-group">
            <label class="control-label">Sharing</label> 
