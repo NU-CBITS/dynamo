@@ -1,0 +1,88 @@
+(% var dateFormat = "dddd, MMMM d, yyyy" %)
+<tr>
+	<td> (%= title 											%)</td>
+	<td> (%= start.toString(dateFormat) %)</td>
+	<td> (%= predicted_pleasure 				%)</td>
+	<td> (%= predicted_accomplishment 	%)</td>
+	<td>
+		<select id="edit-motivation" data-bind="value: motivation">
+      <option value="">None</option>
+      <option value="mood_directed">Mood Directed</option>
+      <option value="goal_directed">Goal Directed</option>
+		</select>
+	</td>			
+	<td> 
+		<label id="event-completed-no-label" class="radio inline">
+			<input data-bind="checked: eventCompleted" type="radio" value="0"> No
+		</label> 
+		<br />
+		<label id="event-completed-yes-label" class="radio inline">
+			<input data-bind="checked: eventCompleted" type="radio" value="1"> Yes
+		</label>
+	</td>
+	<td>
+    <select id="edit-actual-pleasure" 
+    				class="input-medium" 
+    				data-bind="enable: eventCompleted, value: actual_pleasure">
+       <option value="1">1</option>
+       <option value="2">2</option>
+       <option value="3">3</option>
+       <option value="4">4</option>
+       <option value="5">5</option>
+       <option value="6">6</option>
+       <option value="7">7</option>
+       <option value="8">8</option>
+       <option value="9">9</option>
+       <option value="10">10</option>
+    </select>
+	</td>
+	<td> 
+    <select id="edit-actual-accomplishment" 
+    				class="input-medium" 
+    				data-bind="enable: eventCompleted, value: actual_accomplishment">
+       <option value="1">1</option>
+       <option value="2">2</option>
+       <option value="3">3</option>
+       <option value="4">4</option>
+       <option value="5">5</option>
+       <option value="6">6</option>
+       <option value="7">7</option>
+       <option value="8">8</option>
+       <option value="9">9</option>
+       <option value="10">10</option>
+    </select>
+	</td>
+	<td>
+    <select id="edit-emotion" 
+    				class="input-medium" 
+    				data-bind="enable: eventCompleted, value: emotion">
+       <option value="anger">Anger</option>
+       <option value="anxiety">Anxiety</option>
+       <option value="guilt">Guilt</option>
+       <option value="happiness">Happiness</option>
+       <option value="loneliness">Loneliness</option>
+       <option value="okay">Okay</option>
+       <option value="sadness">Sadness</option>
+       <option value="shame">Shame</option>
+    </select>
+  </td>
+	<td> 
+    <select id="edit-emotion-intensity" 
+    				class="input-medium" 
+    				data-bind="enable: eventCompleted, value: emotion_intensity">
+       <option value="1">1</option>
+       <option value="2">2</option>
+       <option value="3">3</option>
+       <option value="4">4</option>
+       <option value="5">5</option>
+       <option value="6">6</option>
+       <option value="7">7</option>
+       <option value="8">8</option>
+       <option value="9">9</option>
+       <option value="10">10</option>
+    </select>
+	</td>
+  <td> 
+    <button class="btn btn-info">Finish</button>
+  </td>  
+</tr>

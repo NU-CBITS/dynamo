@@ -336,7 +336,8 @@
 
   <!-- ACTIVITY COMPLETION -->
   <div class="control-group" data-bind="if: inReviewing" id="edit-event-completed-attribute-container" style="margin-top:10px">
-    <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px; font-weight:bold;">I Completed This Activity</label>
+    <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px; font-weight:bold;">I Completed This Activity
+    </label>
 
     <div class="controls">
       <label class="radio inline" id="event-completed-no-label"><input data-bind="checked: eventCompleted" type="radio" value="0"> No</label> <label class="radio inline" id="event-completed-yes-label"><input data-bind="checked: eventCompleted" type="radio" value="1"> Yes</label>
@@ -443,7 +444,7 @@
     <div  data-bind="if: inReviewing"
           id="accomplishment-previously-predicted-container"
           class="row-fluid text-prof-blue"
-          title="What you previously rated as your expected accomplishment; false means that you did&#apos;nt provide a rating">
+          title="What you previously rated as your expected accomplishment.">
       <div class="slider-bar">
         <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Accomplishment:</strong>
       </div>
@@ -501,20 +502,11 @@
       <div class="row-fluid">
         <div class="control-group">
           <label class="control-label">Motivation</label>
-
           <div class="controls">
             <select data-bind="value: motivation" id="edit-motivation">
-              <option value="">
-                None
-              </option>
-
-              <option value="mood_directed">
-                Mood Directed
-              </option>
-
-              <option value="goal_directed">
-                Goal Directed
-              </option>
+              <option value="">None </option>
+              <option value="mood_directed"> Mood Directed </option>
+              <option value="goal_directed"> Goal Directed </option>
             </select>
           </div>
         </div>

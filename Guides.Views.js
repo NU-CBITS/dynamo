@@ -26,17 +26,19 @@
 // currently relies on jQuery UI.
 launchInModal = function(viewInstance, options) {
   
-  _.extend(this, Backbone.Events);
-  this.cid = _.uniqueId('c');
-  this.viewInstance = viewInstance;
+  var modalViewObj = {};
+
+  _.extend(modalViewObj, Backbone.Events);
+  modalViewObj.cid = _.uniqueId('c');
+  modalViewObj.viewInstance = viewInstance;
 
   // Setup launch button
   if (options.$launchButton) {
-    this.$launchButton = options.$launchButton;
+    modalViewObj.$launchButton = options.$launchButton;
   }
   else if (options.$launchButtonContainer) {
 
-    var buttonId = "launch-"+this.cid
+    var buttonId = "launch-"+modalViewObj.cid
 
     options.$launchButtonContainer.prepend(
       t.button(options.launchButtonText, { 
@@ -44,7 +46,7 @@ launchInModal = function(viewInstance, options) {
         class: "btn btn-info", 
         style: (options.launchButtonStyle || "") 
       }));
-    this.$launchButton = $(options.$launchButtonContainer.find(("button#"+buttonId+":first")));
+    modalViewObj.$launchButton = $(options.$launchButtonContainer.find(("button#"+buttonId+":first")));
 
   }
   else {
@@ -54,14 +56,14 @@ launchInModal = function(viewInstance, options) {
   // Set view container.
   if (options.$viewContainer) {
 
-    this.$viewContainer = options.$viewContainer;
+    modalViewObj.$viewContainer = options.$viewContainer;
 
   }
   else {
 
-    var dialogId = 'dialog-'+this.cid;
-    this.$viewContainer = $('<div id="'+dialogId+'"></div>');
-    $('body').append(this.$viewContainer);
+    var dialogId = 'dialog-'+modalViewObj.cid;
+    modalViewObj.$viewContainer = $('<div id="'+dialogId+'"></div>');
+    $('body').append(modalViewObj.$viewContainer);
 
   }
 
@@ -69,34 +71,34 @@ launchInModal = function(viewInstance, options) {
   var modalOpts = _.extend({
     autoOpen: false
   }, options.jqModalOptions);
-  this.$viewContainer.dialog( modalOpts );  
+  modalViewObj.$viewContainer.dialog( modalOpts );  
 
   // Set up the on-button-click trigger
   if (options.onLaunchButtonClick) {
-    this.onLaunchButtonClick = options.onLaunchButtonClick;
-    _.bindAll(this, 'onLaunchButtonClick');
-    this.$launchButton.on("click", this.onLaunchButtonClick);
+    modalViewObj.onLaunchButtonClick = options.onLaunchButtonClick;
+    _.bindAll(modalViewObj, 'onLaunchButtonClick');
+    modalViewObj.$launchButton.on("click", modalViewObj.onLaunchButtonClick);
   }
   else {
-    this.$launchButton.on("click", this.openModal);
+    modalViewObj.$launchButton.on("click", modalViewObj.openModal);
   
   };
   
-  this.openModal = function() {
-    this.$viewContainer.dialog("open");
-    this.$viewContainer.html(this.viewInstance.render().$el);
-    this.viewInstance.delegateEvents();
-    this.trigger('opened');
+  modalViewObj.openModal = function() {
+    modalViewObj.$viewContainer.dialog("open");
+    modalViewObj.$viewContainer.html(modalViewObj.viewInstance.render().$el);
+    modalViewObj.viewInstance.delegateEvents();
+    modalViewObj.trigger('opened');
   };
-  _.bindAll(this, 'openModal');
+  _.bindAll(modalViewObj, 'openModal');
 
-  this.closeModal = function() {
-    this.$viewContainer.dialog("close");
-    this.trigger('closed');
+  modalViewObj.closeModal = function() {
+    modalViewObj.$viewContainer.dialog("close");
+    modalViewObj.trigger('closed');
   };
-  _.bindAll(this, 'closeModal');  
+  _.bindAll(modalViewObj, 'closeModal');  
 
-  return this;
+  return modalViewObj;
 };
 
 
