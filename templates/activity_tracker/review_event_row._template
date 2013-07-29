@@ -1,29 +1,29 @@
-(% var dateFormat = "dddd, MMMM d, yyyy" %)
 <tr>
-	<td> (%= title 											%)</td>
-	<td> (%= start.toString(dateFormat) %)</td>
-	<td> (%= predicted_pleasure 				%)</td>
-	<td> (%= predicted_accomplishment 	%)</td>
-	<td>
-		<select id="edit-motivation" data-bind="value: motivation">
+  <td data-bind="text: $data.title"> </td>
+  <td data-bind="text: $data.formattedStart()"></td>
+  <td data-bind="text: $data.predicted_pleasure"></td>
+  <td data-bind="text: $data.predicted_accomplishment"></td>
+  <td>
+    <select id="edit-motivation" 
+            class="input-small" 
+            data-bind="value: $data.motivation">
       <option value="">None</option>
       <option value="mood_directed">Mood Directed</option>
       <option value="goal_directed">Goal Directed</option>
-		</select>
-	</td>			
-	<td> 
-		<label id="event-completed-no-label" class="radio inline">
-			<input data-bind="checked: eventCompleted" type="radio" value="0"> No
-		</label> 
-		<br />
-		<label id="event-completed-yes-label" class="radio inline">
-			<input data-bind="checked: eventCompleted" type="radio" value="1"> Yes
-		</label>
-	</td>
-	<td>
+    </select>
+  </td>     
+  <td> 
+    <select id="edit-evenCompleted" 
+            class="input-small" 
+            data-bind="value: $data.eventCompleted">
+       <option value="">No</option>
+       <option value="true">Yes</option>
+    </select>
+  </td>
+  <td>
     <select id="edit-actual-pleasure" 
-    				class="input-medium" 
-    				data-bind="enable: eventCompleted, value: actual_pleasure">
+            class="input-mini" 
+            data-bind="value: $data.actual_pleasure">
        <option value="1">1</option>
        <option value="2">2</option>
        <option value="3">3</option>
@@ -35,11 +35,11 @@
        <option value="9">9</option>
        <option value="10">10</option>
     </select>
-	</td>
-	<td> 
+  </td>
+  <td> 
     <select id="edit-actual-accomplishment" 
-    				class="input-medium" 
-    				data-bind="enable: eventCompleted, value: actual_accomplishment">
+            class="input-mini" 
+            data-bind="value: $data.actual_accomplishment">
        <option value="1">1</option>
        <option value="2">2</option>
        <option value="3">3</option>
@@ -51,11 +51,11 @@
        <option value="9">9</option>
        <option value="10">10</option>
     </select>
-	</td>
-	<td>
+  </td>
+  <td>
     <select id="edit-emotion" 
-    				class="input-medium" 
-    				data-bind="enable: eventCompleted, value: emotion">
+            class="input-small" 
+            data-bind="value: $data.emotion">
        <option value="anger">Anger</option>
        <option value="anxiety">Anxiety</option>
        <option value="guilt">Guilt</option>
@@ -66,10 +66,10 @@
        <option value="shame">Shame</option>
     </select>
   </td>
-	<td> 
+  <td> 
     <select id="edit-emotion-intensity" 
-    				class="input-medium" 
-    				data-bind="enable: eventCompleted, value: emotion_intensity">
+            class="input-mini" 
+            data-bind="value: $data.emotion_intensity">
        <option value="1">1</option>
        <option value="2">2</option>
        <option value="3">3</option>
@@ -81,8 +81,5 @@
        <option value="9">9</option>
        <option value="10">10</option>
     </select>
-	</td>
-  <td> 
-    <button class="btn btn-info">Finish</button>
-  </td>  
+  </td>
 </tr>
