@@ -1,109 +1,20 @@
 <table class="table">
-<thead>
-	<tr>
-		<th>Activity</th>
-		<th>Date</th>
-		<th>Predicted Pleasure</th>
-		<th>Predicted Accomplishment</th>
-		<th>Motivation</th>
-		<th>Completed?</th>
-		<th>Actual Pleasure</th>
-		<th>Actual Accomplishment</th>
-		<th>Emotion</th>
-		<th>Emotion Intensity</th>
-	</tr>
-</thead>
-
-<tbody id="reviewable_events" data-bind="template: { foreach: items }">
-
-<tr>
-  <td data-bind="text: $data.title"> </td>
-  <td data-bind="text: $data.formattedStart()"></td>
-  <td data-bind="text: $data.predicted_pleasure"></td>
-  <td data-bind="text: $data.predicted_accomplishment"></td>
-  <td>
-    <select id="edit-motivation" 
-            class="input-small" 
-            data-bind="value: $data.motivation">
-      <option value="">None</option>
-      <option value="mood_directed">Mood Directed</option>
-      <option value="goal_directed">Goal Directed</option>
-    </select>
-  </td>     
-  <td> 
-    <select id="edit-evenCompleted" 
-            class="input-small" 
-            data-bind="value: $data.eventCompleted">
-       <option value="">No</option>
-       <option value="true">Yes</option>
-    </select>
-  </td>
-  <td>
-    <select id="edit-actual-pleasure" 
-            class="input-mini" 
-            data-bind="value: $data.actual_pleasure">
-       <option value="1">1</option>
-       <option value="2">2</option>
-       <option value="3">3</option>
-       <option value="4">4</option>
-       <option value="5">5</option>
-       <option value="6">6</option>
-       <option value="7">7</option>
-       <option value="8">8</option>
-       <option value="9">9</option>
-       <option value="10">10</option>
-    </select>
-  </td>
-  <td> 
-    <select id="edit-actual-accomplishment" 
-            class="input-mini" 
-            data-bind="value: $data.actual_accomplishment">
-       <option value="1">1</option>
-       <option value="2">2</option>
-       <option value="3">3</option>
-       <option value="4">4</option>
-       <option value="5">5</option>
-       <option value="6">6</option>
-       <option value="7">7</option>
-       <option value="8">8</option>
-       <option value="9">9</option>
-       <option value="10">10</option>
-    </select>
-  </td>
-  <td>
-    <select id="edit-emotion" 
-            class="input-small" 
-            data-bind="value: $data.emotion">
-       <option value="anger">Anger</option>
-       <option value="anxiety">Anxiety</option>
-       <option value="guilt">Guilt</option>
-       <option value="happiness">Happiness</option>
-       <option value="loneliness">Loneliness</option>
-       <option value="okay">Okay</option>
-       <option value="sadness">Sadness</option>
-       <option value="shame">Shame</option>
-    </select>
-  </td>
-  <td> 
-    <select id="edit-emotion-intensity" 
-            class="input-mini" 
-            data-bind="value: $data.emotion_intensity">
-       <option value="1">1</option>
-       <option value="2">2</option>
-       <option value="3">3</option>
-       <option value="4">4</option>
-       <option value="5">5</option>
-       <option value="6">6</option>
-       <option value="7">7</option>
-       <option value="8">8</option>
-       <option value="9">9</option>
-       <option value="10">10</option>
-    </select>
-  </td>
-</tr>
-
-</tbody>
+	<thead>
+		<tr>
+			<th>Activity</th>
+			<th>Date</th>
+			<th>Predicted Pleasure</th>
+			<th>Predicted Accomplishment</th>
+			<th>Completed?</th>
+			<th>Actual Pleasure</th>
+			<th>Actual Accomplishment</th>
+			<th>Emotion</th>
+			<th>Emotion Intensity</th>
+		</tr>
+	</thead>
+	<tbody class="items"></tbody>
 </table>
+
 <div class="pull-right">
 	<button class="btn btn-success clearReviewed">Save & Clear Completed</button>
 </div>

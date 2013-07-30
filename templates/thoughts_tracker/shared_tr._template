@@ -17,7 +17,7 @@
 		<p>And ended feeling
 			<strong>
 			(% if (outcome_intensity > emotion_intensity) { print("more")} %) 
-			(% if (outcome_intensity < emotion_intensity) { print("less")} %) 
+			(% if (outcome_intensity < emotion_intensity) { print("less")} %)
 			(% if (outcome_intensity == emotion_intensity) { print("the same level of")} %) 
 			(%= emotion %) ((%= outcome_intensity %))
 			</strong>
