@@ -3,7 +3,12 @@
 		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
 	(% } %)
 	<div class="shared_activity">
-		(% var dateFormat = "dddd, MMMM d, yyyy" %)
+		(% 
+			var dateFormat = "dddd, MMMM d, yyyy",
+					eventNotReviewed = (eventCompleted === null || eventCompleted === void 0 || eventCompleted === ""),
+					eventWasNotCompleted = (eventCompleted === false || eventCompleted === 0 || eventCompleted === "0"),
+					eventWasCompleted = !eventWasNotCompleted;
+		%)
 
 		<p><strong>(%= username %)</strong></p>
 
@@ -11,11 +16,11 @@
 			<p>Has scheduled:</p>
 		(% } else if (savedInState == "monitoring") { %)	
 			<p>Recorded:</p>
-		(% } else if (eventCompleted) { %)
+		(% } else if (eventWasCompleted) { %)
 			<p>Completed:</p>
-		(% } else if (eventCompleted === null) { %)
+		(% } else if (eventNotReviewed) { %)
 			<p>Has not yet reviewed:</p>
-		(% } else if (eventCompleted === false) { %)
+		(% } else { %)
 			<p>Did not complete:</p>
 		(% } %)
 		
@@ -27,11 +32,11 @@
 
 		(% if ( start > (new Date()) ) { %)
 			<p>For (%= start.toString(dateFormat) %)</p> 
-		(% } else if ( savedInState == "monitoring" || eventCompleted ) { %)	
+		(% } else if ( savedInState == "monitoring" || eventWasCompleted ) { %)	
 			<p>On (%= start.toString(dateFormat) %)</p>
-		(% } else if (eventCompleted === null) { %)
+		(% } else if (eventNotReviewed) { %)
 			<p>Which was scheduled for (%= start.toString(dateFormat) %)</p> 
-		(% } else if (eventCompleted === false) { %)
+		(% } else { %)
 			<p>Which had been scheduled for (%= start.toString(dateFormat) %)</p> 
 		(% } %)
 
@@ -66,7 +71,7 @@
 					</div>
 				(% } %)
 
-				(% if (	eventCompleted && 
+				(% if (	eventWasCompleted && 
 								(actual_pleasure || actual_accomplishment || emotion_intensity) 
 							) { %)
 					<div class="span6">

@@ -14,16 +14,15 @@
   <span data-bind="if: (predicted_accomplishment || predicted_accomplishment !== \'false\')"><span data-bind="text: predicted_accomplishment"></span></span>  
 </td>   
 <td> 
-  <select id="edit-evenCompleted" 
-          class="input-small" 
+  <select class="event-completed input-small" 
           data-bind="value: eventCompleted">
-     <option value="false">No</option>
-     <option value="true">Yes</option>
+     <option value=""></option>
+     <option value="0">No</option>
+     <option value="1">Yes</option>
   </select>
 </td>
 <td>
-  <select id="edit-actual-pleasure" 
-          class="input-mini" 
+  <select class="actual-pleasure input-mini"
           data-bind="value: actual_pleasure">
      <option value="1">1</option>
      <option value="2">2</option>
@@ -38,8 +37,7 @@
   </select>
 </td>
 <td> 
-  <select id="edit-actual-accomplishment" 
-          class="input-mini" 
+  <select class="actual-accomplishment input-mini" 
           data-bind="value: actual_accomplishment">
      <option value="1">1</option>
      <option value="2">2</option>
@@ -54,8 +52,7 @@
   </select>
 </td>
 <td>
-  <select id="edit-emotion" 
-          class="input-small" 
+  <select class="emotion input-small" 
           data-bind="value: emotion">
      <option value="anger">Anger</option>
      <option value="anxiety">Anxiety</option>
@@ -68,8 +65,7 @@
   </select>
 </td>
 <td> 
-  <select id="edit-emotion-intensity" 
-          class="input-mini" 
+  <select class="emotion-intensity input-mini" 
           data-bind="value: emotion_intensity">
      <option value="1">1</option>
      <option value="2">2</option>
@@ -82,4 +78,7 @@
      <option value="9">9</option>
      <option value="10">10</option>
   </select>
+</td>
+<td>
+  <button class="btn btn-success" data-bind="click: save">Save</button>
 </td>

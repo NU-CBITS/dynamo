@@ -1,4 +1,4 @@
-<form id="edit-event"
+<form id="edit-event-(%= cid %)"
       class="form-horizontal widget-content form-condensed" 
       name="edit-event">
 
@@ -328,7 +328,10 @@
                 options: [
                     {value: \'work\', text: \'work\'},
                     {value: \'friends\', text: \'friends\'},
-                    {value: \'family\', text: \'family\'}
+                    {value: \'family\', text: \'family\'},
+                    {value: \'chores\', text: \'chores\'},
+                    {value: \'leisure\', text: \'leisure\'},
+                    {value: \'self_care\', text: \'self-care\'}
                 ]
               }"></input>
      </div>

@@ -14,7 +14,3 @@
 	</thead>
 	<tbody class="items"></tbody>
 </table>
-
-<div class="pull-right">
-	<button class="btn btn-success clearReviewed">Save & Clear Completed</button>
-</div>

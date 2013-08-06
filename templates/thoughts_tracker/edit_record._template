@@ -69,7 +69,19 @@
       <div class="control-group">
          <label class="control-label">Tags (max 5)</label> 
          <div class="controls">
-            <input type="text" class="input-large" data-bind="selectizeText: tags, selectizeOptions: {create: true, maxItems: 5 }"></input>
+            <input type="text" class="input-large" data-bind="selectizeText: tags, selectizeOptions: {
+                openOnFocus: true, 
+                maxItems: 5,
+                create: function(input) { return { value: input, text: input } }, 
+                options: [
+                    {value: \'work\', text: \'work\'},
+                    {value: \'friends\', text: \'friends\'},
+                    {value: \'family\', text: \'family\'},
+                    {value: \'chores\', text: \'chores\'},
+                    {value: \'leisure\', text: \'leisure\'},
+                    {value: \'self_care\', text: \'self-care\'}
+                ]
+             }"></input>
          </div>
       </div>
       <!-- Emotion --> 
