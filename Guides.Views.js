@@ -86,8 +86,11 @@ launchInModal = function(viewInstance, options) {
   
   modalViewObj.openModal = function() {
     modalViewObj.$viewContainer.dialog("open");
-    modalViewObj.$viewContainer.html(modalViewObj.viewInstance.render().$el);
-    modalViewObj.viewInstance.delegateEvents();
+    if (!modalViewObj.viewRendered) {
+      modalViewObj.$viewContainer.html(modalViewObj.viewInstance.render().$el);
+      modalViewObj.viewInstance.delegateEvents();      
+      modalViewObj.viewRendered = true;
+    }
     modalViewObj.trigger('opened');
   };
   _.bindAll(modalViewObj, 'openModal');

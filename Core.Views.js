@@ -1470,6 +1470,10 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     // no need to re-render on model change.
   },
 
+  id: function() {
+    return _.uniqueId();
+  },
+
   // The function that returns the attributes from the backbone model
   // that need to be turned into knockoout viewModel keys.
   // You can:
@@ -1533,16 +1537,13 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     self.knockoutModel.save = function() {
       self.triggerSave();
+      return false;
     };
 
     self.knockoutModel.destroy = function() {
       self.triggerDelete();
+      return false;
     };
-
-    this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
-      console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
-      // alert('Saved.');
-    });
 
   },
 
@@ -1727,9 +1728,11 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   // as the supplied template will do all the
   // heavy lifting!
   render: function() {
-    this.$el.html( this.knockoutTemplate() );
+    this.$el.empty();
+    this.$el.html( _.template(this.knockoutTemplate(), { cid: _.uniqueId() }) );
+    var domEl = this.$el.children(":first").get(0);
     this.createKnockoutModel();
-    ko.applyBindings(this.knockoutModel, this.$el.get(0));
+    ko.applyBindings(this.knockoutModel, domEl);
     this.trigger("rendered");
     return this;
   },
@@ -1737,7 +1740,9 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   // Override delegate events function
   // to use knockout
   delegateEvents: function() {
-    ko.applyBindings(this.knockoutModel, this.$el.get(0));
+    // var el = this.$el.children(":first").get(0);
+    // this.createKnockoutModel();
+    // ko.applyBindings(this.knockoutModel, this.$el.get(0));
   },
 
   triggerSave: function() {
