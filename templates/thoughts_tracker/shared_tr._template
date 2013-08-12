@@ -16,27 +16,23 @@
 		<blockquote><em>(%= alternative_thought %)</em></blockquote>
 		<p>And ended feeling
 			<strong>
-			(% if (outcome_intensity > emotion_intensity) { print("more")} %) 
-			(% if (outcome_intensity < emotion_intensity) { print("less")} %)
-			(% if (outcome_intensity == emotion_intensity) { print("the same level of")} %) 
+			(% if (outcome_intensity > emotion_intensity) {  print("more") } %) 
+			(% if (outcome_intensity < emotion_intensity) {  print("less") } %)
+			(% if (outcome_intensity == emotion_intensity) { print("the same level of") } %) 
 			(%= emotion %) ((%= outcome_intensity %))
 			</strong>
 		</p>
 	</div>
 	<div class="prompts">
 		<ul>
-			(% if (typeof(share_empathy) !== "undefined" && (share_empathy == true) ) { %)
+			(% if ( (typeof(share_empathy) !== "undefined") 		&& !!share_empathy ) { %)
 				<li>Anybody else feel this way?</li>
 			(% 	} %)
-			(% if (	typeof(share_suggestions) !== "undefined" && 
-							(share_suggestions == true) 
-						) { %)
-						<li>Have any suggestions?</li>
+			(% if ( (typeof(share_suggestions) !== "undefined") && !!share_suggestions ) { %)
+				<li>Have any suggestions?</li>
 			(% } %)
-			(% if (	typeof(share_pride) !== "undefined" && 
-							(share_pride == true) 
-						) { %)
-				<li>I&#39;m proud about this one!</li>
+			(% if ( (typeof(share_pride) !== "undefined") 			&& !!share_pride ) { %)
+				<li>I&apos;m proud about this one!</li>
 			(% 	} %)
 		</ul>
 	</div>

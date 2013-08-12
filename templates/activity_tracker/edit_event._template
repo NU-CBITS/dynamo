@@ -466,27 +466,17 @@
   <div data-bind="ifnot: inScheduling">
     <div id="edit-emotion-attribute-container" 
           style="font-weight:bold;padding:5px 0px;">
-      Emotion <select class="input-small" data-bind="value: emotion" id="edit-emotion">
-        <option value="">
-          None
-        </option>
-
-        <option value="sad">
-          Sad
-        </option>
-
-        <option value="happy">
-          Happy
-        </option>
-
-        <option value="angry">
-          Angry
-        </option>
-
-        <option value="anxious">
-          Anxious
-        </option>
-      </select> 
+      Emotion
+      <select id="edit-emotion" class="input-small" data-bind="value: emotion">
+         <option value="anger">Anger</option>
+         <option value="anxiety">Anxiety</option>
+         <option value="guilt">Guilt</option>
+         <option value="happiness">Happiness</option>
+         <option value="loneliness">Loneliness</option>
+         <option value="okay">Okay</option>
+         <option value="sadness">Sadness</option>
+         <option value="shame">Shame</option>
+      </select>
     </div>
 
     <div  class="row-fluid" id="edit-emotion-intensity-attribute-container"

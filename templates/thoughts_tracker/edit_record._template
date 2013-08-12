@@ -155,7 +155,7 @@
                         >Blaming</option>
                      <option
                         value="catastrophizing"
-                        title="We expect disaster to strike, no matter what. This is also referred to as “magnifying or minimizing.” We hear about a problem and use what if questions (e.g., “What if tragedy strikes?” “What if it happens to me?”). For example, a person might exaggerate the importance of insignificant events (such as their mistake, or someone else’s achievement). Or they may inappropriately shrink the magnitude of significant events until they appear tiny (for example, a person’s own desirable qualities or someone else’s imperfections)."
+                        title="We expect disaster to strike, no matter what. This is also referred to as &quot;magnifying or minimizing.&quot; We hear about a problem and use what if questions (e.g., &quot;What if tragedy strikes?&quot; &quot;What if it happens to me?&quot;). For example, a person might exaggerate the importance of insignificant events (such as their mistake, or someone else&apos;s achievement). Or, they may inappropriately shrink the magnitude of significant events until they appear tiny (for example, a person&apos;s own desirable qualities or someone else&apos;s imperfections)."
                         >Catastrophizing</option>
                      <option
                         value="change_fallacy"
@@ -163,7 +163,7 @@
                         >Change Fallacy</option>
                      <option
                         value="control_fallacy"
-                        title="If we feel externally controlled, we see ourselves as helpless a victim of fate. For example, “I can’t help it if the quality of the work is poor, my boss demanded I work overtime on it.” The fallacy of internal control has us assuming responsibility for the pain and happiness of everyone around us."
+                        title="If we feel externally controlled, we see ourselves as helpless a victim of fate. For example, &quot;I can’t help it if the quality of the work is poor, my boss demanded I work overtime on it.&quot; The fallacy of internal control has us assuming responsibility for the pain and happiness of everyone around us."
                         >Control Fallacy</option>
                      <option
                         value="emotional_reasoning"
@@ -171,7 +171,7 @@
                         >Emotional Reasoning</option>
                      <option
                         value="fairness_fallacy"
-                        title="We feel resentful because we think we know what is fair, but other people won’t agree with us."
+                        title="We feel resentful because we think we know what is fair, but other people won&apos;t agree with us."
                         >Fairness Fallacy</option>
                      <option
                         value="filtering"
@@ -179,7 +179,7 @@
                         >Filtering</option>
                      <option
                         value="conclusion_jumping"
-                        title="Without individuals saying so, we know what they are feeling and why they act the way they do. In particular, we are able to determine how people are feeling toward us. For example, a person may conclude that someone is reacting negatively toward them but doesn’t actually bother to find out if they are correct. Another example is a person may anticipate that things will turn out badly, and will feel convinced that their prediction is already an established fact."
+                        title="Without individuals saying so, we know what they are feeling and why they act the way they do. In particular, we are able to determine how people are feeling toward us. For example, a person may conclude that someone is reacting negatively toward them but doesn&apos;t actually bother to find out if they are correct. Another example is a person may anticipate that things will turn out badly, and will feel convinced that their prediction is already an established fact."
                         >Jumping to Conclusions</option>
                      <option
                         value="mislabeling"
@@ -195,15 +195,15 @@
                         >Personalization</option>
                      <option
                         value="polarized_thinking"
-                        title="In polarized thinking, things are either “black-or-white.” We have to be perfect or we’re a failure — there is no middle ground. You place people or situations in “either/or” categories, with no shades of gray or allowing for the complexity of most people and situations. If your performance falls short of perfect, you see yourself as a total failure."
+                        title="In polarized thinking, things are either &quot;black-or-white.&quot; We have to be perfect or we&apos;re a failure — there is no middle ground. You place people or situations in &quot;either/or&quot; categories, with no shades of gray or allowing for the complexity of most people and situations. If your performance falls short of perfect, you see yourself as a total failure."
                         >Polarized Thinking</option>
                      <option
                         value="sacrifice_fallacy"
-                        title="We expect our sacrifice and self-denial to pay off, as if someone is keeping score. We feel bitter when the reward doesn’t come."
+                        title="We expect our sacrifice and self-denial to pay off, as if someone is keeping score. We feel bitter when the reward doesn&apos;t come."
                         >Sacrificial Reward Fallacy</option>
                      <option
                         value="shoulds"
-                        title="We have a list of ironclad rules about how others and we should behave. People who break the rules make us angry, and we feel guilty when we violate these rules. A person may often believe they are trying to motivate themselves with shoulds and shouldn’ts, as if they have to be punished before they can do anything."
+                        title="We have a list of ironclad rules about how others and we should behave. People who break the rules make us angry, and we feel guilty when we violate these rules. A person may often believe they are trying to motivate themselves with shoulds and shouldn&apos;ts, as if they have to be punished before they can do anything."
                         >Shoulds</option>
                   </select>
                </div>
@@ -254,9 +254,7 @@
                      <div class="control-group">
                         <div>
                            <label class="checkbox">
-                              <input   type="checkbox"
-                                        data-bind="checked: shared"
-                                        />
+                              <input type="checkbox" data-bind="checked: shared" />
                               Share this
                            </label>
                         </div>
@@ -264,8 +262,7 @@
                      <div class="control-group">
                         <div class="controls">
                            <label class="checkbox">
-                              <input type="checkbox" 
-                                    data-bind="checked: share_empathy" >
+                              <input type="checkbox" data-bind="checked: share_empathy" />
                               Anybody else feel this way?
                            </label>
                         </div>
@@ -273,7 +270,7 @@
                      <div class="control-group">
                         <div class="controls">
                            <label class="checkbox">
-                           <input type="checkbox" data-bind="checked: share_suggestions">
+                              <input type="checkbox" data-bind="checked: share_suggestions" />
                               Any suggestions?
                            </label>
                         </div>
@@ -281,7 +278,7 @@
                      <div class="control-group">
                         <div class="controls">
                            <label class="checkbox">
-                              <input type="checkbox" data-bind="checked: share_pride">
+                              <input type="checkbox" data-bind="checked: share_pride" />
                               I feel proud!
                            </label>
                         </div>
