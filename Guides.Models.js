@@ -26,8 +26,15 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     catch (e) {
       slide_ids = this.get_field_value("required_xelement_ids");
     };
-    slide_models = _.map( slide_ids, function(id) { return SLIDES.get(id) });
-    this.slides = new SlideCollection(slide_models);
+
+    if (typeof(SLIDES) !== "undefined" && SLIDES) {
+      slide_models = _.map( slide_ids, function(id) { return SLIDES.get(id) });
+      this.slides = new SlideCollection(slide_models);      
+    } else {
+      console.warn("No existing SLIDES collection on Guide instantion. Setting slides to empty.")
+      this.slides = new SlideCollection();      
+    };
+
     
 
     // Let any change to slides reflect a change of save state in the guide:

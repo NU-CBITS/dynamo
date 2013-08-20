@@ -598,11 +598,12 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     var atts;
 
-    if (this.model.guided_page_url === "[None]") {
+    if (this.model.guided_page_url === "[None]" || 
+        this.model.guided_page_url === ""       || 
+        this.model.guided_page_url === " ") {
       this.guidedPageSM.skip();
       this.renderSlides();
     };
-
 
     atts = { 
       guide: this.model.get_fields_as_object(),
