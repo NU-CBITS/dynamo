@@ -698,22 +698,11 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.on('sync', this.completeRender);
     this.initializeAsSaveable(this.model);
     this.instantiateEditorFn = this.options.instantiateEditorFn || function(options, thisView) {
-      var e = new wysihtml5.Editor(options.selector, { 
-        toolbar: options.toolbar, 
-        stylesheets: options.stylesheets,
-        parserRules:  options.parserRules
-      });
-      e.on("change", function() {
-        self.updateContent( thisView.$el.find('textarea.slide-content:first').val() )
-      });
-      return e;
+      console.error("no instantiateEditorFn!")
     };
     this.instantiateEditorOptions = _.extend({ 
-        selector: this.model.cid+"-slide-content",
-        toolbar: this.model.cid+"-wysihtml5-toolbar", // id of toolbar element
-        stylesheets: ["wysihtml5/website/css/stylesheet.css", "wysihtml5/website/css/editor.css"],
-        parserRules:  wysihtml5ParserRules // defined in parser rules set 
-    }, ( _.result(this.options, 'instantiateEditorOptions') || {}) );
+        selector: this.model.cid+"-slide-content"
+        },( _.result(this.options, 'instantiateEditorOptions') || {}) );
 
   },
 
