@@ -1,0 +1,47 @@
+<div class="widget-content">
+	(% if (deletable) { %)
+		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
+	(% } %)
+	<div class="thought_record">
+		<p class="lead"><strong>(%= username %)</strong> shared:</p>
+		<blockquote><em>(%= situation %)</em></blockquote>
+		<p>Initially, they felt 
+			<strong>
+			(%= emotion %) ((%= emotion_intensity %))
+			</strong>
+			because they were thinking:
+		</p> 
+		<blockquote><em>(%= thought %)</em></blockquote>
+		<p>After reflection, they thought:</p>
+		<blockquote><em>(%= alternative_thought %)</em></blockquote>
+		<p>And ended feeling
+			<strong>
+			(% if (outcome_intensity > emotion_intensity) {  print("more") } %) 
+			(% if (outcome_intensity < emotion_intensity) {  print("less") } %)
+			(% if (outcome_intensity == emotion_intensity) { print("the same level of") } %) 
+			(%= emotion %) ((%= outcome_intensity %))
+			</strong>
+		</p>
+	</div>
+	<div class="prompts">
+		<ul>
+			(% if ( (typeof(share_empathy) !== "undefined") 		&& !!share_empathy ) { %)
+				<li>Anybody else feel this way?</li>
+			(% 	} %)
+			(% if ( (typeof(share_suggestions) !== "undefined") && !!share_suggestions ) { %)
+				<li>Have any suggestions?</li>
+			(% } %)
+			(% if ( (typeof(share_pride) !== "undefined") 			&& !!share_pride ) { %)
+				<li>I&apos;m proud about this one!</li>
+			(% 	} %)
+		</ul>
+	</div>
+	<div class="row-fluid" style="margin-top:20px;">
+		<div class="span4 hugs"></div>
+		<div class="span4 me-toos"></div>
+		<div class="span4 thumbs-up"></div>
+	</div>
+	<div class="row-fluid" style="margin-top:10px;">
+		<div class="span12 comments"></div>
+	</div>
+</div>

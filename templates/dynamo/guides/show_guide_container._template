@@ -2,7 +2,7 @@
 
   <div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
 
-    <h3 style="padding-left:15px;" id="current-guide-title"></h3>
+    <h3 id="current-guide-title"></h3>
 
   </div>
 

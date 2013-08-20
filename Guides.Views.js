@@ -19,21 +19,142 @@
 //   }
 // });
 
+
+// launchInModal
+// Following the decorator pattern, wraps a view instance
+// so that it is properly rendered within a modal dialog
+// currently relies on jQuery UI.
+launchInModal = function(viewInstance, options) {
+  
+  var modalViewObj = {};
+
+  _.extend(modalViewObj, Backbone.Events);
+  modalViewObj.cid = _.uniqueId('c');
+  modalViewObj.viewInstance = viewInstance;
+
+  // Setup launch button
+  if (options.$launchButton) {
+    modalViewObj.$launchButton = options.$launchButton;
+  }
+  else if (options.$launchButtonContainer) {
+
+    var buttonId = "launch-"+modalViewObj.cid
+
+    options.$launchButtonContainer.prepend(
+      t.button(options.launchButtonText, { 
+        id: buttonId, 
+        class: "btn btn-info", 
+        style: (options.launchButtonStyle || "") 
+      }));
+    modalViewObj.$launchButton = $(options.$launchButtonContainer.find(("button#"+buttonId+":first")));
+
+  }
+  else {
+    throw "requires a $launchButton or $launchButtonContainer option"
+  }
+
+  // Set view container.
+  if (options.$viewContainer) {
+
+    modalViewObj.$viewContainer = options.$viewContainer;
+
+  }
+  else {
+
+    var dialogId = 'dialog-'+modalViewObj.cid;
+    modalViewObj.$viewContainer = $('<div id="'+dialogId+'"></div>');
+    $('body').append(modalViewObj.$viewContainer);
+
+  }
+
+  // Initalize view container as dialog
+  var modalOpts = _.extend({
+    autoOpen: false
+  }, options.jqModalOptions);
+  modalViewObj.$viewContainer.dialog( modalOpts );  
+
+  // Set up the on-button-click trigger
+  if (options.onLaunchButtonClick) {
+    modalViewObj.onLaunchButtonClick = options.onLaunchButtonClick;
+    _.bindAll(modalViewObj, 'onLaunchButtonClick');
+    modalViewObj.$launchButton.on("click", modalViewObj.onLaunchButtonClick);
+  }
+  else {
+    modalViewObj.$launchButton.on("click", modalViewObj.openModal);
+  
+  };
+  
+  modalViewObj.openModal = function() {
+    modalViewObj.$viewContainer.dialog("open");
+    if (!modalViewObj.viewRendered) {
+      modalViewObj.$viewContainer.html(modalViewObj.viewInstance.render().$el);
+      modalViewObj.viewInstance.delegateEvents();      
+      modalViewObj.viewRendered = true;
+    }
+    modalViewObj.trigger('opened');
+  };
+  _.bindAll(modalViewObj, 'openModal');
+
+  modalViewObj.closeModal = function() {
+    modalViewObj.$viewContainer.dialog("close");
+    modalViewObj.trigger('closed');
+  };
+  _.bindAll(modalViewObj, 'closeModal');  
+
+  return modalViewObj;
+};
+
+
 GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectionView.extend({
+
+  // _launchButton: "<button id='guide_launcher' class='btn btn-info'>Launch Guides</button>",
 
   initialize: function() {
     var self = this;
+    _.extend(this, Backbone.Events);
+
+    this.cid = _.uniqueId('c');
     
     this.guideData = this.options.guideData;
-    
+
+    this.collection_name = this.options.collection_name || "Guides";
+
     this.guideSelect = new Dynamo.ChooseOneXelementFromCollectionView({
       template: DIT["dynamo/guides/index"],
+      collection_name: this.collection_name,
       collection: this.collection
     });
 
     this.guideSelect.on("element:chosen", function() {
       self.setAsCurrentGuide(self.guideSelect.chosen_element);
     });
+
+    if (this.options.$launchButtonContainer) {
+      this.asModal = true;
+      this.$launchButtonContainer = this.options.$launchButtonContainer;
+
+      this.$launchButtonContainer.prepend(
+        t.button("Launch "+this.collection_name, { 
+          id: "guide_launcher", 
+          class: "btn btn-info", 
+          style: (this.options.launchButtonStyle || "") 
+        }));
+      this.$launchButtonContainer.find('button#guide_launcher').click(function() { 
+        self.openInModal();
+      });
+      this.$guideContainer = $("<div id='guide_player_container-"+this.cid+"'></div>");
+      $('body').append(this.$guideContainer);
+      this.$guideContainer.dialog({
+        autoOpen: false,
+        width: 610,
+        height: 540
+      });
+    }
+    else {
+      this.asModal = false;
+    };
+
+
 
     this.collection.on("all", this.render);
   },
@@ -43,41 +164,64 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     "click .previous" : "moveBack",
     "click .finished" : "displayGuideIndex",
     "click .lesson-index" : "displayGuideIndex",
-    "click .guide-action" : "performAction",
-    "click .accordion-header": "displayWidgetContent",
-    "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
+    "click .guide-action" : "performAction" //,
+    // "click .accordion-header": "displayWidgetContent",
+    // "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
   },
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
   },
 
-  displayDropdownAndWidgetContent: function() {
-    this.$el.find(".accordion-body").show();
-    this.rotateArrowDown();
-  },
+  //
+  // displayDropdownAndWidgetContent: function() {
+  //   this.$el.find(".accordion-body").show();
+  //   this.rotateArrowDown();
+  // },
+
+  // displayWidgetContent: function(event) {
+  //   var target = $(event.target);
+  //   if (target.closest('.dropdown').length == 0) {
+  //     var body = this.$el.find(".accordion-body");
+  //     if (body.is(":visible")) {
+  //       body.hide();
+  //       this.rotateArrowRight();
+  //     } else {
+  //       body.show();
+  //       this.toggleChevronArrow();
+  //     }
+  //   };
+  // },
+  //
+
+  // rotateArrowRight: function() {
+  //   this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
+  // },
+
+  // rotateArrowDown: function() {
+  //   this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
+  // },
+
+  // toggleChevronArrow: function() {
+  //   if (this.$el.find('i.icon-caret-right').length === 1) {
+  //     this.rotateArrowDown();
+  //   } else {
+  //     this.rotateArrowRight();
+  //   }
+  // }
+  //    
 
   displayGuideIndex: function() {
     var self = this;
     this.$el.html(self.guideSelect.render().$el);
+    self.guideSelect.render();
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer
+    if (!this.asModal) {
+      this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer      
+    };
+    
     self.guideSelect.delegateEvents()
     // remove comments etcs
-  },
-
-  displayWidgetContent: function(event) {
-    var target = $(event.target);
-    if (target.closest('.dropdown').length == 0) {
-      var body = this.$el.find(".accordion-body");
-      if (body.is(":visible")) {
-        body.hide();
-        this.rotateArrowRight();
-      } else {
-        body.show();
-        this.toggleChevronArrow();
-      }
-    };
   },
 
   moveBack: function() {
@@ -104,6 +248,13 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     }
   },
 
+  openInModal: function() {
+    this.$guideContainer.dialog("open");
+    this.$guideContainer.html(this.render().$el);
+    this.delegateEvents();
+    this.displayGuideIndex();
+  },
+
   resetCurrentSlide: function() {
     this._currentSlideIndex = 0;
   },
@@ -123,7 +274,9 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },
 
   render: function() {
-    this.$el.html( this._template() );
+    this.$el.html( this._template({
+      collection_name: this.collection_name
+    }) );
     return this;
   },    
 
@@ -137,18 +290,28 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     }
     // if on first slide
     if (this.currentSlideIndex() === 0) {
-      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> Lessons");;
+      navButtons.find('button').first().removeClass("previous").addClass('lesson-index').html("<i class='icon-list'></i> "+this.collection_name);;
     } else {
       navButtons.find('button').first().removeClass("lesson-index").addClass('previous').html("&larr; Previous");
     }
   },
 
   renderSlide: function() {
+    this.trigger("guide:slide:render", this.currentSlideIndex());
+    
+    if (this.currentSlideIndex() === (this.currentGuide.slides.length - 1)) {
+      this.trigger("guide:finished");
+    }    
+
     if (this.$el.find("div#current-guide-slide-content").length == 0 ) {
       this.$el.html( this._template({}) );
-    };
-    // Set height so the buttons stay in the same place!
-    this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )
+    }
+    
+    if (!this.asModal) {
+      // Set height so the buttons stay in the same place!
+      this.$el.find('.guide-view').css('height', (window.innerHeight * .25) )      
+    }
+
     var $slide_content = this.$el.find("div#current-guide-slide-content");
 
     //  Place current Guide title into correct spot in the title bar.
@@ -170,6 +333,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
      comparator: function(c) { return (new Date(c.get("created_at") )); }
     });
 
+    lessonComments.storyRoute = this.options.storyRoute;
     // lessonComments.comparator = reverseSortBy(lessonComments.comparator);
     lessonComments.sort();
 
@@ -178,9 +342,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       collection: lessonComments,
       collectionAtts: {
         xelement_id: guide.id
-      },
-      knockoutTemplate: app.templates["partial/comments"],
-      knockoutElementTemplate: app.templates["partial/comment"]
+      }
     });
     lessonCommentsView.render();
   },
@@ -189,6 +351,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     guideLikes = app.Likes.where(function(like) {
       return (like.get_field_value("item_liked_id") == guide.id )
     });
+    guideLikes.storyRoute = this.options.storyRoute;
 
     guideLikesView = new LikesView({
       el: "div#guide-likes",
@@ -209,22 +372,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     //Once a guide is selected we can load comments and likes for the guide.
     if ( app.Likes ) { this.renderLikes(app, guide) };
     if ( app.Comments ) { this.renderComments(app, guide) };
-  },
-
-  rotateArrowRight: function() {
-    this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
-  },
-
-  rotateArrowDown: function() {
-    this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
-  },
-
-  toggleChevronArrow: function() {
-    if (this.$el.find('i.icon-caret-right').length === 1) {
-      this.rotateArrowDown();
-    } else {
-      this.rotateArrowRight();
-    }
   }
 
 });

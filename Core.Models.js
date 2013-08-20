@@ -31,7 +31,7 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
   },
 
   logChange: function () {
-    console.log("Xelement<cid="+this.cid+"> - "+this.prettyName+" changed");
+    //console.log("Xelement<cid="+this.cid+"> - "+this.prettyName+" changed");
   },
 
   currentSaveState: function() {
@@ -297,29 +297,6 @@ XelementRoot = Dynamo.XelementRoot = {
 
 };
 
-Dynamo.XelementAvailability = function(availabilityObject, elementId) {
-  this.availability = availabilityObject || {};
-
-  this.elementId = elementId;
-
-  this.usableNumDaysIn = function(parentXelementId) {
-    if (parentXelementId) {
-      var parentAvailability = this.availability[parentXelementId] || {};
-
-      return _.max([
-        coerceNum(parentAvailability.self),
-        coerceNum(((parentAvailability.sub_elements || {})[this.elementId] || {}).self)
-      ]);
-    }
-
-    return coerceNum((this.availability[this.elementId] || {}).self);
-  }
-
-  function coerceNum(maybeNum) {
-    return typeof(maybeNum) == "number" ? maybeNum : 1;
-  }
-}
-
 UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend({}, Dynamo.XelementRoot, {
 
   codeName: 'unitary_xelement',
@@ -328,30 +305,19 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   initAsXelement: function() {
     this.stringifyAllValues();
     this.initializeAsSaveable();
-    console.log(this.get_field_value("title"));
+    // console.log(this.get_field_value("title"));
   },
 
-  // The availability object is expected to have the format
-  // of the availability object that is created by the application_builder tool:
-  // {
-  //   "[xelement_id]": {
-  //     self: [num-days-into-trial-accessible],
-  //     sub_elements: {
-  //       "[child_xelement_id]": {
-  //         self: [num-days-into-trial-accessible],
-  //         ...
-  //       }
-  //     }
-  //   },
-  //   "[another_xelement_id]": {
-  //     ...
-  //   }
-  // }
-  // if an element is nested within another, then pass in the parent's id as an option.
-  // Also the availability of the nested resource is available no-sooner than its parent.
-  usableNumDaysIn: function(availability, options) {
-    return (new Dynamo.XelementAvailability(availability, this.id))
-      .usableNumDaysIn((options || {}).parent);
+  //uses Authorization - refer to purple_application_builder
+  usableNumDaysIn: function(options) {
+    options = options || {};
+    if (! Dynamo._currentAuthorization) {
+      throw "currentAuthorization object not defined"
+    }
+    else {
+      var p = options.parent || null;
+      return Dynamo._currentAuthorization.usableNumDaysIn(this.id, p);  
+    };
   },
 
   get_field_type: function(attribute) {
@@ -581,13 +547,12 @@ Dynamo.getDataFieldsAsObject = function(dataModel) {
   return _.extend(fields, _.object(dataModel.get('names'), _.map(dataModel.get('names'), dataModel.get_field_value )));
 };
 
-//Data
-//modified from Data class in Backhand.js
-//expects:
-//- a trireme_root_url
-//- an xelement_id //
-//- a user_id //
-//- a group_id
+// Data
+// expects:
+//  - a trireme_root_url
+//  - an xelement_id //
+//  - a user_id //
+//  - a group_id
 Data = Dynamo.Data = Dynamo.SaveableModel.extend({
 
   codeName: 'data',
@@ -822,7 +787,9 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     if ( !this.get('group_id')      ) { throw new Error("no group_id");     };
 
     this.group = this.groupsCln.get( this.get('group_id') );
-    if (!this.group) { throw new Error( "no group found for group_id:"+this.get('group_id') ) };
+    if (!this.group) { 
+      throw new Error( "no group found for group_id:"+this.get('group_id') ); 
+    };
 
     this.buildUserCollections();
 
@@ -849,14 +816,46 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
     return self._attributeNames
   },
 
+  all: function() {
+    
+    var clnProps = _.extend({
+          xelement_id: function() { 
+            new Error("xelement_id called for abstract collection");
+          },
+          user_id:  function() { 
+            new Error("user_id called for abstract collection");
+          },
+          group_id: function() { 
+            new Error("group_id called for abstract collection");
+          },
+    }, (this.get("collectionProperties") || {}) );
+
+
+    var allModels = this.collections.reduce(function(memo, collection) { 
+      return collection.models.concat(memo)
+    }, []);
+
+    var cln = new Dynamo.DataCollection(allModels, clnProps);
+    cln.sort();
+    return cln;
+
+  },
+
   add: function(modelToAdd) {
     var user_id = modelToAdd.get("user_id");
-    this.userCollectionFor(user_id).add(modelToAdd)
+    this.userCollectionFor(user_id).add(modelToAdd);
+    this.trigger('add');
   },
+
+  debouncedChange: _.debounce(function() { 
+    console.log("debouncedChange triggered for", this);
+    this.trigger('change');
+  }, 500),
 
   buildUserCollections: function() {
     var self = this;
     this.collections = [];
+
     this.group.users.each(function(user) {
 
       var classProps = _.extend({
@@ -865,22 +864,81 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
           group_id: self.get('group_id')
         }, (self.get("collectionProperties") || {}) );
 
-      var UserData = new Dynamo.DataCollection(null, classProps);
-
-      UserData.fetch({ async:false });
-      UserData.on('add',    function() { self.trigger('change') });
-      UserData.on('remove', function() { self.trigger('change') });
-      UserData.on('reset',  function() { self.trigger('change') });
+      var UserData = new Dynamo.DataCollection([], classProps);
+      UserData.on('add', this.debouncedChange);
+      UserData.on('remove', this.debounceChange);
+      UserData.on('reset', this.debounceChange);
+      UserData.on('sync', this.debounceChange);
       self.collections.push(UserData);
+
     });
+
   },
 
-  fetchUserCollections: function(fetch_options) {
-    if ( (!this.last_time_fetched) || (this.last_time_fetched < ( (30).seconds().ago() )) ) {
-      this.last_time_fetched = (new Date());
-      var options = _.extend({ async: false }, fetch_options);
-      _.each(this.collections, function(c) { c.fetch(options); });
-      this.trigger('change');
+  // successiveCollectionBuild: function(nthUser) {
+
+  //   var self = this;
+  //   var user = this.group.users.at(nthUser);
+  //   var nextUser = nthUser+1;
+
+  //   var classProps = _.extend({
+  //       xelement_id: self.get('xelement_id'),
+  //       user_id: user.id,
+  //       group_id: self.get('group_id')
+  //     }, (self.get("collectionProperties") || {}) );
+
+  //   var UserData = new Dynamo.DataCollection([], classProps);
+  //   UserData.once('sync', function(syncedCollection) {
+  //     console.log("UserData === syncedCollection", (UserData === syncedCollection));
+  //     syncedCollection.on('all', self.debouncedChange );
+  //     self.collections.push(syncedCollection);
+  //     self.debouncedChange();
+  //     if (nextUser < self.group.users.length) {
+  //       self.successiveCollectionBuild(nextUser);
+  //     }
+  //   });
+  //   UserData.fetch({ async: true});
+
+  // },
+
+  successiveFetch: function(nthCollection, fetch_options) {
+    var self = this,
+        nextCollection = nthCollection+1,
+        currentClxn;
+    
+    fetch_options = fetch_options || {};
+
+    if (nthCollection < self.group.users.length) { 
+      currentClxn = this.collections[nthCollection];
+    }
+    else {
+      return;
+    }
+
+    // console.log("successiveFetch: (clxn, blockingFetch)", currentClxn, (fetch_options.async === false));
+
+    if (fetch_options.async === false) {
+      currentClxn.fetch(fetch_options);
+      return self.successiveFetch(nextCollection, fetch_options);
+    }
+    else {
+      currentClxn.once("sync", function() {
+        self.successiveFetch(nextCollection, fetch_options);
+        self.debouncedChange();
+      });
+      currentClxn.fetch(fetch_options);
+    }
+  
+  },
+
+  fetchAll: function(fetch_options) {
+    
+    if (  (!this.lastFetch) || 
+          (this.lastFetch < ( (30).seconds().ago() )) 
+        ) {
+      this.lastFetch = new Date();
+      var options = _.extend({}, fetch_options);
+      this.successiveFetch(0, options);
     }
 
   },
@@ -926,14 +984,15 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
                   .compact()
                   .value();
 
-    return ( new Backbone.Collection( result, collectionOptions ) );
+    return ( new Dynamo.DataCollection( result, collectionOptions ) );
   }
 
 });
 
 // Underscore methods that we want to implement on GroupWideData.
+// If you want to override one of these methods, remember to remove it from here!!
 var methods = ['forEach', 'each', 'map', 'reduce', 'reduceRight', 'find',
-  'detect', 'filter',  'select', 'reject', 'every', 'all', 'some', 'any',
+  'detect', 'filter',  'select', 'reject', 'every', 'some', 'any',
   'include', 'contains', 'invoke', 'max', 'min', 'sortBy', 'sortedIndex',
   'toArray', 'size', 'first', 'initial', 'rest', 'last', 'without', 'indexOf',
   'shuffle', 'lastIndexOf', 'isEmpty', 'groupBy'];
@@ -944,6 +1003,9 @@ _.each(methods, function(method) {
     return _[method].apply(_, [this.collections].concat(_.toArray(arguments)));
   };
 });
+
+
+
 
 // Same as Data, but doesn't save to a server.
 Dynamo.TempData = Dynamo.Data.extend({

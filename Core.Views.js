@@ -1470,6 +1470,23 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     // no need to re-render on model change.
   },
 
+  id: function() {
+    return _.uniqueId();
+  },
+
+  // The function that returns the attributes from the backbone model
+  // that need to be turned into knockoout viewModel keys.
+  // You can:
+  //  - let it use model.attributes
+  //  - Pass in a custom function on initialize modelAttsFn, which will return
+  //  this object, 
+  //  - Add atts which may not be found in either through the 'lateAddAtts' option,
+  //    which expects to be a function with key-value pairs for additional defaults.
+  //    this is useful when the underlying model changes and old entries don't have keys
+  //    for new attributes; w/out adding those atts to the object, knockout will raise
+  //    an error.
+  //  - the function also adds the id & cid to the final set of modelAtts that are
+  //    created as attributes of the knockout viewModel. 
   modelAtts: function() {
     var atts;
     if (this.options.modelAttsFn) {
@@ -1478,7 +1495,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     else {
       atts = this.model.attributes;
     };
-    return _.extend({}, atts, {id: this.model.id, cid: this.model.cid });
+    return _.extend({}, this.options.lateAddAtts, atts, {id: this.model.id, cid: this.model.cid });
   },
 
   createKnockoutModel: function() {
@@ -1489,7 +1506,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     self.knockoutModel = {};
     self.knockoutModel.view = self;
-    //in case you ever want to force a re-computation of a computed,
+    //in case you ever want/need to force a re-computation of a computed,
     //you can place a call to the value of this dummyObservable in the computed,
     //and then call self.knockoutModel.dummyObservable.notifySubscribers();
     //when you want to trigger a recomputation:
@@ -1520,16 +1537,13 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
     self.knockoutModel.save = function() {
       self.triggerSave();
+      return false;
     };
 
     self.knockoutModel.destroy = function() {
       self.triggerDelete();
+      return false;
     };
-
-    this.model.on('sync', function(syncArg1, syncArg2, syncArg3) {
-      console.log("sync callback is passed:", syncArg1, syncArg2, syncArg3);
-      // alert('Saved.');
-    });
 
   },
 
@@ -1542,7 +1556,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
       throw new Error("Unhandled case: attribute '"+attr+"'\'s value is an object.")
     };
 
-    console.log("Attr, Value:", attr, value);
+    // console.log("Attr, Value:", attr, value);
 
     if ( _.isDate(value) ) {
       self.knockoutModel[attr+"_year"] = ko.observable(value.getFullYear());
@@ -1710,14 +1724,25 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     });
   },
 
-  //render function is greatly simplified
-  //as the supplied template will do all the
-  //heavy lifting!
+  // Render function is greatly simplified
+  // as the supplied template will do all the
+  // heavy lifting!
   render: function() {
-    this.$el.html( this.knockoutTemplate() );
+    this.$el.empty();
+    this.$el.html( _.template(this.knockoutTemplate(), { cid: _.uniqueId() }) );
+    var domEl = this.$el.children(":first").get(0);
     this.createKnockoutModel();
-    ko.applyBindings(this.knockoutModel, this.$el.get(0));
+    ko.applyBindings(this.knockoutModel, domEl);
+    this.trigger("rendered");
     return this;
+  },
+
+  // Override delegate events function
+  // to use knockout
+  delegateEvents: function() {
+    // var el = this.$el.children(":first").get(0);
+    // this.createKnockoutModel();
+    // ko.applyBindings(this.knockoutModel, this.$el.get(0));
   },
 
   triggerSave: function() {
@@ -1730,6 +1755,65 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
 });
 
+
+// Abstract view for rendering an index view of a group-wide data set,
+// Expects: 
+//  - Expects to be subclassed with the modelViewClass attribute overwritten,
+//    or have the modelViewClass be passed in on instantiation.
+//  - The model passed in on instantion ot have an 'all' method which returns a
+//    collection of models to be rendered by the modelViewClass, as well as 'add' / 'remove'
+//    methods. 
+GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
+
+  modelViewClass: function() {
+    new Error("Abstract function, modelViewClass of GroupWideDataIndexView called!")
+  },
+
+  initialize: function() {
+    var self = this;
+    this.modelViewClass = this.options.modelViewClass || this.modelViewClass;
+    this.renderOrder = this.options.renderOrder || this.renderOrder;
+    
+    this.model.on("add", this.initialRender, this);
+    this.model.on("remove", this.initialRender, this);
+  },
+
+  initialRender: function() {
+    
+    this.modelViews = null;
+    this.modelViews = [];
+
+    var self = this;
+    this.model.all().each(function(someModel) {
+      self.modelViews.push( (new self.modelViewClass({ model: someModel })) );
+    });
+
+    this.$el.empty();
+    _.each(this.modelViews, function(mView) {
+      if (self.renderOrder === 'reverse') {
+        self.$el.prepend(mView.render().$el);
+      }
+      else {
+        self.$el.append(mView.render().$el);  
+      };
+    });
+    this.initiallyRendered = true;
+
+  },
+
+  render: function() {
+  
+    if (!this.initiallyRendered) {
+      this.initialRender();
+    }  
+    else {
+      _.invoke(this.modelViews, 'render');
+    };
+
+    return this;
+  }
+
+});
 
 
 GoalsView = Dynamo.GoalsView = Backbone.View.extend({

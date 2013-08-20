@@ -17,6 +17,6 @@
 	<div class="end">(%= end_content %)</div>
 (% }; %)
 
-<div class="navigation">
-  <button id="finish" class="btn">Finish</button>
+<div class="navigation btn-toolbar">
+  <button id="finish" class="btn btn-large btn-primary">Finish</button>
 </div>

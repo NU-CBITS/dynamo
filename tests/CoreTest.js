@@ -185,7 +185,7 @@ describe("Core", function() {
       })
 
     it("should do what it says", function() {
-      assert.equal("foo?user_id=" + user.id + "&session_id=YO-IMA-SESSION-ID", addSessionVarsToUrl("foo"));
+      assert.equal("foo?user_id=" + user.id + "&session_id=YO-IMA-SESSION-ID", Dynamo.addSessionVarsToUrl("foo"));
     })
   })
 

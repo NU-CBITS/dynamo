@@ -1,20 +1,13 @@
-<div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
-  <h3>Event Editor</h3>
+<form id="edit-event-(%= cid %)"
+      class="form-horizontal widget-content form-condensed" 
+      name="edit-event">
 
-  <ul class="nav pull-right">
-    <li class="caret-icons">
-      <a><i class="icon-caret-right"></i></a>
-    </li>
-  </ul>
-</div>
-
-<form class="form-horizontal widget-content form-condensed accordion-body" id="edit-event" name="edit-event">
   <div class="row-fluid">
     <div class="control-group span12" id="edit-title-attribute-container">
       <label class="control-label" id="title-attribute-label">Title</label>
 
       <div class="controls">
-        <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Description" type="text">
+        <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Situation" type="text">
       </div>
     </div>
   </div><!-- Start and End Times -->
@@ -321,34 +314,45 @@
         </option>
       </select> <input class="input-xmini" data-bind="value: end_minute" id="end-time-minute" placeholder="min" type="text">
     </div>
-  </div><!-- TAGS -->
+  </div>
 
-  <div class="control-group" id="edit-tags-attribute-container">
-    <label class="control-label" id="tags-attribute-label">Tags (<span data-bind="text: tags().length"></span>)</label>
+  <!-- TAGS -->
+  <div class="control-group">
+     <label class="control-label">Tags (max 5)</label> 
+     <div class="controls">
+        <input type="text" class="input-large" 
+              data-bind="selectizeText: tags, selectizeOptions: {
+                openOnFocus: true, 
+                maxItems: 5,
+                create: function(input) { return { value: input, text: input } }, 
+                options: [
+                    {value: \'work\', text: \'work\'},
+                    {value: \'friends\', text: \'friends\'},
+                    {value: \'family\', text: \'family\'},
+                    {value: \'chores\', text: \'chores\'},
+                    {value: \'leisure\', text: \'leisure\'},
+                    {value: \'self_care\', text: \'self-care\'}
+                ]
+              }"></input>
+     </div>
+  </div>
 
-    <div class="controls">
-      <div data-bind="foreach: { data: tags }">
-        <div class="input-tag">
-          <input class="edit-tag-attribute" data-bind="value: $data.value, valueUpdate: \'afterkeydown\'" type="text"> <button class="btn remove-tag-attribute" data-bind="click: $data.remove"><em class="icon-remove">Remove</em></button>
-        </div>
-      </div><button class="btn add-tag-attribute" data-bind="click: tags_addElement"><em class="icon-plus"></em> Add Tag</button>
-    </div>
-  </div><!-- ACTIVITY COMPLETION -->
-
-  <div class="control-group" data-bind="if: inReviewing" id="edit-event-completed-attribute-container">
-    <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px;">Completed This Activity</label>
+  <!-- ACTIVITY COMPLETION -->
+  <div class="control-group" data-bind="if: inReviewing" id="edit-event-completed-attribute-container" style="margin-top:10px">
+    <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px; font-weight:bold;">I Completed This Activity
+    </label>
 
     <div class="controls">
       <label class="radio inline" id="event-completed-no-label"><input data-bind="checked: eventCompleted" type="radio" value="0"> No</label> <label class="radio inline" id="event-completed-yes-label"><input data-bind="checked: eventCompleted" type="radio" value="1"> Yes</label>
     </div>
   </div>
 
+  <!-- PLEASURE - PREDICT -->
   <div class="control-group" id="pleasure-attributes-container">
-    <!-- PLEASURE - PREDICT -->
-
-    <div data-bind="if: inScheduling" id="edit-pleasure-predict-attribute-container">
-      <div class="text-center" style="font-weight:bold;padding:5px 0px;">
-        Please rate your predicted PLEASURE during the event
+  
+    <div data-bind="if: inScheduling" id="edit-pleasure-predict-attribute-container" title="the amount of pleasure you think you&apos;ll have DURING the activity">
+      <div style="font-weight:bold;padding:5px 0px;" >
+        Predicted PLEASURE
       </div>
 
       <div class="row-fluid">
@@ -362,9 +366,10 @@
       </div>
     </div><!-- PLEASURE - ACTUAL -->
 
-    <div data-bind="ifnot: inScheduling" id="edit-pleasure-actual-attribute-container">
-      <div class="text-center" style="font-weight:bold;padding:5px 0px;">
-        Please rate your actual PLEASURE during the event
+    <div data-bind="ifnot: inScheduling" id="edit-pleasure-actual-attribute-container"
+    title="the amount of pleasure you actually had DURING the activity">
+      <div style="font-weight:bold;padding:5px 0px;">
+        Actual PLEASURE
       </div>
 
       <div class="row-fluid">
@@ -376,25 +381,36 @@
           <strong data-bind="text: actual_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
-    </div><!-- PLEASURE - PREVIOUSLY PREDICTED -->
+    </div>
 
-    <div class="row-fluid text-prof-blue" data-bind="if: inReviewing" id="pleasure-previously-predicted-container">
+    <!-- PLEASURE - PREVIOUSLY PREDICTED -->
+    <div  data-bind="if: inReviewing" 
+          id="pleasure-previously-predicted-container"
+          class="row-fluid text-prof-blue"
+          title="What you previously rated as your expected pleasure.">
       <div class="slider-bar">
         <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Pleasure:</strong>
       </div>
 
       <div class="slider-number text-right">
-        <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
+        <span data-bind="ifnot: predicted_pleasure, valueUpdate: \'afterkeydown\'">
+          <strong>not entered</strong>
+        </span>
+        <span data-bind="if: predicted_pleasure", valueUpdate: \'afterkeydown\'">
+          <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
+        </span>
       </div>
     </div>
   </div>
 
   <div class="row-fluid" id="accomplishment-attributes-container">
+    
     <!-- ACCOMPLISHMENT - PREDICT -->
-
-    <div data-bind="if: inScheduling" id="edit-accomplishment-predict-attribute-container">
-      <div class="text-center" style="font-weight:bold;padding:5px 0px;">
-        Please rate your predicted ACCOMPLISHMENT during the event
+    <div  data-bind="if: inScheduling" 
+          id="edit-accomplishment-predict-attribute-container"
+          title="the amount of accomplishment you think you&apos;ll have DURING the activity">
+      <div  style="font-weight:bold;padding:5px 0px;">
+        Predicted ACCOMPLISHMENT
       </div>
 
       <div class="row-fluid">
@@ -406,11 +422,14 @@
           <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
-    </div><!-- ACCOMPLISHMENT - ACTUAL -->
+    </div>
 
-    <div data-bind="ifnot: inScheduling" id="edit-accomplishment-actual-attribute-container">
-      <div class="text-center" style="font-weight:bold;padding:5px 0px;">
-        Please rate your actual ACCOMPLISHMENT during the event
+    <!-- ACCOMPLISHMENT - ACTUAL -->
+    <div  data-bind="ifnot: inScheduling" 
+          id="edit-accomplishment-actual-attribute-container"
+          title="the amount of accomplishment you actually had DURING the activity">
+      <div style="font-weight:bold;padding:5px 0px;">
+        Actual ACCOMPLISHMENT
       </div>
 
       <div class="row-fluid">
@@ -422,45 +441,47 @@
           <strong data-bind="text: actual_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
         </div>
       </div>
-    </div><!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
+    </div>
 
-    <div class="row-fluid text-prof-blue" data-bind="if: inReviewing" id="accomplishment-previously-predicted-container">
+    <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
+    <div  data-bind="if: inReviewing"
+          id="accomplishment-previously-predicted-container"
+          class="row-fluid text-prof-blue"
+          title="What you previously rated as your expected accomplishment.">
       <div class="slider-bar">
         <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Accomplishment:</strong>
       </div>
 
       <div class="slider-number text-right">
-        <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
+        <span data-bind="ifnot: predicted_accomplishment, valueUpdate: \'afterkeydown\'">
+          <strong>not entered</strong>
+        </span>
+        <span data-bind="if: predicted_accomplishment", valueUpdate: \'afterkeydown\'">
+          <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
+        </span>
       </div>
     </div>
   </div>
 
   <div data-bind="ifnot: inScheduling">
-    <div class="text-center" id="edit-emotion-attribute-container" style="font-weight:bold;padding:5px 0px;">
-      Please rate your <select class="input-small" data-bind="value: emotion" id="edit-emotion">
-        <option value="">
-          None
-        </option>
-
-        <option value="sad">
-          Sad
-        </option>
-
-        <option value="happy">
-          Happy
-        </option>
-
-        <option value="angry">
-          Angry
-        </option>
-
-        <option value="anxious">
-          Anxious
-        </option>
-      </select> Intensity
+    <div id="edit-emotion-attribute-container" 
+          style="font-weight:bold;padding:5px 0px;">
+      Emotion
+      <select id="edit-emotion" class="input-small" data-bind="value: emotion">
+         <option value="anger">Anger</option>
+         <option value="anxiety">Anxiety</option>
+         <option value="guilt">Guilt</option>
+         <option value="happiness">Happiness</option>
+         <option value="loneliness">Loneliness</option>
+         <option value="okay">Okay</option>
+         <option value="sadness">Sadness</option>
+         <option value="shame">Shame</option>
+      </select>
     </div>
 
-    <div class="row-fluid" id="edit-emotion-intensity-attribute-container">
+    <div  class="row-fluid" id="edit-emotion-intensity-attribute-container"
+          style="font-weight:bold;padding:5px 0px;">
+      Emotion Intensity
       <div class="slider-bar">
         <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}" id="edit-emotion-intensity-slider"></div>
       </div>
@@ -474,20 +495,11 @@
       <div class="row-fluid">
         <div class="control-group">
           <label class="control-label">Motivation</label>
-
           <div class="controls">
             <select data-bind="value: motivation" id="edit-motivation">
-              <option value="">
-                None
-              </option>
-
-              <option value="mood_directed">
-                Mood Directed
-              </option>
-
-              <option value="goal_directed">
-                Goal Directed
-              </option>
+              <option value="">None </option>
+              <option value="mood_directed"> Mood Directed </option>
+              <option value="goal_directed"> Goal Directed </option>
             </select>
           </div>
         </div>
@@ -495,11 +507,32 @@
     </div>
   </div>
 
-  <div id="event-form-save-delete-buttons-container">
-    <div class="btn-toolbar pull-right">
-      <button class="save btn btn-primary btn-large" data-bind="click: save" id="event-save-button">Save Event</button> <button class="del btn btn-danger btn-large" data-bind="click: destroy" id="event-delete-button"><em class="icon-trash"></em> Delete Event</button>
-    </div>
+  <!-- Sharing --> 
+  <div class="row-fluid">
+    <input type="hidden" data-bind="value: currentState">
+     <div class="span12">
+        <div class="control-group">
+           <label class="control-label">Sharing</label> 
+           <div class="controls">
+              <div class="well well-small">
+                 <div class="control-group">
+                    <div>
+                       <label class="checkbox">
+                          <input   type="checkbox"
+                                    data-bind="checked: shared"
+                                    />
+                          Share this
+                       </label>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+     </div>
+  </div>  
 
-    <div class="clearfix"></div>
+  <div id="event-form-save-delete-buttons-container" style="margin-top:20px">
+    <button class="del btn btn-danger btn-large" data-bind="click: destroy" id="event-delete-button"><em class="icon-trash"></em> Delete</button>
+    <button class="save btn btn-primary btn-large" data-bind="click: save" id="event-save-button">Save</button> 
   </div>
 </form>

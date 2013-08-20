@@ -1,7 +1,18 @@
 <div class="(%= type %)_group" id="(%= id %)">
 (% if (type == "select") { %)
   (%= t.label(label) %)
-  <select name="(%= name %)"></select>
+  <select name="(%= name %)">
+  	(% 
+  		_.each(options, function(o, index) { 
+  			var html_atts = { name: name, value: o.value }; 
+  			if (selected_value == o.value) { 
+  				html_atts.checked = "checked" 
+  			}; 
+  			print( t.option(o.label, html_atts) ); 
+  			numberOfOptions++ 
+  		}); 
+  	%)    	
+  </select>
 (% }; %)
 
 (% if (type == "radio" || type == "checkbox") { %)

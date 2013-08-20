@@ -102,6 +102,77 @@ Dynamo.redirectTo = function(fileName, options) {
 // we can override the Authenticating User and leave the CurrentUser as is.
 Dynamo.AUTHENTICATING_USER_ID = function() { return Dynamo.CurrentUser().id };
 
+Dynamo.ApplicationAuthorization = function(appXel) {
+
+  function coerceToNumber(maybeNum) {
+    return typeof(maybeNum) == "number" ? maybeNum : 1;
+  };
+
+  _.bindAll(this);
+  this.authProperties = appXel.authorizingProperties || [];
+  this.propTypes = appXel.authorizingPropertyTypes || {};
+  this.propDefaults = appXel.authorizingPropertyDefaults || {};
+  this.propValues = appXel.metacontent().authorizingPropertyValues || { self: {}, sub_elements: {} };
+  
+  this.propDefault = function(property) {
+    if ( ! _.contains(this.authProperties, property) ) {
+      throw (new Error("property '"+property+"' is not valid for authorization") );
+    }
+    return this.propDefaults[property];
+  };
+
+  this.getElementPropValue = function(elementId, property) {
+    if ( this.propValues[elementId] && this.propValues[elementId].self ) {
+      return this.propValues[elementId].self[property]
+    }
+    else {
+      return null;
+    }
+  };
+
+  this.getNestedElementPropValue = function(parentId, elementId, property) {
+    subElementAuth = this.propValues[parentId].sub_elements[elementId];
+    if (subElementAuth) {
+     return Dynamo.strToType(this.propTypes[property], subElementAuth.self[property]);
+    }
+    return void 0;
+  };
+
+  this.authPropVal = function(property, elementId, parentElementId) {
+    var default_value =  this.propDefault(property);
+
+    if (parentElementId) {
+
+      var parentAuthValue = this.getElementPropValue(parentElementId, property) || default_value;
+
+      return [ parentAuthValue, this.getNestedElementPropValue(parentElementId, elementId, property) ];
+
+    };
+
+    if ( this.getElementPropValue(elementId, property) ) {
+      return [ this.getElementPropValue(elementId, property) ]
+    }
+    else {
+      return [ default_value ]
+    }
+
+  };
+
+  this.usableNumDaysIn = function(elementId, parentElementId) {
+    var firstAvailabilityArray = this.authPropVal("firstAvailability", elementId, parentElementId);
+    var usableOnDay = _.max(_.compact(firstAvailabilityArray));
+    // console.log("In AppAuth usableNumDaysIn (elementId, parentId), array, usableOnDay)", elementId, parentElementId, firstAvailabilityArray, usableOnDay );
+    return usableOnDay;
+  };
+
+};
+
+Dynamo.initializeApplicationAuthorization = function(appXelement) {
+  if (! Dynamo._currentAuthorization ) {
+    Dynamo._currentAuthorization = new Dynamo.ApplicationAuthorization(appXelement);
+  }
+};
+
 
 // CurrentUser
 // Function which returns the currently authenticated user,
@@ -126,7 +197,7 @@ Dynamo.CurrentUser = function() {
   if ( localStorage.getItem("CurrentUser") ) {
 
     var user_atts = JSON.parse(localStorage.getItem("CurrentUser"));
-    //USERS is expected to be the globally defined and available of collection of users.
+    // USERS is expected to be the globally defined and available of collection of users.
     if (typeof(USERS) !== "undefined") {
       Dynamo._CurrentUser = USERS.get(user_atts.guid);
 
@@ -139,7 +210,8 @@ Dynamo.CurrentUser = function() {
       };
 
     } else {
-      //must not matter too much; create a dummy user.
+
+      // Must not matter too much; Create a Dummy user.
       Dynamo._CurrentUser = new Dynamo.User(user_atts)
 
     };
@@ -148,14 +220,18 @@ Dynamo.CurrentUser = function() {
   };
 
   if (Dynamo.loginRequired()) {
+
     Dynamo.redirectTo("login.html");
+
   }
   else {
+    
     Dynamo._CurrentUser = new Dynamo.User({
       phone_guid: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
       username: "DEFAULT-DYNAMO-USER_"+Dynamo.deviceID(),
       group_id: "DEFAULT-DYNAMO-USER-GROUP-1"
     });
+
     Dynamo._CurrentUser.dualstorage_id = "CURRENT-USER"
     localStorage.setItem("CurrentUser", JSON.stringify( Dynamo._CurrentUser.toJSON() ) );
     localStorage.setItem("CurrentUserSaved", "false");
@@ -168,8 +244,7 @@ Dynamo.CurrentUser = function() {
     });
 
     return Dynamo._CurrentUser;
-  }
-
+  };
 
 };
 
@@ -314,7 +389,7 @@ Dynamo.AuthenticatedSync = function (method, model, options) {
 
   // Ensure appropriate session variables for authentication.
   options.beforeSend = function(jqXHR, settings) {
-    settings.url = addSessionVarsToUrl(settings.url);
+    settings.url = Dynamo.addSessionVarsToUrl(settings.url);
     if (settings.data) {
       var new_data = JSON.parse(settings.data);
       new_data.transmitted_at = (new Date()).toString();
@@ -381,6 +456,25 @@ PseudoSync = function (method, model, options) {
 //
 // ************************************************
 
+Dynamo.s4 = function() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+             .toString(16)
+             .substring(1);
+};
+
+Dynamo.guid = function() {
+  return Dynamo.s4() + Dynamo.s4() + '-' + Dynamo.s4() + '-' + Dynamo.s4() + '-' +
+         Dynamo.s4() + '-' + Dynamo.s4() + Dynamo.s4() + Dynamo.s4();
+}
+
+//copied out of Backhand.js
+Dynamo.addSessionVarsToUrl = function(url) {
+  var new_url;
+  new_url = addQueryVarToUrl("user_id", Dynamo.AUTHENTICATING_USER_ID(), url);
+  new_url = addQueryVarToUrl("session_id", "YO-IMA-SESSION-ID", new_url);
+  return new_url;
+};
+
 addQueryVarToUrl = function(name, value, url) {
   var new_url;
   new_url = url;
@@ -392,14 +486,6 @@ addQueryVarToUrl = function(name, value, url) {
     }
     new_url = new_url + ("" + name + "=" + value);
   }
-  return new_url;
-};
-
-//copied out of Backhand.js
-addSessionVarsToUrl = function(url) {
-  var new_url;
-  new_url = addQueryVarToUrl("user_id", Dynamo.AUTHENTICATING_USER_ID(), url);
-  new_url = addQueryVarToUrl("session_id", "YO-IMA-SESSION-ID", new_url);
   return new_url;
 };
 
@@ -510,3 +596,75 @@ stringToXelementType = function(type, value) {
     return null;
   };
 }
+
+// stringToBoolean
+// I would love to be able to write:
+// Object.defineProperty(String.prototype, "to_bool", {
+//     get : function() {
+//         return (/^(true|1)$/i).test(this);
+//     }
+// });
+// but this doesn't work in Firefox b/c of a bug in their Javascript engine:
+// https://bugzilla.mozilla.org/show_bug.cgi?id=720760
+// so instead:
+Dynamo.strToBool = function(str) {
+  if (str === true || str === false) {
+    return str;
+  };
+  return (/^(true|1)$/i).test(str);
+};
+
+Dynamo.strToType = function(type, maybeString) {
+  switch (type) {
+    case "bool":
+    case "boolean": 
+      return Dynamo.strToBool(maybeString);
+      break;
+    case "date":
+    case "Date": 
+      return ( new Date(maybeString) );
+      break;
+    case "int": 
+    case "integer": 
+    case "number": 
+      if ( _.isNumber(maybeString) ) { return maybeString }
+      return parseInt(maybeString);
+      break;
+    case "array":
+    case "object":
+    case "json":
+    case 'xelementGuidArray':
+      if ( _.isArray(maybeString) ||  _.isObject(maybeString) ) { return maybeString }
+      try {
+        return JSON.parse(maybeString);
+      }
+      catch (error) {
+         if (type == 'json') {
+          return {}
+         } else {
+          return []
+        }
+      }      
+      break;
+    case "function":
+      if ( _.isFunction(maybeString) ) { return maybeString }
+      return (emaybeString(maybeString));
+      break;
+    case 'html':
+    case 'string':
+      try {
+        return maybeString.toString();
+      }
+      catch (e) {
+        console.warn("conversion to string failed for: "+maybeString);
+        return "";  
+      }        
+      break;
+    case 'javascript':
+      return eval(maybeString);
+      break;      
+    default: 
+      console.warn("type does not match any expected value! (type, val)", type, maybeString);
+      return maybeString;
+  }
+};
