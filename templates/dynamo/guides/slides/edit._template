@@ -43,7 +43,7 @@
         </div>
       </div>
       <textarea id="(%= slide.cid %)-slide-content" class="slide-content" style="width:95%;height:400px" placeholder="Enter content">(%= slide.content %)</textarea>
-      <div class="btn-toolbar"> <!-- <br /> --> <input type="reset" class="btn btn-warning" value="Reset Form"> </div>
+      <div class="btn-toolbar"></div>
     </div>
   </div>
 </form>
