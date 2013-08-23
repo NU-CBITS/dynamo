@@ -593,7 +593,8 @@ Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
     this.model.questions.each(function(question) {
       var qView = new Dynamo.showQuestionView({
         model: question,
-        userResponseModel: self.userResponseData
+        userResponseModel: self.userResponseData,
+        template: '<span class="content content-condensed"></span> <div class="responseGroup"></div>'
       });
       $questions.append(qView.render().$el);
       qView.on("response:chosen", self.saveIfChanges );
