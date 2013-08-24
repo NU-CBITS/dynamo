@@ -134,7 +134,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       this.$launchButtonContainer = this.options.$launchButtonContainer;
 
       this.$launchButtonContainer.prepend(
-        t.button("Launch "+this.collection_name, { 
+        t.button("<i class='icon-book'></i> Launch "+this.collection_name, { 
           id: "guide_launcher", 
           class: "btn btn-info", 
           style: (this.options.launchButtonStyle || "") 
