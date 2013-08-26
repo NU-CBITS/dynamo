@@ -122,7 +122,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     options = options || {};
     this.container = options.container || "<div></div>";
     this.$container = $(this.container);
-    this.el = options.el || '<div class="array-view"></div>';
+    this.el = options.el || '<div class="array-view list-group"></div>';
     this.$container.prepend(this.el);
     this.$el = $(this.container).find('div.array-view:first');
     this.getArrayFn = options.getArrayFn;
