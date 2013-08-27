@@ -154,8 +154,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       this.asModal = false;
     };
 
-
-
     this.collection.on("all", this.render);
   },
 
@@ -171,45 +169,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
-  },
-
-  //
-  // displayDropdownAndWidgetContent: function() {
-  //   this.$el.find(".accordion-body").show();
-  //   this.rotateArrowDown();
-  // },
-
-  // displayWidgetContent: function(event) {
-  //   var target = $(event.target);
-  //   if (target.closest('.dropdown').length == 0) {
-  //     var body = this.$el.find(".accordion-body");
-  //     if (body.is(":visible")) {
-  //       body.hide();
-  //       this.rotateArrowRight();
-  //     } else {
-  //       body.show();
-  //       this.toggleChevronArrow();
-  //     }
-  //   };
-  // },
-  //
-
-  // rotateArrowRight: function() {
-  //   this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
-  // },
-
-  // rotateArrowDown: function() {
-  //   this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
-  // },
-
-  // toggleChevronArrow: function() {
-  //   if (this.$el.find('i.icon-caret-right').length === 1) {
-  //     this.rotateArrowDown();
-  //   } else {
-  //     this.rotateArrowRight();
-  //   }
-  // }
-  //    
+  },    
 
   displayGuideIndex: function() {
     var self = this;
