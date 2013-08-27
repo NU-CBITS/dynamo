@@ -8,7 +8,7 @@
 
     <ul id="guides-list">
     (% _.each(elements, function(e) { %)
-      <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
+      <li class="choose_element" data-cid="(%= e.id %)">(%= e.html %)</li>
     (% }) %)
     </ul>
   </div>

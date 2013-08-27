@@ -1,106 +1,130 @@
 <div class="widget-content">
 	(% if (deletable) { %)
-		<button class="pull-right btn btn-mini btn-danger delete"><i class="icon-remove"></i> Delete Share</button>
+		<div>
+			<button class="pull-right btn btn-mini btn-danger delete" title="Delete Share" style="margin-right:-15px;margin-top:-20px;">
+				<i class="icon-remove"></i>
+			</button>
+		</div>
 	(% } %)
-	<div class="shared_activity">
+	<div class="shared_activity clearfix">
 		(% 
 			var dateFormat = "dddd, MMMM d, yyyy",
 					eventNotReviewed = (eventCompleted === null || eventCompleted === void 0 || eventCompleted === ""),
 					eventWasNotCompleted = (eventCompleted === false || eventCompleted === 0 || eventCompleted === "0"),
 					eventWasCompleted = !eventWasNotCompleted;
 		%)
+		<div class="row-fluid">
+			<span class="name">(%= username %)</span>		
+		</div>
+		<div class="summary row-fluid">
+			<p class="lead span7">
+				<span class="title">(%= title %)</span>
+			</p>
+			<div class="label pull-right">
+				<div class="text-right">
+					(% if ( start > (new Date()) ) { %)
+						For (%= start.toString(dateFormat) %) 
+					(% } else if ( savedInState == "monitoring" || eventWasCompleted ) { %)	
+						On (%= start.toString(dateFormat) %)
+					(% } else if (eventNotReviewed) { %)
+						Was scheduled for (%= start.toString(dateFormat) %) 
+					(% } else { %)
+						Had been scheduled for (%= start.toString(dateFormat) %) 
+					(% } %)
+				</div>
+				<div class="completion-status text-right">
+					(% if ( start > (new Date()) ) { %)
+						(Scheduled)
+					(% } else if (savedInState == "monitoring") { %)	
+						(Recorded)
+					(% } else if (eventWasCompleted) { %)
+						(Completed)
+					(% } else if (eventNotReviewed) { %)
+						(Not yet reviewed)
+					(% } else { %)
+						(Did not complete)
+					(% } %)					
+				</div>			
+			</div>			
+		</div>
 
-		<p><strong>(%= username %)</strong></p>
-
-		(% if ( start > (new Date()) ) { %)
-			<p>Has scheduled:</p>
-		(% } else if (savedInState == "monitoring") { %)	
-			<p>Recorded:</p>
-		(% } else if (eventWasCompleted) { %)
-			<p>Completed:</p>
-		(% } else if (eventNotReviewed) { %)
-			<p>Has not yet reviewed:</p>
-		(% } else { %)
-			<p>Did not complete:</p>
-		(% } %)
-		
-		<p style="margin-left:10px;"><em>(%= title %)</em></p>
-		<p style="margin-left:10px;"><em>(%= _.map(tags, function(tag) { "#"+tag }).join(" ") %)</em></p>
-		(% if (motivation) { %) 
-			<p>A <strong>(%= motivation %)</strong> activity<p>
-		(% } %)
-
-		(% if ( start > (new Date()) ) { %)
-			<p>For (%= start.toString(dateFormat) %)</p> 
-		(% } else if ( savedInState == "monitoring" || eventWasCompleted ) { %)	
-			<p>On (%= start.toString(dateFormat) %)</p>
-		(% } else if (eventNotReviewed) { %)
-			<p>Which was scheduled for (%= start.toString(dateFormat) %)</p> 
-		(% } else { %)
-			<p>Which had been scheduled for (%= start.toString(dateFormat) %)</p> 
-		(% } %)
-
-		(% if ( start > (new Date()) ) { %)
-			(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
-				<p>
-					<strong>Predicting</strong>, <br />
-					<ul>
-						(% if ( predicted_pleasure ) { %)		
-							<li>A pleasure of (%= predicted_pleasure %)</li>
-						(% } %)
-						(% if ( predicted_accomplishment ) { %)		
-							<li>An accomplishment of (%= predicted_accomplishment %)</li>
-						(% } %)
-					<ul>
-				</p>
+		<div class="motivation">
+			(% if (motivation) { %) 
+				A <strong>(%= motivation %)</strong> activity
 			(% } %)
-		(% } else { %)
-			<div class="row-fluid">
-				(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
-					<div class="span6">
-						<p>They had <strong>predicted</strong>, <br />
-							<ul>
-								(% if ( predicted_pleasure ) { %)		
-									<li>A pleasure of (%= predicted_pleasure %)</li>
-								(% } %)
-								(% if ( predicted_accomplishment ) { %)		
-									<li>An accomplishment of (%= predicted_accomplishment %)</li>
-								(% } %)
-							</ul>
-						</p>
+			<span class="tags">(%= _.map(tags, function(tag) { "#"+tag }).join(" ") %)</span>
+		</div>
+
+		(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
+			<div class="predictions row-fluid">
+				<div class="row-fluid">
+					<div class="span12 text-center">(%= username %) predicted</div>
+				</div>
+				<div class="row-fluid text-center">
+					<span class="accomplishment span6">Accomplishment</span>
+					<span class="pleasure span6">Pleasure</span>
+				</div>				
+				<div class="row-fluid text-center">
+					<span class="accomplishment value span6 ">
+						(% if ( predicted_accomplishment ) { print(predicted_accomplishment) } %)
+					</span>
+					<span class="pleasure value span6">
+						(% if ( predicted_pleasure ) { print(predicted_pleasure) } %)
+					</span>
+				</div>
+			</div>
+			<hr>
+		(% } %)
+
+		(% if ( eventWasCompleted && 
+						(actual_pleasure || actual_accomplishment || emotion_intensity) 
+					) { %)
+			<hr>
+
+			<div class="actual row-fluid">
+
+				<div class="row-fluid">
+					<div class="span12 text-center">(%= username %) experienced</div>
+				</div>
+
+				(% if ( actual_accomplishment || actual_pleasure ) { %)		
+					<div class="row-fluid text-center">
+						<span class="accomplishment span6">Accomplishment</span>
+						<span class="pleasure span6">Pleasure</span>
+					</div>				
+					<div class="row-fluid text-center">
+						<span class="accomplishment value span6 ">
+							(% if ( actual_accomplishment ) { print(actual_accomplishment) } %)
+						</span>
+						<span class="pleasure value span6">
+							(% if ( actual_pleasure ) { print(actual_pleasure) } %)
+						</span>
 					</div>
 				(% } %)
 
-				(% if (	eventWasCompleted && 
-								(actual_pleasure || actual_accomplishment || emotion_intensity) 
-							) { %)
-					<div class="span6">
-						<p>They <strong>experienced</strong>, <br />
-							<ul>
-								(% if ( actual_pleasure ) { %)	
-									<li>A pleasure of (%= actual_pleasure %)</li>
-								(% } %)
-								(% if ( actual_accomplishment ) { %)	
-									<li>An accomplishment of (%= actual_accomplishment %)</li>
-								(% } %)
-								(% if ( emotion ) { %)	
-									<li>A general feeling of (%= emotion %) 
-											(% if (emotion_intensity) { print("("+emotion_intensity+")")} %)</li>
-								(% } %)
-							</ul>					
-						</p>
+				(% if ( emotion ) { %)	
+					<div class="row-fluid">
+						<div class="text-center">(%= emotion %)</div>
+						<div class="text-center">
+							(% if (emotion_intensity) { print("("+emotion_intensity+")")} %)</li>
+						</div>
 					</div>
 				(% } %)
+
 			</div>
 
+			<hr>
 		(% } %)
 	</div>
+
 	<div class="row-fluid" style="margin-top:20px;">
 		<div class="span4 likes"></div>
 		<div class="span4 fun-votes"></div>
 		<div class="span4 important-votes"></div>
 	</div>
+
 	<div class="row-fluid" style="margin-top:10px;">
 		<div class="span12 comments"></div>
 	</div>
+
 </div>
