@@ -734,7 +734,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     this.trigger("element:chosen");
   },
   modelHTML: function(m) {
-    return t.span( m.get_field_value(this.chooseOn) );
+    return t.span( { class: "link" }, m.get_field_value(this.chooseOn) );
   },
   checkedInput: function(m) {
     return _.contains(this.checkedInputsCIDsArray, m.cid)
@@ -1760,22 +1760,27 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 // Expects: 
 //  - Expects to be subclassed with the modelViewClass attribute overwritten,
 //    or have the modelViewClass be passed in on instantiation.
-//  - The model passed in on instantion ot have an 'all' method which returns a
+//  - The model passed in on instantion to have an 'all' method which returns a
 //    collection of models to be rendered by the modelViewClass, as well as 'add' / 'remove'
 //    methods. 
 GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
 
   modelViewClass: function() {
-    new Error("Abstract function, modelViewClass of GroupWideDataIndexView called!")
+    new Error("Abstract function, modelViewClass of GroupWideDataIndexView called. "+
+              "Expected a ModelViewClass to be defined when sub-classing GroupWideDataIndexView.")
   },
 
   initialize: function() {
+
     var self = this;
     this.modelViewClass = this.options.modelViewClass || this.modelViewClass;
     this.renderOrder = this.options.renderOrder || this.renderOrder;
     
     this.model.on("add", this.initialRender, this);
     this.model.on("remove", this.initialRender, this);
+    _.result(this, "afterInitialize");
+    _.result(this.options, "afterInitialize");
+
   },
 
   initialRender: function() {
