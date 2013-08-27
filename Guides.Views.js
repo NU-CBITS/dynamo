@@ -162,9 +162,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     "click .previous" : "moveBack",
     "click .finished" : "displayGuideIndex",
     "click .lesson-index" : "displayGuideIndex",
-    "click .guide-action" : "performAction" //,
-    // "click .accordion-header": "displayWidgetContent",
-    // "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
+    "click .guide-action" : "performAction"
   },
 
   currentSlideIndex: function() {
