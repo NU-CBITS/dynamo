@@ -1,35 +1,48 @@
-<div class="item" data-cid="(%= item.cid %)">
-   <div class="stream-icon purple">
-      <i class="icon-puzzle-piece"></i>
-   </div>
-   <p class="date">
-      (%= item.start.toString("h:mm tt, MMM d, yyyy") %)
+<div class="list-group-item" data-cid="(%= item.cid %)">
+   <h4 class="list-group-item-heading" title="Situation">
+      <i class="icon-puzzle-piece icon-cbits-think-feel" style="margin-left: 5px;"></i>
+      (%= item.situation %)
+      <span class="label pull-right date">
+         (%= item.start.toString("h:mm tt, MMM d, yyyy") %)
+      </span>
+   </h4>
+   <p class="list-group-item-text" title="Immediate Thought">
+      <span class="icon-stack">
+         <i class="icon-sign-blank icon-stack-base icon-cbits-connect"></i>
+         <i class=" icon-quote-left icon-light"></i>
+      </span>
+      (%= item.thought %)
    </p>
-   <h4 title="Situation">(%= item.situation %)</h4>
-   <div class="row-fluid" title="Immediate Thought">
-      <h5 style="font-size:120%">
-         <i class="icon-quote-left icon-large"></i> (%= item.thought %) 
-      </h5>
-   </div>
-   <div class="row-fluid" title="Tags">
-      <p> 
-         (% _.each(item.tags.split(", "), function(tag) { 
-               print(t.em("#"+tag, {class: "tag", })); 
-            }); 
-         %)
-      </p>
-   </div>
-   <div class="row-fluid" title="Immediate Emotion"> 
-      <i class="icon-heart-empty icon-large"></i> 
+   <p class="list-group-item-text" title="Tags">
+      <span class="icon-stack">
+         <i class="icon-sign-blank icon-stack-base"></i>
+         <i class="icon-tag icon-light"></i>
+      </span>
+      (% _.each(item.tags.split(", "), function(tag) { 
+            print(t.em("#"+tag, {class: "tag", })); 
+         });
+      %)
+   </p>
+   <p class="list-group-item-text" title="Immediate Emotion"> 
+      <span class="icon-stack">
+         <i class="icon-sign-blank icon-stack-base icon-cbits-mood"></i>
+         <i class="icon-heart-empty icon-light"></i>
+      </span
       (%= item.emotion %) 
-      (% if (item.emotion_intensity) { %) ((%= item.emotion_intensity %)) (% } %) 
-   </div>
-   <div class="row-fluid" title="Alternative Thought"> 
-      <i class="icon-cogs icon-large"></i> 
-      (%= item.alternative_thought %) 
-   </div>
-   <div class="row-fluid" title="Outcome Emotion"> 
-      <i class="icon-heart icon-large"></i> 
-      (% if (item.outcome_intensity) { %) ((%= item.outcome_intensity %)) (% } %) 
-   </div>
+      (% if (item.emotion_intensity) { %) ((%= item.emotion_intensity %)) (% } %)
+   </p>
+   <p class="list-group-item-text" title="Alternative Thought">
+      <span class="icon-stack">
+         <i class="icon-sign-blank icon-stack-base icon-cbits-connect"></i>
+         <i class="icon-cogs icon-light"></i>
+      </span>
+      (%= item.alternative_thought %)
+   </p>
+   <p class="list-group-item-text" title="Outcome Emotion">
+      <span class="icon-stack">
+         <i class="icon-sign-blank icon-stack-base icon-cbits-mood"></i>
+         <i class="icon-heart icon-light"></i>
+      </span>
+      (% if (item.outcome_intensity) { %) ((%= item.outcome_intensity %)) (% } %)
+   </p>
 </div>
