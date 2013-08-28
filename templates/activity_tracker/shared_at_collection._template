@@ -1,0 +1,18 @@
+<div class="widget-content">
+	<div class="row-fluid">
+		<div class="name span6">(%= username %)</div>
+		<div class="span6 text-right">
+			<span class="num-shared orange-background">(%= length %) Shared</span>
+		</div>
+	</div>
+
+	<div class="row-fluid">
+		<div class="user-collections preview"></div>
+		(% if (length > 0) { %)
+			<div class="toolbar text-center">
+				<span class="link toggle-open">Show All of (%= username %)&apos;s Shared Activities</span>
+			</div>
+		(% } %)
+	</div>
+
+</div>

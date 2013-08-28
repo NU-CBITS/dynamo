@@ -1820,6 +1820,63 @@ GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
 
 });
 
+Dynamo.GroupWideDataByUserCollectionView = Backbone.View.extend({
+
+  collectionViewClass: function() {
+    new Error("Abstract function, collectionViewClass of GroupWideDataIndexView called. "+
+              "Expected a ModelViewClass to be defined when sub-classing GroupWideDataIndexView.")
+  },
+
+  initialize: function() {
+
+    var self = this;
+    this.collectionViewClass = this.options.collectionViewClass || this.collectionViewClass;
+    this.renderOrder = this.options.renderOrder || this.renderOrder;
+    
+    this.model.on("add", this.initialRender, this);
+    this.model.on("remove", this.initialRender, this);
+    _.result(this, "afterInitialize");
+    _.result(this.options, "afterInitialize");
+
+  },
+
+  initialRender: function() {
+
+    this.collectionViews = null;
+    this.collectionViews = [];
+
+    var self = this;
+    _.each(this.model.collections, function(userCollection) {
+      self.collectionViews.push( 
+        (new self.collectionViewClass({ 
+          collection: userCollection, 
+          renderOrder: self.renderOrder 
+        })) 
+      );
+    });
+
+    this.$el.empty();
+    _.each(this.collectionViews, function(cView) {
+      self.$el.append(cView.render().$el);  
+    });
+    this.initiallyRendered = true;
+
+  }, 
+
+  render: function() {
+  
+    if (!this.initiallyRendered) {
+      this.initialRender();
+    }  
+    else {
+      _.invoke(this.collectionViews, 'render');
+    };
+
+    return this;
+  }
+
+});
+
 
 GoalsView = Dynamo.GoalsView = Backbone.View.extend({
 
