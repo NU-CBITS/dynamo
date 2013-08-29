@@ -10,7 +10,7 @@
 		<div class="user-collections preview"></div>
 		(% if (length > 0) { %)
 			<div class="toolbar text-center">
-				<span class="link toggle-open">Show All of (%= username %)&apos;s Shared Activities</span>
+				<span class="link toggle-open">Comment and see more of (%= username %)&apos;s Shared Activities</span>
 			</div>
 		(% } %)
 	</div>
