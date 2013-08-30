@@ -951,9 +951,8 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.end_content = this.options.end_content || '';
     this.display = this.options.display || { show: true };
     this.display.edit = this.display.edit || false;
-    this.display.create = this.display.create || false;
     this.display.del = this.display.del || false;
-    // this.display.create = (this.display.create ? this.display.create :  this.display.edit);
+    this.display.create = (this.display.create ? this.display.create :  this.display.edit);
     this.canAddExisting = !!this.options.enableAddExisting;
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
