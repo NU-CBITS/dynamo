@@ -1,19 +1,19 @@
 <div class="list-group-item" data-cid="(%= item.cid %)">
-   <h4 class="list-group-item-heading" title="Situation">
+   <h4 title="Situation">
       <i class="icon-puzzle-piece icon-cbits-think-feel" style="margin-left: 5px;"></i>
       (%= item.situation %)
       <span class="label pull-right date">
          (%= item.start.toString("h:mm tt, MMM d, yyyy") %)
       </span>
    </h4>
-   <p class="list-group-item-text" title="Immediate Thought">
+   <p title="Immediate Thought">
       <span class="icon-stack">
          <i class="icon-sign-blank icon-stack-base icon-cbits-connect"></i>
          <i class=" icon-quote-left icon-light"></i>
       </span>
       (%= item.thought %)
    </p>
-   <p class="list-group-item-text" title="Tags">
+   <p title="Tags">
       <span class="icon-stack">
          <i class="icon-sign-blank icon-stack-base"></i>
          <i class="icon-tag icon-light"></i>
@@ -23,7 +23,7 @@
          });
       %)
    </p>
-   <p class="list-group-item-text" title="Immediate Emotion"> 
+   <p title="Immediate Emotion"> 
       <span class="icon-stack">
          <i class="icon-sign-blank icon-stack-base icon-cbits-mood"></i>
          <i class="icon-heart-empty icon-light"></i>
@@ -31,14 +31,14 @@
       (%= item.emotion %) 
       (% if (item.emotion_intensity) { %) ((%= item.emotion_intensity %)) (% } %)
    </p>
-   <p class="list-group-item-text" title="Alternative Thought">
+   <p title="Alternative Thought">
       <span class="icon-stack">
          <i class="icon-sign-blank icon-stack-base icon-cbits-connect"></i>
          <i class="icon-cogs icon-light"></i>
       </span>
       (%= item.alternative_thought %)
    </p>
-   <p class="list-group-item-text" title="Outcome Emotion">
+   <p title="Outcome Emotion">
       <span class="icon-stack">
          <i class="icon-sign-blank icon-stack-base icon-cbits-mood"></i>
          <i class="icon-heart icon-light"></i>
