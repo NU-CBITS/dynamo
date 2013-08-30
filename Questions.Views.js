@@ -78,6 +78,7 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     view = new Dynamo.ManageCollectionView({
       collection: this.model.questions,
       display: {
+        create : (true),
         show: (this.displayShow),
         edit: (this.displayEdit),
         del: (this.displayEdit)
@@ -135,8 +136,9 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     });
 
-    this.$el.find('div#questions').append(view.$el);
-    view.render();
+    this.$el.find('div.questions:first').append(view.render().$el);
+    // view.render();
+    debugger;
 
   },
 

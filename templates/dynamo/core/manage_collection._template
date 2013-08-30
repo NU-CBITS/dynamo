@@ -1,7 +1,7 @@
 <div class="collection_widget">
   <div class="start">
     (% start_content ? print(start_content) : null; %)
-  </div>(% if (display.create) { %)
+  </div>
 
   <div class="btn-toolbar">
     <div class="btn-group">
@@ -12,10 +12,12 @@
       <button class="btn add-new-(%=element_code_name%)" data-collection-index="0">Create (%= element_pretty_name %)</button>
 
     (% if (canAddExisting) { %)
-      <button class="btn add-existing-(%=element_code_name%)" data-collection-index="0">Add Existing (%= element_pretty_name %)</button>
+      <button class="btn add-existing-(%=element_code_name%)" data-collection-index="0">
+        Add Existing (%= element_pretty_name %)
+      </button>
     (% }; %)
     </div>
-  </div>(% }; %)
+  </div>
 
   <div class="elements"></div>
 
