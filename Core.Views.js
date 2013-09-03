@@ -148,7 +148,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     var self = this, fields;
     this.$el.empty();
 
-    var elements = this.getArrayFn()
+    var elements = _.result(this, "getArrayFn");
 
     if (elements.length > 0) {
       _.each(elements, function(element) {
@@ -160,6 +160,8 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 
 
     $('div.item', this.$el).on('click', this.onElementClick);
+
+    return this;
 
   };
 
