@@ -4,11 +4,10 @@
     <h3 id="current-guide-title">(%= (collection_name || "Guides") %)</h3>
   </div>
 
-  <div class="widget-content guide-view">
-
+  <div id="guides-list-container" class="widget-content guide-view">
     <ul id="guides-list">
     (% _.each(elements, function(e) { %)
-      <li class="choose_element" data-cid="(%= e.id %)"><a>(%= e.html %)</a></li>
+      <li class="choose_element" data-cid="(%= e.id %)">(%= e.html %)</li>
     (% }) %)
     </ul>
   </div>

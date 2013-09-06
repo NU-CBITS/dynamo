@@ -1,6 +1,6 @@
 <div id="current-guide-slide-container" class="accordion-body widget-content" style="display:block;">
 
-  <div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
+  <div class="widget-header navbar accordion-header" id="edit-event-toggle-bar">
 
     <h3 id="current-guide-title"></h3>
 

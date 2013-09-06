@@ -1,20 +1,14 @@
-<h1><span class="title">(%= title %)</span></h1>
-
 (% if (typeof(directions) !== "undefined") { %)
-	<h2>Directions</h2>
 	<div id="directions">
 	  (%= directions %)
 	</div>
 (% }; %)
-
 (% if (typeof(start_content) !== "undefined") { %)
-	<div class="start">(%= start_content %)</div>
+	<span class="start">(%= start_content %)</span>
 (% }; %)
-
 <div id="questions"></div>
-
 (% if (typeof(end_content) !== "undefined") { %)
-	<div class="end">(%= end_content %)</div>
+	<span class="end">(%= end_content %)</span>
 (% }; %)
 
 <div class="navigation btn-toolbar">

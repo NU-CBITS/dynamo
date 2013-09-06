@@ -78,6 +78,7 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
     view = new Dynamo.ManageCollectionView({
       collection: this.model.questions,
       display: {
+        create : (true),
         show: (this.displayShow),
         edit: (this.displayEdit),
         del: (this.displayEdit)
@@ -135,8 +136,9 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     });
 
-    this.$el.find('div#questions').append(view.$el);
-    view.render();
+    this.$el.find('div.questions:first').append(view.render().$el);
+    // view.render();
+    debugger;
 
   },
 
@@ -593,7 +595,8 @@ Dynamo.CompleteAssessmentAsSingleton = Dynamo.SaveableModelView.extend({
     this.model.questions.each(function(question) {
       var qView = new Dynamo.showQuestionView({
         model: question,
-        userResponseModel: self.userResponseData
+        userResponseModel: self.userResponseData,
+        template: '<span class="content content-condensed"></span> <div class="responseGroup"></div>'
       });
       $questions.append(qView.render().$el);
       qView.on("response:chosen", self.saveIfChanges );

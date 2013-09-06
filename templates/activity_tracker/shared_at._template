@@ -1,106 +1,135 @@
-<div class="widget-content">
-	(% if (deletable) { %)
-		<button class="pull-right btn btn-mini btn-danger delete">Delete Share</button>
-	(% } %)
-	<div class="shared_activity">
-		(% 
-			var dateFormat = "dddd, MMMM d, yyyy",
+<div class="shared_activity">
+	<div class="clearfix">
+		(%
+			var dateFormat = "ddd MMMM d, yyyy",
 					eventNotReviewed = (eventCompleted === null || eventCompleted === void 0 || eventCompleted === ""),
 					eventWasNotCompleted = (eventCompleted === false || eventCompleted === 0 || eventCompleted === "0"),
 					eventWasCompleted = !eventWasNotCompleted;
 		%)
-
-		<p><strong>(%= username %)</strong></p>
-
-		(% if ( start > (new Date()) ) { %)
-			<p>Has scheduled:</p>
-		(% } else if (savedInState == "monitoring") { %)	
-			<p>Recorded:</p>
-		(% } else if (eventWasCompleted) { %)
-			<p>Completed:</p>
-		(% } else if (eventNotReviewed) { %)
-			<p>Has not yet reviewed:</p>
-		(% } else { %)
-			<p>Did not complete:</p>
-		(% } %)
-		
-		<p style="margin-left:10px;"><em>(%= title %)</em></p>
-		<p style="margin-left:10px;"><em>(%= _.map(tags, function(tag) { "#"+tag }).join(" ") %)</em></p>
-		(% if (motivation) { %) 
-			<p>A <strong>(%= motivation %)</strong> activity<p>
-		(% } %)
-
-		(% if ( start > (new Date()) ) { %)
-			<p>For (%= start.toString(dateFormat) %)</p> 
-		(% } else if ( savedInState == "monitoring" || eventWasCompleted ) { %)	
-			<p>On (%= start.toString(dateFormat) %)</p>
-		(% } else if (eventNotReviewed) { %)
-			<p>Which was scheduled for (%= start.toString(dateFormat) %)</p> 
-		(% } else { %)
-			<p>Which had been scheduled for (%= start.toString(dateFormat) %)</p> 
-		(% } %)
-
-		(% if ( start > (new Date()) ) { %)
-			(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
-				<p>
-					<strong>Predicting</strong>, <br />
-					<ul>
-						(% if ( predicted_pleasure ) { %)		
-							<li>A pleasure of (%= predicted_pleasure %)</li>
-						(% } %)
-						(% if ( predicted_accomplishment ) { %)		
-							<li>An accomplishment of (%= predicted_accomplishment %)</li>
-						(% } %)
-					<ul>
-				</p>
-			(% } %)
-		(% } else { %)
+		<div class="summary row-fluid">
 			<div class="row-fluid">
-				(% if ( predicted_pleasure || predicted_accomplishment ) { %)		
-					<div class="span6">
-						<p>They had <strong>predicted</strong>, <br />
-							<ul>
-								(% if ( predicted_pleasure ) { %)		
-									<li>A pleasure of (%= predicted_pleasure %)</li>
-								(% } %)
-								(% if ( predicted_accomplishment ) { %)		
-									<li>An accomplishment of (%= predicted_accomplishment %)</li>
-								(% } %)
-							</ul>
-						</p>
-					</div>
-				(% } %)
+				<div class="label">
+					(%= start.toString(dateFormat) %)
+					<span class="completion-status">
+						(% if ( start > (new Date()) ) { %)
+							(Scheduled)
+						(% } else if (savedInState == "monitoring") { %)	
+							(Recorded)
+						(% } else if (eventWasCompleted) { %)
+							(Completed)
+						(% } else if (eventNotReviewed) { %)
+							(Not yet reviewed)
+						(% } else { %)
+							(Did not complete)
+						(% } %)					
+					</span>					
+				</div>		
+				<div class="pull-right">
+					(% if (deletable) { %)
+						<div class="text-right">
+							<button class="btn btn-mini btn-danger delete">
+								Delete Share
+							</button>
+						</div>
+					(% } %)							
+				</div>
+			</div>
+			<h3 class="title">(%= title %)</h3>
+		</div>
+		<div class="motivation">
+			(% if (motivation) { %) 
+				A <strong>(%= motivation %)</strong> activity
+			(% } %)
+			<span class="tags">
+				(% console.log("Displaying Tags", tags) %)
+				(%= _.map(tags, function(tag) { "#"+tag }).join(" ") %)
+			</span>
+		</div>
 
-				(% if (	eventWasCompleted && 
-								(actual_pleasure || actual_accomplishment || emotion_intensity) 
-							) { %)
-					<div class="span6">
-						<p>They <strong>experienced</strong>, <br />
-							<ul>
-								(% if ( actual_pleasure ) { %)	
-									<li>A pleasure of (%= actual_pleasure %)</li>
-								(% } %)
-								(% if ( actual_accomplishment ) { %)	
-									<li>An accomplishment of (%= actual_accomplishment %)</li>
-								(% } %)
-								(% if ( emotion ) { %)	
-									<li>A general feeling of (%= emotion %) 
-											(% if (emotion_intensity) { print("("+emotion_intensity+")")} %)</li>
-								(% } %)
-							</ul>					
-						</p>
+		<div class="sentiment-comparison row-fluid">
+			<div class="row-fluid text-center">
+				<div class="span6 value-label text-center">Accomplishment</div>
+				<div class="span6 value-label text-center">Pleasure</div>
+			</div>			
+			<div class="row-fluid">
+				<div class="span6">
+					<div class="row-fluid">
+						<div class="span6 text-center">
+							<div class="predicted-accomplishment text-value text-center">?</div>
+							(% if ( predicted_accomplishment ) { %)
+								<canvas class="jq-gauge" 
+												data-gaugeVal="(%= predicted_accomplishment %)"
+												data-gauge-text-selector="div.predicted-accomplishment.text-value:first"></canvas>
+							(% } %)
+						</div>
+						<div class="span6 text-center">
+							<div class="actual-accomplishment text-value text-center">?</div>
+							(% if ( actual_accomplishment ) { %)
+								<canvas class="jq-gauge" 
+												data-gaugeVal="(%= actual_accomplishment %)"
+												data-gauge-text-selector="div.actual-accomplishment.text-value:first"></canvas>
+							(% } %)
+						</div>					
+					</div>
+					<div class="row-fluid">
+						<div class="span6 text-center">Predicted</div>
+						<div class="span6 text-center">Experienced</div>
+					</div>
+				</div>
+				<div class="span6">
+					<div class="row-fluid">
+						<div class="span6 text-center">
+							<div class="predicted-pleasure text-value text-center" >?</div>
+							(% if ( predicted_pleasure ) { %)
+								<canvas class="pleasure jq-gauge" 
+												data-gaugeVal="(%= predicted_pleasure %)"
+												data-gauge-text-selector="div.predicted-pleasure.text-value:first"></canvas>
+							(% } %)
+						</div>
+						<div class="span6 text-center">
+							<div class="actual-pleasure text-value text-center">?</div>
+							(% if ( actual_pleasure ) { %)
+								<canvas class="pleasure jq-gauge" 
+												data-gaugeVal="(%= actual_pleasure %)"
+												data-gauge-text-selector="div.actual-pleasure.text-value:first"></canvas>	
+							(% } %)
+						</div>
+					</div>
+					<div class="row-fluid">
+						<div class="span6 text-center">Predicted</div>
+						<div class="span6 text-center">Experienced</div>
+					</div>
+				</div>
+			</div>	
+		</div>
+
+		<div class="row-fluid">
+			<div class="emotion span3">(%= emotion %)</div>
+			<div class="span9">
+				(% if (emotion_intensity) { %)
+					<div class="emotion-intensity bargraph bar">
+						<div class="percent">
+							<span style="width: 100%;"></span>
+						</div>
+						<div class="circle">
+							<span class="value" data-value="(%= (emotion_intensity*10) %)">(%= emotion_intensity %)</span>
+						</div>
 					</div>
 				(% } %)
 			</div>
-
-		(% } %)
+		</div>
 	</div>
+	
+	<hr>	
+
 	<div class="row-fluid" style="margin-top:20px;">
 		<div class="span4 likes"></div>
 		<div class="span4 fun-votes"></div>
 		<div class="span4 important-votes"></div>
 	</div>
+
 	<div class="row-fluid" style="margin-top:10px;">
 		<div class="span12 comments"></div>
 	</div>
+
 </div>

@@ -122,9 +122,9 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     options = options || {};
     this.container = options.container || "<div></div>";
     this.$container = $(this.container);
-    this.el = options.el || '<div class="array-view"></div>';
+    this.el = options.el || '<div class="array-view list-group"></div>';
     this.$container.prepend(this.el);
-    this.$el = $(this.container).find('div.array-view:first');
+    this.$el = $(this.container).find('.array-view:first');
     this.getArrayFn = options.getArrayFn;
     this.contentWhenEmpty = options.contentWhenEmpty;
     this.elementTemplate = options.elementTemplate;
@@ -148,7 +148,7 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
     var self = this, fields;
     this.$el.empty();
 
-    var elements = this.getArrayFn()
+    var elements = _.result(this, "getArrayFn");
 
     if (elements.length > 0) {
       _.each(elements, function(element) {
@@ -160,6 +160,8 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
 
 
     $('div.item', this.$el).on('click', this.onElementClick);
+
+    return this;
 
   };
 
@@ -734,7 +736,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     this.trigger("element:chosen");
   },
   modelHTML: function(m) {
-    return t.span( m.get_field_value(this.chooseOn) );
+    return t.span( { class: "link" }, m.get_field_value(this.chooseOn) );
   },
   checkedInput: function(m) {
     return _.contains(this.checkedInputsCIDsArray, m.cid)
@@ -1010,9 +1012,8 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     this.end_content = this.options.end_content || '';
     this.display = this.options.display || { show: true };
     this.display.edit = this.display.edit || false;
-    this.display.create = this.display.create || false;
     this.display.del = this.display.del || false;
-    // this.display.create = (this.display.create ? this.display.create :  this.display.edit);
+    this.display.create = (this.display.create ? this.display.create :  this.display.edit);
     this.canAddExisting = !!this.options.enableAddExisting;
     this.collection.on("reset", this.render);
     this.collection.on("add", this.render);
@@ -1819,22 +1820,27 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 // Expects: 
 //  - Expects to be subclassed with the modelViewClass attribute overwritten,
 //    or have the modelViewClass be passed in on instantiation.
-//  - The model passed in on instantion ot have an 'all' method which returns a
+//  - The model passed in on instantion to have an 'all' method which returns a
 //    collection of models to be rendered by the modelViewClass, as well as 'add' / 'remove'
 //    methods. 
 GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
 
   modelViewClass: function() {
-    new Error("Abstract function, modelViewClass of GroupWideDataIndexView called!")
+    new Error("Abstract function, modelViewClass of GroupWideDataIndexView called. "+
+              "Expected a ModelViewClass to be defined when sub-classing GroupWideDataIndexView.")
   },
 
   initialize: function() {
+
     var self = this;
     this.modelViewClass = this.options.modelViewClass || this.modelViewClass;
     this.renderOrder = this.options.renderOrder || this.renderOrder;
     
     this.model.on("add", this.initialRender, this);
     this.model.on("remove", this.initialRender, this);
+    _.result(this, "afterInitialize");
+    _.result(this.options, "afterInitialize");
+
   },
 
   initialRender: function() {
@@ -1867,6 +1873,63 @@ GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
     }  
     else {
       _.invoke(this.modelViews, 'render');
+    };
+
+    return this;
+  }
+
+});
+
+Dynamo.GroupWideDataByUserCollectionView = Backbone.View.extend({
+
+  collectionViewClass: function() {
+    new Error("Abstract function, collectionViewClass of GroupWideDataIndexView called. "+
+              "Expected a ModelViewClass to be defined when sub-classing GroupWideDataIndexView.")
+  },
+
+  initialize: function() {
+
+    var self = this;
+    this.collectionViewClass = this.options.collectionViewClass || this.collectionViewClass;
+    this.renderOrder = this.options.renderOrder || this.renderOrder;
+    
+    this.model.on("add", this.initialRender, this);
+    this.model.on("remove", this.initialRender, this);
+    _.result(this, "afterInitialize");
+    _.result(this.options, "afterInitialize");
+
+  },
+
+  initialRender: function() {
+
+    this.collectionViews = null;
+    this.collectionViews = [];
+
+    var self = this;
+    _.each(this.model.collections, function(userCollection) {
+      self.collectionViews.push( 
+        (new self.collectionViewClass({ 
+          collection: userCollection, 
+          renderOrder: self.renderOrder 
+        })) 
+      );
+    });
+
+    this.$el.empty();
+    _.each(this.collectionViews, function(cView) {
+      self.$el.append(cView.render().$el);  
+    });
+    this.initiallyRendered = true;
+
+  }, 
+
+  render: function() {
+  
+    if (!this.initiallyRendered) {
+      this.initialRender();
+    }  
+    else {
+      _.invoke(this.collectionViews, 'render');
     };
 
     return this;

@@ -1,3 +1,5 @@
-<div class="row-fluid navbar">
-  <h1 class="text-prog-blue"><i class="icon-lightbulb"></i> Learn <small class="text-prog-blue">Today&#39;s Lesson</small></h1>
-</div>
+<h1>
+	<i class="icon-lightbulb"></i>
+	Learn
+	<small>Today&#39;s Lesson</small>
+</h1>

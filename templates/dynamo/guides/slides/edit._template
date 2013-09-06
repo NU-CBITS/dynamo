@@ -1,5 +1,5 @@
 <div style="display:block;clear:auto;">
-  <span class="pull-right"><button class="btn btn-danger delete-slide">Delete Slide</button></span>
+  <span class="pull-right"><button class="btn btn-danger delete-slide"><i class="icon-trash"></i> Delete Slide</button></span>
 </div>
 
 <form>

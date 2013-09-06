@@ -1,7 +1,7 @@
 <div class="(%= element_code_name %) element" data-collection_index="(%= index %)">
 (% if ( (typeof(display.del) !== "undefined") && display.del) { %)
   <div class="delete_container btn-toolbar" style="margin-top: 0px;">
-    <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)"><!-- <i class="icon-trash"></i> --> <em class="icon-trash"></em> Delete (%= element_pretty_name %)</button>
+    <button class="btn btn-danger delete (%= element_code_name %)" data-collection_index="(%= index %)"><i class="icon-trash"></i> Delete (%= element_pretty_name %)</button>
   </div>
 (% } %)
 

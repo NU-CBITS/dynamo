@@ -145,7 +145,7 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       this.$launchButtonContainer = this.options.$launchButtonContainer;
 
       this.$launchButtonContainer.prepend(
-        t.button("Launch "+this.collection_name, { 
+        t.button("<i class='icon-book'></i> Launch "+this.collection_name, { 
           id: "guide_launcher", 
           class: "btn btn-info", 
           style: (this.options.launchButtonStyle || "") 
@@ -165,8 +165,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
       this.asModal = false;
     };
 
-
-
     this.collection.on("all", this.render);
   },
 
@@ -175,52 +173,12 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     "click .previous" : "moveBack",
     "click .finished" : "displayGuideIndex",
     "click .lesson-index" : "displayGuideIndex",
-    "click .guide-action" : "performAction" //,
-    // "click .accordion-header": "displayWidgetContent",
-    // "click li.dropdown a.dropdown-toggle": "displayDropdownAndWidgetContent"
+    "click .guide-action" : "performAction"
   },
 
   currentSlideIndex: function() {
     return this._currentSlideIndex;
-  },
-
-  //
-  // displayDropdownAndWidgetContent: function() {
-  //   this.$el.find(".accordion-body").show();
-  //   this.rotateArrowDown();
-  // },
-
-  // displayWidgetContent: function(event) {
-  //   var target = $(event.target);
-  //   if (target.closest('.dropdown').length == 0) {
-  //     var body = this.$el.find(".accordion-body");
-  //     if (body.is(":visible")) {
-  //       body.hide();
-  //       this.rotateArrowRight();
-  //     } else {
-  //       body.show();
-  //       this.toggleChevronArrow();
-  //     }
-  //   };
-  // },
-  //
-
-  // rotateArrowRight: function() {
-  //   this.$el.find('i.icon-caret-down').removeClass('icon-caret-down').addClass('icon-caret-right');
-  // },
-
-  // rotateArrowDown: function() {
-  //   this.$el.find('i.icon-caret-right').removeClass('icon-caret-right').addClass('icon-caret-down');
-  // },
-
-  // toggleChevronArrow: function() {
-  //   if (this.$el.find('i.icon-caret-right').length === 1) {
-  //     this.rotateArrowDown();
-  //   } else {
-  //     this.rotateArrowRight();
-  //   }
-  // }
-  //    
+  },    
 
   displayGuideIndex: function() {
     var self = this;
