@@ -263,8 +263,14 @@ XelementRoot = Dynamo.XelementRoot = {
     this.setUnsavedChanges();
   },
 
+  _CompleteXelementsCollection: function() {
+    return Dynamo.ALL_XELEMENTS || XELEMENTS
+  },
+
   //function which returns the required_xelement_ids field as a backbone collection of Xelement objects
   required_xelements: function() {
+    var self = this;
+
     if (typeof(this._required_xelements) !== "undefined") {
       return this._required_xelements
     };
@@ -278,7 +284,7 @@ XelementRoot = Dynamo.XelementRoot = {
       required_xelement_ids = this.get_field_value("required_xelement_ids") || [];
     };
     raw_json_models = _.chain(required_xelement_ids)
-                      .map(function(id) { return XELEMENTS.get(id) })
+                      .map(function(id) { return (self._CompleteXelementsCollection()).get(id) })
                       .compact()
                       .value();
     this._required_xelements = new XelementCollection(raw_json_models);
@@ -348,7 +354,10 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   },
 
   set_field_value: function(attribute, new_value, options) {
+    
     var field_values = this.get('xel_data_values');
+    options = options || {};
+
     switch ( this.get_field_type(attribute) ) {
       case "array":
       case "json":
@@ -362,12 +371,13 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
       default:
         field_values[attribute] = new_value;
     };
-    if (options && !options.silent) {
+    if (!options.silent) {
       this.trigger('change');
       this.trigger('change:xel_data_values');
       this.trigger('change:xel_data_values:'+attribute);
     };
     return this;
+    
   },
 
   stringifyAllValues: function() {
