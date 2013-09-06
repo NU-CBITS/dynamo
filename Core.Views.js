@@ -794,6 +794,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
   }
 })
 
+
 // Dynamo.SaveableModelView
 //  Any View which has models or data that the user can save
 //  can inherit from this view which provides a set of functions
@@ -802,6 +803,7 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
 SaveableModelView = Dynamo.SaveableModelView = Backbone.View.extend({
 
   initializeAsSaveable: function(saveableModel) {
+    _.extend(this, Backbone.Events);
     this.saveableModel = saveableModel;
     this.saveableModel.initializeAsSaveable();
     this.saveableModel.on('save_status_change', this.renderSaveStatus);
@@ -809,8 +811,8 @@ SaveableModelView = Dynamo.SaveableModelView = Backbone.View.extend({
   },
 
   saveableEvents: {
-      'focusin'  : "setUserBusy",
-      'focusout' : "clearUserBusy"
+    'focusin'  : "setUserBusy",
+    'focusout' : "clearUserBusy"
   },
 
   // Assumes you have an elment in the view like so:
@@ -920,6 +922,63 @@ Dynamo.BaseUnitaryXelementView = Dynamo.SaveableModelView.extend({
       this.clearInitialRender();
       return this.render();
     };
+  }
+
+});
+
+
+// Dynamo.ReorderChildrenView (rcw)
+//  
+// Reorders the children of an xelement, expected to be in the array field, 'required_xelement_ids',
+// and to which it saves back in the correct order.
+//
+// On instantiation, rcw expects :
+// 1) An Xelement Model object (assumed to have a required_xelement_ids field)
+Dynamo.ReorderChildrenView = Backbone.View.extend({
+
+  initialize: function() {
+    _.bindAll(this);
+    _.extend(this, Backbone.events)
+  },
+
+  events: {
+    "click button.finish" : "finishReordering"
+  },
+
+  reorderChildren : function(event, ui) {
+    var ids = _.map(this.$el.find("li.child"), function(child) { return $(child).data("el-id") });
+    var evs = _.extend({}, Backbone.Events);
+    this.model.set_field_value("required_xelement_ids", ids);
+  },
+
+  finishReordering: function() {
+    this.model.save(null, {async : false });
+    this.trigger("reorder:finished");
+  },
+
+  _template: function(data, settings) {
+
+    if (!this.compiled_template) {
+      if (!this.template) {
+        this.template = this.options.template || DIT["dynamo/core/reorder_children"];
+      };
+      this.compiled_template = _.template(this.template)
+    };
+
+    return this.compiled_template(data, settings);
+  },
+
+  render: function() {
+    var elements = _.map(this.model.required_xelements().toJSON(), function(el) { 
+      return ({ id: el.guid, title: el.xel_data_values.title }) 
+    });
+    this.$el.html( this._template({ elements: elements })  );
+
+    this.$el.find("ul.reorder").sortable({
+      update: this.reorderChildren
+    });
+
+    return this;
   }
 
 });
