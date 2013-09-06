@@ -59,17 +59,22 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
       slide_ids = this.get_field_value("required_xelement_ids");
     };
 
-    console.log("Guides Slide IDs: ", slide_ids);
+    // console.log("Slide IDs: ", slide_ids);
 
     if (typeof(SLIDES) !== "undefined" && SLIDES) {
       slide_models = _.map( slide_ids, function(id) { return SLIDES.get(id) });
-      this.slides = new SlideCollection(slide_models);      
+      // console.log("Slide Models:", _.map(slide_models, function(sm) { return sm.get_field_value("title") }) )
+      this.slides = new SlideCollection(slide_models);
+      this.slides.comparator = function(slide) {
+        return _.indexOf(slide_ids, slide.id);
+      };
+      this.slides.sort();      
     } else {
       console.warn("No existing SLIDES collection on Guide instantion. Setting slides to empty.")
       this.slides = new SlideCollection();      
     };
 
-    console.log( "Guide's Slides: ", this.slides.toJSON() );
+    console.log("Guide's Ordered Slide Titles: ", this.slides.map(function(s) { return s.get_field_value("title")}) );
 
     this.trigger("change:slides");
     this.initSlideObserver();
