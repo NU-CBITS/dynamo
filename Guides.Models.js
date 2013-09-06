@@ -9,9 +9,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   // Functions:
   initialize: function () {
     _.bindAll(this);
-    var slide_ids, 
-        slide_models,
-        self = this;
+    var self = this;
 
     this.initAsXelement();
     this.set_field_value('xelement_type', 'guide');
@@ -19,29 +17,11 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     // Metacontent Attributes:
     this.guided_page_url = this.getPageURL();
 
-    // Create a collection of slides based on the array of guids in 'required_xelement_ids'
-    try {
-      slide_ids =  JSON.parse( this.get_field_value("required_xelement_ids") )
-    }
-    catch (e) {
-      slide_ids = this.get_field_value("required_xelement_ids");
-    };
-
-    if (typeof(SLIDES) !== "undefined" && SLIDES) {
-      slide_models = _.map( slide_ids, function(id) { return SLIDES.get(id) });
-      this.slides = new SlideCollection(slide_models);      
-    } else {
-      console.warn("No existing SLIDES collection on Guide instantion. Setting slides to empty.")
-      this.slides = new SlideCollection();      
-    };
-
-    
-
-    // Let any change to slides reflect a change of save state in the guide:
-    this.slideObserver = {};
-    _.extend(this.slideObserver, Backbone.Events);
-    this.initSlideObserver();
-
+    this.buildSlides(); //instantiates dependent slide xelements
+    //rebuild slides if something changes "required_xelement_ids"
+    this.on("change:xel_data_values:required_xelement_ids", function() {
+      self.buildSlides();
+    });
 
     //  Saving a slide group should save both the Guide and 
     //  All member slides; 
@@ -68,8 +48,38 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     
   },
 
+  buildSlides: function() {
+    var slide_ids, slide_models;
+    
+    // Create a collection of slides based on the array of guids in 'required_xelement_ids'
+    try {
+      slide_ids =  JSON.parse( this.get_field_value("required_xelement_ids") )
+    }
+    catch (e) {
+      slide_ids = this.get_field_value("required_xelement_ids");
+    };
+
+    console.log("Guides Slide IDs: ", slide_ids);
+
+    if (typeof(SLIDES) !== "undefined" && SLIDES) {
+      slide_models = _.map( slide_ids, function(id) { return SLIDES.get(id) });
+      this.slides = new SlideCollection(slide_models);      
+    } else {
+      console.warn("No existing SLIDES collection on Guide instantion. Setting slides to empty.")
+      this.slides = new SlideCollection();      
+    };
+
+    console.log( "Guide's Slides: ", this.slides.toJSON() );
+
+    this.trigger("change:slides");
+    this.initSlideObserver();
+
+  },
+
   initSlideObserver: function() {
     var self = this;
+    this.slideObserver = null;
+    this.slideObserver = _.extend({}, Backbone.Events);
     this.slideObserver.stopListening();
     this.slideObserver.listenTo(this.slides, "add", this.initSlideObserver);
     this.slideObserver.listenTo(this.slides, "remove", this.initSlideObserver);
