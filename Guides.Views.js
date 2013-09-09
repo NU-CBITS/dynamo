@@ -72,6 +72,33 @@ launchInModal = function(viewInstance, options) {
     autoOpen: false
   }, options.jqModalOptions);
   modalViewObj.$viewContainer.dialog( modalOpts );  
+  
+  modalViewObj.openModal = function() {
+    modalViewObj.$viewContainer.dialog("open");
+    if (!modalViewObj.viewRendered) {
+      modalViewObj.$viewContainer.html(modalViewObj.viewInstance.render().$el);
+      modalViewObj.viewInstance.delegateEvents();      
+      modalViewObj.viewRendered = true;
+    }
+    modalViewObj.trigger('opened');
+  };
+  
+  modalViewObj.closeModal = function() {
+    modalViewObj.$viewContainer.dialog("close");
+    modalViewObj.trigger('closed');
+  };
+  _.bindAll(modalViewObj, 'closeModal');
+
+  modalViewObj.destroy = function() {
+    modalViewObj.$viewContainer.dialog("close");
+    modalViewObj.trigger('closed');
+    modalViewObj.$viewContainer.remove();
+    modalViewObj.viewInstance.remove();
+    modalViewObj.viewInstance = null;
+    modalViewObj.trigger('destroyed');
+  };
+  _.bindAll(modalViewObj, 'openModal', 'closeModal', 'destroy');
+
 
   // Set up the on-button-click trigger
   if (options.onLaunchButtonClick) {
@@ -83,23 +110,7 @@ launchInModal = function(viewInstance, options) {
     modalViewObj.$launchButton.on("click", modalViewObj.openModal);
   
   };
-  
-  modalViewObj.openModal = function() {
-    modalViewObj.$viewContainer.dialog("open");
-    if (!modalViewObj.viewRendered) {
-      modalViewObj.$viewContainer.html(modalViewObj.viewInstance.render().$el);
-      modalViewObj.viewInstance.delegateEvents();      
-      modalViewObj.viewRendered = true;
-    }
-    modalViewObj.trigger('opened');
-  };
-  _.bindAll(modalViewObj, 'openModal');
 
-  modalViewObj.closeModal = function() {
-    modalViewObj.$viewContainer.dialog("close");
-    modalViewObj.trigger('closed');
-  };
-  _.bindAll(modalViewObj, 'closeModal');  
 
   return modalViewObj;
 };
@@ -358,6 +369,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
     this.model.on('change', this.render);
+    this.model.on('change:slides', this.renderSlides);
     this.model.on('sync', this.completeRender); //  completeRender = inherited method
     this.initializeAsSaveable(this.model);
 
@@ -393,8 +405,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
   events: function() {
     return {
-      'keyup input#guide_title'          : "updateTitle",
-      'keyup input#guide_description'    : "updateDescription",
+      'keyup input#guide_title'             : "updateTitle",
+      'keyup input#guide_description'       : "updateDescription",
       'click button.skip-guided-page'       : "skipGuidedPage",
       'click button.load-guided-page'       : "updateGuidedPage",
       'click button.clear-guided-page'      : "clearGuidedPage",  
@@ -424,6 +436,22 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.guidedPageSM.load();
     this.initialRender(); 
     this.render();
+  },
+
+  initSlideReordering: function() {
+
+    //avoid mem leak
+    if (this.reorderSlidesModal) { 
+      this.reorderSlidesModal.destroy(); 
+      this.reorderSlidesModal = null; 
+    };
+
+    this.reorderSlidesModal = launchInModal( (new Dynamo.ReorderChildrenView({ model : this.model })), {
+      $launchButton : (this.$el.find('button.sort-slides'))
+    });
+
+    this.reorderSlidesModal.viewInstance.on("reorder:finished", this.reorderSlidesModal.closeModal);
+
   },
 
   skipGuidedPage: function() {
@@ -610,6 +638,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     $slides_container.empty();
     $slides_container.html(this.slidesView.render().$el);
+
     this.slideEditing.allow();
 
   },
@@ -618,7 +647,8 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     if (!this.initiallyRendered()) { 
       this.initialRender(); 
-      this.setInitialRender(); 
+      this.initSlideReordering();
+      this.setInitialRender();
     };
 
     if ( this.guidedPageSM.is('blank') && this.model.guided_page_url ) {
@@ -630,12 +660,13 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
       var self = this;
 
       //refresh direct attributes (i.e., non-slides) with model values:
-      _.each({ 
+    _.each({ 
         title: 'input#guide_title',
         guided_page_url: "input#guided_page_url"
       }, function(value, key) {
         self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
-      });  
+      });
+
     };
 
     this.renderSlides();
@@ -789,6 +820,13 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     });
     
     self.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
+
+    //Set focus to title @ end of input
+    var $title = self.$el.find('input.title:first');
+    $title.one("focus", function() {
+      this.selectionStart = this.selectionEnd = this.value.length;
+    });
+    $title[0].focus();
 
   },
 

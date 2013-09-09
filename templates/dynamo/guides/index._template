@@ -1,14 +1,12 @@
-<div class="row-fluid">
-
-  <div class="widget-header orange navbar accordion-header" id="edit-event-toggle-bar">
-    <h3 id="current-guide-title">(%= (collection_name || "Guides") %)</h3>
+<div class="panel panel-default">
+  <div class="panel-heading" id="edit-event-toggle-bar">
+    <h3 id="current-guide-title" class="panel-title">(%= (collection_name || "Guides") %)</h3>
   </div>
-
-  <div id="guides-list-container" class="widget-content guide-view">
-    <ul id="guides-list">
+  <div id="guides-list-container" class="guide-view list-group" style="overflow-y:scroll;">
+    <div id="guides-list">
     (% _.each(elements, function(e) { %)
-      <li class="choose_element" data-cid="(%= e.id %)">(%= e.html %)</li>
+      <div class="choose_element list-group-item" data-cid="(%= e.id %)">(%= e.html %)</div>
     (% }) %)
-    </ul>
+    </div>
   </div>
 </div>

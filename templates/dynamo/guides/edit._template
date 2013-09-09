@@ -42,8 +42,9 @@
     (% }; %)
 
     <div class="on-slide-edit">
-    <hr>
-    <div id="slides"></div>      
+      <hr>
+      <div class="btn-toolbar"><button class="btn sort-slides"><i class="icon-reorder"></i> Reorder Slides</button></div>
+      <div id="slides"></div>      
     </div>
 
     <hr>

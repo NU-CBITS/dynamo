@@ -1,19 +1,19 @@
-<div id="current-guide-slide-container" class="accordion-body widget-content" style="display:block;">
+<div id="current-guide-slide-container" class="panel panel-default">
 
-  <div class="widget-header navbar accordion-header" id="edit-event-toggle-bar">
+  <div class="panel-heading" id="edit-event-toggle-bar">
 
-    <h3 id="current-guide-title"></h3>
+    <h4 id="current-guide-title" class="panel-title"></h4>
 
   </div>
 
-  <div class="guide-view">
+  <div class="guide-view panel-body" style="overflow-y: scroll;">
     <div id="current-guide-slide-content">
     </div>
 
     <div id="current-guide-slide-actions"></div>
   </div>
 
-  <ul id="current-guide-navigation-buttons" class="pager">
+  <ul id="current-guide-navigation-buttons" class="pager panel-footer">
     <li><button class="previous">&larr; Previous</button></li>
     <li><button class="next">Next &rarr;</button></li>
   </ul>

@@ -1,0 +1,8 @@
+<div>
+	<ul class="reorder">
+	(% _.each(elements, function(el) { %) 
+		<li class="child" data-el-id="(%= el.id %)">(%= el.title %) <i class="icon-sort pull-right"></i></li>
+	(% }); %)		
+	</ul>
+	<button class="finish btn btn-success">Finish</button>
+</div>
