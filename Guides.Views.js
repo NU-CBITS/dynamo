@@ -821,6 +821,13 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     
     self.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
 
+    //Set focus to title @ end of input
+    var $title = self.$el.find('input.title:first');
+    $title.one("focus", function() {
+      this.selectionStart = this.selectionEnd = this.value.length;
+    });
+    $title[0].focus();
+
   },
 
   remove: function() {
