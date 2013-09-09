@@ -48,33 +48,78 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     
   },
 
+  _CompleteSlidesCollection: function() {
+    return Dynamo.ALL_SLIDES || SLIDES
+  },
+
   buildSlides: function() {
-    var slide_ids, slide_models;
-    
-    // Create a collection of slides based on the array of guids in 'required_xelement_ids'
+    var slideIds, 
+        fromCollectionSlideModels,
+        AllSlides = this._CompleteSlidesCollection();
+
+    // Ensure some collection of slides exists.
+    if (!AllSlides) {
+      console.warn("No existing SLIDES collection on Guide instantion. Setting slides to empty.")
+      this.slides = new SlideCollection(); 
+      return;
+    };
+
+    // Get array of slide ids from 'required_xelement_ids' attribute.
     try {
-      slide_ids =  JSON.parse( this.get_field_value("required_xelement_ids") )
+      slideIds =  JSON.parse( this.get_field_value("required_xelement_ids") )
     }
     catch (e) {
-      slide_ids = this.get_field_value("required_xelement_ids");
+      slideIds = this.get_field_value("required_xelement_ids");
+    };
+    console.log("Slide IDs: ", slideIds);
+
+    // If any of the ids in required_xelement_ids does not return as a valid
+    // slide in the universe of known slides, then we have an inconsistency problem.
+    // Choose to resolve it by assuming we must sync our collection of slides with the server
+    // and then retry building the slides collection.
+    // (This assumption could be wrong if there were a more grievous inconsistency 
+    // such as a non-slide is within this guide's required_xelement_ids).
+    if ( !(_.all(slideIds, function(slideId) { 
+      return AllSlides.get(slideId)
+      })) ) {
+
+      AllSlides.once("sync", function() {
+        console.log("Universal Slides Collection Synced, triggering slides rebuild.");
+        this.buildSlides();
+      }, this);
+      AllSlides.fetch();
+
+      return;
     };
 
-    // console.log("Slide IDs: ", slide_ids);
+    //
+    // Other possibilities exhausted, can now update this guide's collection of slides.
+    //
 
-    if (typeof(SLIDES) !== "undefined" && SLIDES) {
-      slide_models = _.map( slide_ids, function(id) { return SLIDES.get(id) });
-      // console.log("Slide Models:", _.map(slide_models, function(sm) { return sm.get_field_value("title") }) )
-      this.slides = new SlideCollection(slide_models);
-      this.slides.comparator = function(slide) {
-        return _.indexOf(slide_ids, slide.id);
-      };
-      this.slides.sort();      
-    } else {
-      console.warn("No existing SLIDES collection on Guide instantion. Setting slides to empty.")
-      this.slides = new SlideCollection();      
+    // Fetch the Slide models as they are seen in the universal collection of slides.
+    fromCollectionSlideModels = _.map( slideIds, function(id) { return AllSlides.get(id) }) || [];
+    console.log("Slide Models:", _.map(fromCollectionSlideModels, function(sm) { 
+        return sm.get_field_value("title") 
+      }) 
+    );
+
+    // Merge together content from what is in the collection, and the
+    // collection of slides currently already a part of this guide,
+    // assuming superiority of content from slides that are part of this guide (must be more recently edited by the user).
+
+    if (this.slides) {
+      var self = this;
+      _.each(fromCollectionSlideModels, function(fromCollectionSlide, arrayIndex) {
+        if (self.slides.get(fromCollectionSlide.id)) { fromCollectionSlideModels[arrayIndex] = self.slides.get(fromCollectionSlide.id); }
+      });      
+    }
+
+    // Update slide collection & sort.
+    this.slides = new SlideCollection(fromCollectionSlideModels);
+    this.slides.comparator = function(slide) {
+      return _.indexOf(slideIds, slide.id);
     };
-
-    console.log("Guide's Ordered Slide Titles: ", this.slides.map(function(s) { return s.get_field_value("title")}) );
+    this.slides.sort();
 
     this.trigger("change:slides");
     this.initSlideObserver();
@@ -115,13 +160,13 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   //  
   //  This default implementation simply selects the next slide (based upon index) 
   //  in the array of a Guide's 'slides' attribute.
-  defaultSelectNext: function(guide, visited_slide_ids, responseData) {
-    console.log("In defaultSelectNext. (guide, visited_slide_ids, responseData):", guide, visited_slide_ids, responseData);
+  defaultSelectNext: function(guide, visitedSlideIds, responseData) {
+    console.log("In defaultSelectNext. (guide, visitedSlideIds, responseData):", guide, visitedSlideIds, responseData);
     if (guide.slides.length == 0) {
       // alert("It seems that guide '"+guide.id+"' has no slides.");
       return 0;
     };
-    var next_q = guide.slides.at(visited_slide_ids.length);
+    var next_q = guide.slides.at(visitedSlideIds.length);
     return next_q.id;
   },
 
