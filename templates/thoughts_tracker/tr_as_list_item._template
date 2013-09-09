@@ -1,48 +1,51 @@
-<div class="list-group-item" data-cid="(%= item.cid %)">
-   <h4 title="Situation">
-      <i class="icon-puzzle-piece icon-cbits-think-feel" style="margin-left: 5px;"></i>
-      (%= item.situation %)
-      <span class="label pull-right date">
-         (%= item.start.toString("h:mm tt, MMM d, yyyy") %)
-      </span>
-   </h4>
-   <p title="Immediate Thought">
-      <span class="icon-stack">
-         <i class="icon-sign-blank icon-stack-base icon-cbits-connect"></i>
-         <i class=" icon-quote-left icon-light"></i>
-      </span>
-      (%= item.thought %)
-   </p>
-   <p title="Tags">
-      <span class="icon-stack">
-         <i class="icon-sign-blank icon-stack-base"></i>
-         <i class="icon-tag icon-light"></i>
-      </span>
-      (% _.each(item.tags.split(", "), function(tag) { 
-            print(t.em("#"+tag, {class: "tag", })); 
-         });
-      %)
-   </p>
-   <p title="Immediate Emotion"> 
-      <span class="icon-stack">
-         <i class="icon-sign-blank icon-stack-base icon-cbits-mood"></i>
-         <i class="icon-heart-empty icon-light"></i>
-      </span
-      (%= item.emotion %) 
-      (% if (item.emotion_intensity) { %) ((%= item.emotion_intensity %)) (% } %)
-   </p>
-   <p title="Alternative Thought">
-      <span class="icon-stack">
-         <i class="icon-sign-blank icon-stack-base icon-cbits-connect"></i>
-         <i class="icon-cogs icon-light"></i>
-      </span>
-      (%= item.alternative_thought %)
-   </p>
-   <p title="Outcome Emotion">
-      <span class="icon-stack">
-         <i class="icon-sign-blank icon-stack-base icon-cbits-mood"></i>
-         <i class="icon-heart icon-light"></i>
-      </span>
-      (% if (item.outcome_intensity) { %) ((%= item.outcome_intensity %)) (% } %)
-   </p>
+<div data-cid="(%= item.cid %)">
+   <ul class="list-group">
+      <li class="list-group-item">
+         <h4 title="Situation" class="list-group-item-heading">
+            (%= item.situation %)
+            <span class="label pull-right date">
+               (%= item.start.toString("h:mm tt, MMM d, yyyy") %)
+            </span>
+         </h4>
+      </li>
+      <li class="list-group-item" title="Immediate Thought">
+         <span class="icon-stack">
+             <i class="icon-circle icon-stack-base"></i>
+             <i class="icon-li icon-quote-left icon-light"></i>
+         </span>
+         (%= item.thought %)
+      </li>
+      <li class="list-group-item" title="Tags">
+         <span class="icon-stack">
+            <i class="icon-circle icon-stack-base"></i>
+            <i class="icon-li icon-tag icon-light"></i>
+         </span>
+         (% _.each(item.tags.split(", "), function(tag) { 
+               print(t.em("#"+tag, {class: "tag", })); 
+            });
+         %)
+      </li>
+      <li class="list-group-item" title="Immediate Emotion"> 
+         <span class="icon-stack">
+            <i class="icon-circle icon-stack-base"></i>
+            <i class="icon-li icon-heart-empty icon-light"></i>
+         </span>
+         (%= item.emotion %) 
+         (% if (item.emotion_intensity) { %) <span class="label label-warning">(%= item.emotion_intensity %)</span> (% } %)
+      </li>
+      <li class="list-group-item" title="Alternative Thought">
+         <span class="icon-stack">
+            <i class="icon-circle icon-stack-base"></i>
+            <i class="icon-li icon-puzzle-piece icon-light"></i>
+         </span>
+         (%= item.alternative_thought %)
+      </li>
+      <li class="list-group-item" title="Outcome Emotion">
+         <span class="icon-stack">
+            <i class="icon-circle icon-stack-base"></i>
+            <i class="icon-li icon-heart icon-light"></i>
+         </span>
+         (% if (item.outcome_intensity) { %) <span class="label label-success">(%= item.outcome_intensity %)</span> (% } %)
+      </li>
+   </ul>
 </div>
