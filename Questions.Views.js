@@ -138,7 +138,7 @@ QuestionGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     this.$el.find('div.questions:first').append(view.render().$el);
     // view.render();
-    debugger;
+    // debugger;
 
   },
 
