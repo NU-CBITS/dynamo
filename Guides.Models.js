@@ -42,9 +42,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
         this.saveSlides();
       }
     };
-
-
-    this.slides.on('sync', this.updateSelfAndSave);
     
   },
 
@@ -82,6 +79,15 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     if ( !(_.all(slideIds, function(slideId) { 
       return AllSlides.get(slideId)
       })) ) {
+
+      // Allows the developer to ignore this scenario.
+      // This became useful on the Guide Index Page of the guide editor,
+      // When the guides didn't need their slide collections to be accurate
+      // --gs, 9/11/2013
+      if (AllSlides._ignoreSlideInconsistency) {
+        this.slides = new SlideCollection(); 
+        return;        
+      };
 
       AllSlides.once("sync", function() {
         console.log("Universal Slides Collection Synced, triggering slides rebuild.");
@@ -131,8 +137,9 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.slideObserver = null;
     this.slideObserver = _.extend({}, Backbone.Events);
     this.slideObserver.stopListening();
-    this.slideObserver.listenTo(this.slides, "add", this.initSlideObserver);
+    this.slideObserver.listenTo(this.slides, "add",    this.initSlideObserver);
     this.slideObserver.listenTo(this.slides, "remove", this.initSlideObserver);
+    this.slideObserver.listenTo(this.slides, "sync",   this.initSlideObserver);    
     this.slides.each(function(slide) {
       self.slideObserver.listenTo(slide, "change", self.setUnsavedChanges)
     });
