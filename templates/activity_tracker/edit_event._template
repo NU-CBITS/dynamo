@@ -1,538 +1,537 @@
 <form id="edit-event-(%= cid %)"
-      class="form-horizontal widget-content form-condensed" 
-      name="edit-event">
+      class="form-horizontal form-condensed" 
+      name="edit-event"
+      style="margin-bottom:0px;">
+  <div class="panel-body">
+    <div class="row-fluid">
+      <div class="control-group span12" id="edit-title-attribute-container">
+        <label class="control-label" id="title-attribute-label">Title</label>
 
-  <div class="row-fluid">
-    <div class="control-group span12" id="edit-title-attribute-container">
-      <label class="control-label" id="title-attribute-label">Title</label>
+        <div class="controls">
+          <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Situation" type="text">
+        </div>
+      </div>
+    </div><!-- Start and End Times -->
+
+    <div class="control-group" id="edit-start-time-attribute-container">
+      <label class="control-label" id="start-time-attribute-label">Starts</label>
 
       <div class="controls">
-        <input class="input-xlarge" data-bind="value: title" id="title-attribute-input" placeholder="Situation" type="text">
-      </div>
-    </div>
-  </div><!-- Start and End Times -->
-
-  <div class="control-group" id="edit-start-time-attribute-container">
-    <label class="control-label" id="start-time-attribute-label">Starts</label>
-
-    <div class="controls">
-      <select class="input-mini" data-bind="value: start_month" id="start-time-month">
-        <option value="0">
-          Jan
-        </option>
-
-        <option value="1">
-          Feb
-        </option>
-
-        <option value="2">
-          Mar
-        </option>
-
-        <option value="3">
-          Apr
-        </option>
-
-        <option value="4">
-          May
-        </option>
-
-        <option value="5">
-          June
-        </option>
-
-        <option value="6">
-          July
-        </option>
-
-        <option value="7">
-          Aug
-        </option>
-
-        <option value="8">
-          Sept
-        </option>
-
-        <option value="9">
-          Oct
-        </option>
-
-        <option value="10">
-          Nov
-        </option>
-
-        <option value="11">
-          Dec
-        </option>
-      </select> <input class="input-xmini" data-bind="value: start_date" id="start-time-day" placeholder="dd" type="text"> <input class="input-xmini" data-bind="value: start_year" id="start-time-year" placeholder="yyyy" type="text"> <select class="input-small" data-bind="value: start_hour" id="start-time-hour">
-        <option value="0">
-          12 am
-        </option>
-
-        <option value="1">
-          1 am
-        </option>
-
-        <option value="2">
-          2 am
-        </option>
-
-        <option value="3">
-          3 am
-        </option>
-
-        <option value="4">
-          4 am
-        </option>
-
-        <option value="5">
-          5 am
-        </option>
-
-        <option value="6">
-          6 am
-        </option>
-
-        <option value="7">
-          7 am
-        </option>
-
-        <option value="8">
-          8 am
-        </option>
-
-        <option value="9">
-          9 am
-        </option>
-
-        <option value="10">
-          10 am
-        </option>
-
-        <option value="11">
-          11 am
-        </option>
-
-        <option value="12">
-          12 pm
-        </option>
-
-        <option value="13">
-          1 pm
-        </option>
-
-        <option value="14">
-          2 pm
-        </option>
-
-        <option value="15">
-          3 pm
-        </option>
-
-        <option value="16">
-          4 pm
-        </option>
-
-        <option value="17">
-          5 pm
-        </option>
-
-        <option value="18">
-          6 pm
-        </option>
-
-        <option value="19">
-          7 pm
-        </option>
-
-        <option value="20">
-          8 pm
-        </option>
-
-        <option value="21">
-          9 pm
-        </option>
-
-        <option value="22">
-          10 pm
-        </option>
-
-        <option value="23">
-          11 pm
-        </option>
-      </select> <input class="input-xmini" data-bind="value: start_minute" id="start-time-minute" placeholder="min" type="text">
-    </div>
-  </div>
-
-  <div class="control-group" id="edit-end-time-attribute-container">
-    <label class="control-label" id="end-time-attribute-label">Ends</label>
-
-    <div class="controls" id="end-time-month">
-      <select class="input-mini" data-bind="value: end_month">
-        <option value="0">
-          Jan
-        </option>
-
-        <option value="1">
-          Feb
-        </option>
-
-        <option value="2">
-          Mar
-        </option>
-
-        <option value="3">
-          Apr
-        </option>
-
-        <option value="4">
-          May
-        </option>
-
-        <option value="5">
-          June
-        </option>
-
-        <option value="6">
-          July
-        </option>
-
-        <option value="7">
-          Aug
-        </option>
-
-        <option value="8">
-          Sept
-        </option>
-
-        <option value="9">
-          Oct
-        </option>
-
-        <option value="10">
-          Nov
-        </option>
-
-        <option value="11">
-          Dec
-        </option>
-      </select> <input class="input-xmini" data-bind="value: end_date" id="end-time-day" placeholder="dd" type="text"> <input class="input-xmini" data-bind="value: end_year" id="end-time-year" placeholder="yyyy" type="text"> <select class="input-small" data-bind="value: end_hour" id="end-time-hour">
-        <option value="0">
-          12 am
-        </option>
-
-        <option value="1">
-          1 am
-        </option>
-
-        <option value="2">
-          2 am
-        </option>
-
-        <option value="3">
-          3 am
-        </option>
-
-        <option value="4">
-          4 am
-        </option>
-
-        <option value="5">
-          5 am
-        </option>
-
-        <option value="6">
-          6 am
-        </option>
-
-        <option value="7">
-          7 am
-        </option>
-
-        <option value="8">
-          8 am
-        </option>
-
-        <option value="9">
-          9 am
-        </option>
-
-        <option value="10">
-          10 am
-        </option>
-
-        <option value="11">
-          11 am
-        </option>
-
-        <option value="12">
-          12 pm
-        </option>
-
-        <option value="13">
-          1 pm
-        </option>
-
-        <option value="14">
-          2 pm
-        </option>
-
-        <option value="15">
-          3 pm
-        </option>
-
-        <option value="16">
-          4 pm
-        </option>
-
-        <option value="17">
-          5 pm
-        </option>
-
-        <option value="18">
-          6 pm
-        </option>
-
-        <option value="19">
-          7 pm
-        </option>
-
-        <option value="20">
-          8 pm
-        </option>
-
-        <option value="21">
-          9 pm
-        </option>
-
-        <option value="22">
-          10 pm
-        </option>
-
-        <option value="23">
-          11 pm
-        </option>
-      </select> <input class="input-xmini" data-bind="value: end_minute" id="end-time-minute" placeholder="min" type="text">
-    </div>
-  </div>
-
-  <!-- TAGS -->
-  <div class="control-group">
-     <label class="control-label">Tags (max 5)</label> 
-     <div class="controls">
-        <input type="text" class="input-large" 
-              data-bind="selectizeText: tags, selectizeOptions: {
-                openOnFocus: true, 
-                maxItems: 5,
-                create: function(input) { return { value: input, text: input } }, 
-                options: [
-                    {value: \'work\', text: \'work\'},
-                    {value: \'friends\', text: \'friends\'},
-                    {value: \'family\', text: \'family\'},
-                    {value: \'chores\', text: \'chores\'},
-                    {value: \'leisure\', text: \'leisure\'},
-                    {value: \'self_care\', text: \'self-care\'}
-                ]
-              }"></input>
-     </div>
-  </div>
-
-  <!-- ACTIVITY COMPLETION -->
-  <div class="control-group" data-bind="if: inReviewing" id="edit-event-completed-attribute-container" style="margin-top:10px">
-    <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px; font-weight:bold;">I Completed This Activity
-    </label>
-
-    <div class="controls">
-      <label class="radio inline" id="event-completed-no-label"><input data-bind="checked: eventCompleted" type="radio" value="0"> No</label> <label class="radio inline" id="event-completed-yes-label"><input data-bind="checked: eventCompleted" type="radio" value="1"> Yes</label>
-    </div>
-  </div>
-
-  <!-- PLEASURE - PREDICT -->
-  <div class="control-group" id="pleasure-attributes-container">
-  
-    <div data-bind="if: inScheduling" id="edit-pleasure-predict-attribute-container" title="the amount of pleasure you think you&apos;ll have DURING the activity">
-      <div style="font-weight:bold;padding:5px 0px;" >
-        Predicted PLEASURE
-      </div>
-
-      <div class="row-fluid">
-        <div class="slider-bar">
-          <div class="slider" data-bind="slider: predicted_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-pleasure-predict-slider" style="margin-top: 3px;"></div>
-        </div>
-
-        <div class="slider-number text-right">
-          <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
-        </div>
-      </div>
-    </div><!-- PLEASURE - ACTUAL -->
-
-    <div data-bind="ifnot: inScheduling" id="edit-pleasure-actual-attribute-container"
-    title="the amount of pleasure you actually had DURING the activity">
-      <div style="font-weight:bold;padding:5px 0px;">
-        Actual PLEASURE
-      </div>
-
-      <div class="row-fluid">
-        <div class="slider-bar">
-          <div class="slider" data-bind="slider: actual_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-pleasure-actual-slider" style="margin-top: 3px;"></div>
-        </div>
-
-        <div class="slider-number text-right">
-          <strong data-bind="text: actual_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
-        </div>
+        <select class="input-mini" data-bind="value: start_month" id="start-time-month">
+          <option value="0">
+            Jan
+          </option>
+
+          <option value="1">
+            Feb
+          </option>
+
+          <option value="2">
+            Mar
+          </option>
+
+          <option value="3">
+            Apr
+          </option>
+
+          <option value="4">
+            May
+          </option>
+
+          <option value="5">
+            June
+          </option>
+
+          <option value="6">
+            July
+          </option>
+
+          <option value="7">
+            Aug
+          </option>
+
+          <option value="8">
+            Sept
+          </option>
+
+          <option value="9">
+            Oct
+          </option>
+
+          <option value="10">
+            Nov
+          </option>
+
+          <option value="11">
+            Dec
+          </option>
+        </select> <input class="input-xmini" data-bind="value: start_date" id="start-time-day" placeholder="dd" type="text"> <input class="input-xmini" data-bind="value: start_year" id="start-time-year" placeholder="yyyy" type="text"> <select class="input-small" data-bind="value: start_hour" id="start-time-hour">
+          <option value="0">
+            12 am
+          </option>
+
+          <option value="1">
+            1 am
+          </option>
+
+          <option value="2">
+            2 am
+          </option>
+
+          <option value="3">
+            3 am
+          </option>
+
+          <option value="4">
+            4 am
+          </option>
+
+          <option value="5">
+            5 am
+          </option>
+
+          <option value="6">
+            6 am
+          </option>
+
+          <option value="7">
+            7 am
+          </option>
+
+          <option value="8">
+            8 am
+          </option>
+
+          <option value="9">
+            9 am
+          </option>
+
+          <option value="10">
+            10 am
+          </option>
+
+          <option value="11">
+            11 am
+          </option>
+
+          <option value="12">
+            12 pm
+          </option>
+
+          <option value="13">
+            1 pm
+          </option>
+
+          <option value="14">
+            2 pm
+          </option>
+
+          <option value="15">
+            3 pm
+          </option>
+
+          <option value="16">
+            4 pm
+          </option>
+
+          <option value="17">
+            5 pm
+          </option>
+
+          <option value="18">
+            6 pm
+          </option>
+
+          <option value="19">
+            7 pm
+          </option>
+
+          <option value="20">
+            8 pm
+          </option>
+
+          <option value="21">
+            9 pm
+          </option>
+
+          <option value="22">
+            10 pm
+          </option>
+
+          <option value="23">
+            11 pm
+          </option>
+        </select> <input class="input-xmini" data-bind="value: start_minute" id="start-time-minute" placeholder="min" type="text">
       </div>
     </div>
 
-    <!-- PLEASURE - PREVIOUSLY PREDICTED -->
-    <div  data-bind="if: inReviewing" 
-          id="pleasure-previously-predicted-container"
-          class="row-fluid text-prof-blue"
-          title="What you previously rated as your expected pleasure.">
-      <div class="slider-bar">
-        <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Pleasure:</strong>
-      </div>
+    <div class="control-group" id="edit-end-time-attribute-container">
+      <label class="control-label" id="end-time-attribute-label">Ends</label>
 
-      <div class="slider-number text-right">
-        <span data-bind="ifnot: predicted_pleasure, valueUpdate: \'afterkeydown\'">
-          <strong>not entered</strong>
-        </span>
-        <span data-bind="if: predicted_pleasure", valueUpdate: \'afterkeydown\'">
-          <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
-        </span>
+      <div class="controls" id="end-time-month">
+        <select class="input-mini" data-bind="value: end_month">
+          <option value="0">
+            Jan
+          </option>
+
+          <option value="1">
+            Feb
+          </option>
+
+          <option value="2">
+            Mar
+          </option>
+
+          <option value="3">
+            Apr
+          </option>
+
+          <option value="4">
+            May
+          </option>
+
+          <option value="5">
+            June
+          </option>
+
+          <option value="6">
+            July
+          </option>
+
+          <option value="7">
+            Aug
+          </option>
+
+          <option value="8">
+            Sept
+          </option>
+
+          <option value="9">
+            Oct
+          </option>
+
+          <option value="10">
+            Nov
+          </option>
+
+          <option value="11">
+            Dec
+          </option>
+        </select> <input class="input-xmini" data-bind="value: end_date" id="end-time-day" placeholder="dd" type="text"> <input class="input-xmini" data-bind="value: end_year" id="end-time-year" placeholder="yyyy" type="text"> <select class="input-small" data-bind="value: end_hour" id="end-time-hour">
+          <option value="0">
+            12 am
+          </option>
+
+          <option value="1">
+            1 am
+          </option>
+
+          <option value="2">
+            2 am
+          </option>
+
+          <option value="3">
+            3 am
+          </option>
+
+          <option value="4">
+            4 am
+          </option>
+
+          <option value="5">
+            5 am
+          </option>
+
+          <option value="6">
+            6 am
+          </option>
+
+          <option value="7">
+            7 am
+          </option>
+
+          <option value="8">
+            8 am
+          </option>
+
+          <option value="9">
+            9 am
+          </option>
+
+          <option value="10">
+            10 am
+          </option>
+
+          <option value="11">
+            11 am
+          </option>
+
+          <option value="12">
+            12 pm
+          </option>
+
+          <option value="13">
+            1 pm
+          </option>
+
+          <option value="14">
+            2 pm
+          </option>
+
+          <option value="15">
+            3 pm
+          </option>
+
+          <option value="16">
+            4 pm
+          </option>
+
+          <option value="17">
+            5 pm
+          </option>
+
+          <option value="18">
+            6 pm
+          </option>
+
+          <option value="19">
+            7 pm
+          </option>
+
+          <option value="20">
+            8 pm
+          </option>
+
+          <option value="21">
+            9 pm
+          </option>
+
+          <option value="22">
+            10 pm
+          </option>
+
+          <option value="23">
+            11 pm
+          </option>
+        </select> <input class="input-xmini" data-bind="value: end_minute" id="end-time-minute" placeholder="min" type="text">
       </div>
     </div>
-  </div>
 
-  <div class="row-fluid" id="accomplishment-attributes-container">
+    <!-- TAGS -->
+    <div class="control-group">
+       <label class="control-label">Tags (max 5)</label> 
+       <div class="controls">
+          <input type="text" class="input-large" 
+                data-bind="selectizeText: tags, selectizeOptions: {
+                  openOnFocus: true, 
+                  maxItems: 5,
+                  create: function(input) { return { value: input, text: input } }, 
+                  options: [
+                      {value: \'work\', text: \'work\'},
+                      {value: \'friends\', text: \'friends\'},
+                      {value: \'family\', text: \'family\'},
+                      {value: \'chores\', text: \'chores\'},
+                      {value: \'leisure\', text: \'leisure\'},
+                      {value: \'self_care\', text: \'self-care\'}
+                  ]
+                }"></input>
+       </div>
+    </div>
+
+    <!-- ACTIVITY COMPLETION -->
+    <div class="control-group" data-bind="if: inReviewing" id="edit-event-completed-attribute-container" style="margin-top:10px">
+      <label class="pull-left" style="padding-right:10px;padding-top: 5px;text-align: right;margin-bottom: 5px; font-weight:bold;">I Completed This Activity
+      </label>
+
+      <div class="controls">
+        <label class="radio inline" id="event-completed-no-label"><input data-bind="checked: eventCompleted" type="radio" value="0"> No</label> <label class="radio inline" id="event-completed-yes-label"><input data-bind="checked: eventCompleted" type="radio" value="1"> Yes</label>
+      </div>
+    </div>
+
+    <!-- PLEASURE - PREDICT -->
+    <div class="control-group" id="pleasure-attributes-container">
     
-    <!-- ACCOMPLISHMENT - PREDICT -->
-    <div  data-bind="if: inScheduling" 
-          id="edit-accomplishment-predict-attribute-container"
-          title="the amount of accomplishment you think you&apos;ll have DURING the activity">
-      <div  style="font-weight:bold;padding:5px 0px;">
-        Predicted ACCOMPLISHMENT
+      <div data-bind="if: inScheduling" id="edit-pleasure-predict-attribute-container" title="the amount of pleasure you think you&apos;ll have DURING the activity">
+        <div style="font-weight:bold;padding:5px 0px;" >
+          Predicted PLEASURE
+        </div>
+
+        <div class="row-fluid">
+          <div class="slider-bar">
+            <div class="slider" data-bind="slider: predicted_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-pleasure-predict-slider" style="margin-top: 3px;"></div>
+          </div>
+
+          <div class="slider-number text-right">
+            <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+          </div>
+        </div>
+      </div><!-- PLEASURE - ACTUAL -->
+
+      <div data-bind="ifnot: inScheduling" id="edit-pleasure-actual-attribute-container"
+      title="the amount of pleasure you actually had DURING the activity">
+        <div style="font-weight:bold;padding:5px 0px;">
+          Actual PLEASURE
+        </div>
+
+        <div class="row-fluid">
+          <div class="slider-bar">
+            <div class="slider" data-bind="slider: actual_pleasure, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-pleasure-actual-slider" style="margin-top: 3px;"></div>
+          </div>
+
+          <div class="slider-number text-right">
+            <strong data-bind="text: actual_pleasure, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+          </div>
+        </div>
       </div>
 
-      <div class="row-fluid">
+      <!-- PLEASURE - PREVIOUSLY PREDICTED -->
+      <div  data-bind="if: inReviewing" 
+            id="pleasure-previously-predicted-container"
+            class="row-fluid text-prof-blue"
+            title="What you previously rated as your expected pleasure.">
         <div class="slider-bar">
-          <div class="slider" data-bind="slider: predicted_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-accomplishment-predicted-slider" style="margin-top: 3px;"></div>
+          <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Pleasure:</strong>
         </div>
 
         <div class="slider-number text-right">
-          <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+          <span data-bind="ifnot: predicted_pleasure, valueUpdate: \'afterkeydown\'">
+            <strong>not entered</strong>
+          </span>
+          <span data-bind="if: predicted_pleasure", valueUpdate: \'afterkeydown\'">
+            <strong data-bind="text: predicted_pleasure, valueUpdate: \'afterkeydown\'"></strong>
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- ACCOMPLISHMENT - ACTUAL -->
-    <div  data-bind="ifnot: inScheduling" 
-          id="edit-accomplishment-actual-attribute-container"
-          title="the amount of accomplishment you actually had DURING the activity">
-      <div style="font-weight:bold;padding:5px 0px;">
-        Actual ACCOMPLISHMENT
+    <div class="row-fluid" id="accomplishment-attributes-container">
+      
+      <!-- ACCOMPLISHMENT - PREDICT -->
+      <div  data-bind="if: inScheduling" 
+            id="edit-accomplishment-predict-attribute-container"
+            title="the amount of accomplishment you think you&apos;ll have DURING the activity">
+        <div  style="font-weight:bold;padding:5px 0px;">
+          Predicted ACCOMPLISHMENT
+        </div>
+
+        <div class="row-fluid">
+          <div class="slider-bar">
+            <div class="slider" data-bind="slider: predicted_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-accomplishment-predicted-slider" style="margin-top: 3px;"></div>
+          </div>
+
+          <div class="slider-number text-right">
+            <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+          </div>
+        </div>
       </div>
 
-      <div class="row-fluid">
+      <!-- ACCOMPLISHMENT - ACTUAL -->
+      <div  data-bind="ifnot: inScheduling" 
+            id="edit-accomplishment-actual-attribute-container"
+            title="the amount of accomplishment you actually had DURING the activity">
+        <div style="font-weight:bold;padding:5px 0px;">
+          Actual ACCOMPLISHMENT
+        </div>
+
+        <div class="row-fluid">
+          <div class="slider-bar">
+            <div class="slider" data-bind="slider: actual_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-accomplishment-actual-slider" style="margin-top: 3px;"></div>
+          </div>
+
+          <div class="slider-number text-right">
+            <strong data-bind="text: actual_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
+      <div  data-bind="if: inReviewing"
+            id="accomplishment-previously-predicted-container"
+            class="row-fluid text-prof-blue"
+            title="What you previously rated as your expected accomplishment.">
         <div class="slider-bar">
-          <div class="slider" data-bind="slider: actual_accomplishment, sliderOptions: {min: 0, max: 10, value: 5, range: \'min\', step: 1}" id="edit-accomplishment-actual-slider" style="margin-top: 3px;"></div>
+          <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Accomplishment:</strong>
         </div>
 
         <div class="slider-number text-right">
-          <strong data-bind="text: actual_accomplishment, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+          <span data-bind="ifnot: predicted_accomplishment, valueUpdate: \'afterkeydown\'">
+            <strong>not entered</strong>
+          </span>
+          <span data-bind="if: predicted_accomplishment", valueUpdate: \'afterkeydown\'">
+            <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- ACCOMPLISHMENT - PREVIOUSLY PREDICTED -->
-    <div  data-bind="if: inReviewing"
-          id="accomplishment-previously-predicted-container"
-          class="row-fluid text-prof-blue"
-          title="What you previously rated as your expected accomplishment.">
-      <div class="slider-bar">
-        <strong class="pull-right"><em class="icon-lightbulb"></em> Predicted Accomplishment:</strong>
+    <div data-bind="ifnot: inScheduling">
+      <div id="edit-emotion-attribute-container" 
+            style="font-weight:bold;padding:5px 0px;">
+        Emotion
+        <select id="edit-emotion" class="input-small" data-bind="value: emotion">
+           <option value="anger">Anger</option>
+           <option value="anxiety">Anxiety</option>
+           <option value="guilt">Guilt</option>
+           <option value="happiness">Happiness</option>
+           <option value="loneliness">Loneliness</option>
+           <option value="okay">Okay</option>
+           <option value="sadness">Sadness</option>
+           <option value="shame">Shame</option>
+        </select>
       </div>
 
-      <div class="slider-number text-right">
-        <span data-bind="ifnot: predicted_accomplishment, valueUpdate: \'afterkeydown\'">
-          <strong>not entered</strong>
-        </span>
-        <span data-bind="if: predicted_accomplishment", valueUpdate: \'afterkeydown\'">
-          <strong data-bind="text: predicted_accomplishment, valueUpdate: \'afterkeydown\'"></strong>
-        </span>
-      </div>
-    </div>
-  </div>
+      <div  class="row-fluid" id="edit-emotion-intensity-attribute-container"
+            style="font-weight:bold;padding:5px 0px;">
+        Emotion Intensity
+        <div class="slider-bar">
+          <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}" id="edit-emotion-intensity-slider"></div>
+        </div>
 
-  <div data-bind="ifnot: inScheduling">
-    <div id="edit-emotion-attribute-container" 
-          style="font-weight:bold;padding:5px 0px;">
-      Emotion
-      <select id="edit-emotion" class="input-small" data-bind="value: emotion">
-         <option value="anger">Anger</option>
-         <option value="anxiety">Anxiety</option>
-         <option value="guilt">Guilt</option>
-         <option value="happiness">Happiness</option>
-         <option value="loneliness">Loneliness</option>
-         <option value="okay">Okay</option>
-         <option value="sadness">Sadness</option>
-         <option value="shame">Shame</option>
-      </select>
-    </div>
-
-    <div  class="row-fluid" id="edit-emotion-intensity-attribute-container"
-          style="font-weight:bold;padding:5px 0px;">
-      Emotion Intensity
-      <div class="slider-bar">
-        <div class="slider" data-bind="slider: emotion_intensity, sliderOptions: {min: 0, max: 10, value: 0, step: 1}" id="edit-emotion-intensity-slider"></div>
+        <div class="slider-number text-right">
+          <strong data-bind="text: emotion_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
+        </div>
       </div>
 
-      <div class="slider-number text-right">
-        <strong data-bind="text: emotion_intensity, valueUpdate: \'afterkeydown\'" style="font-size:2em;"></strong>
-      </div>
-    </div>
-
-    <div data-bind="if: inMonitoring" id="edit-motivation-attribute-container">
-      <div class="row-fluid">
-        <div class="control-group">
-          <label class="control-label">Motivation</label>
-          <div class="controls">
-            <select data-bind="value: motivation" id="edit-motivation">
-              <option value="">None </option>
-              <option value="mood_directed"> Mood Directed </option>
-              <option value="goal_directed"> Goal Directed </option>
-            </select>
+      <div data-bind="if: inMonitoring" id="edit-motivation-attribute-container">
+        <div class="row-fluid">
+          <div class="control-group">
+            <label class="control-label">Motivation</label>
+            <div class="controls">
+              <select data-bind="value: motivation" id="edit-motivation">
+                <option value="">None </option>
+                <option value="mood_directed"> Mood Directed </option>
+                <option value="goal_directed"> Goal Directed </option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Sharing --> 
-  <div class="row-fluid">
-    <input type="hidden" data-bind="value: currentState">
-     <div class="span12">
+    <!-- Sharing --> 
+    <div class="row-fluid">
+      <input type="hidden" data-bind="value: currentState">
         <div class="control-group">
            <label class="control-label">Sharing</label> 
            <div class="controls">
-              <div class="well well-small">
-                 <div class="control-group">
-                    <div>
-                       <label class="checkbox">
-                          <input   type="checkbox"
-                                    data-bind="checked: shared"
-                                    />
-                          Share this
-                       </label>
-                    </div>
-                 </div>
+               <div class="control-group">
+                  <div>
+                     <label class="checkbox">
+                        <input   type="checkbox"
+                                  data-bind="checked: shared"
+                                  />
+                        Share this
+                     </label>
+                  </div>
               </div>
            </div>
-        </div>
-     </div>
-  </div>  
+       </div>
+    </div>
+  </div>
 
-  <div id="event-form-save-delete-buttons-container" style="margin-top:20px">
+  <div id="event-form-save-delete-buttons-container" class="panel-footer">
     <button class="del btn btn-danger btn-large" data-bind="click: destroy" id="event-delete-button"><em class="icon-trash"></em> Delete</button>
     <button class="save btn btn-primary btn-large" data-bind="click: save" id="event-save-button">Save</button> 
   </div>
+
 </form>
