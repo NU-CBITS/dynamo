@@ -470,7 +470,7 @@ Dynamo.guid = function() {
 //copied out of Backhand.js
 Dynamo.addSessionVarsToUrl = function(url) {
   var new_url;
-  new_url = addQueryVarToUrl("user_id", Dynamo.AUTHENTICATING_USER_ID(), url);
+  new_url = addQueryVarToUrl("user_id", _.result(Dynamo, "AUTHENTICATING_USER_ID"), url);
   new_url = addQueryVarToUrl("session_id", "YO-IMA-SESSION-ID", new_url);
   return new_url;
 };
