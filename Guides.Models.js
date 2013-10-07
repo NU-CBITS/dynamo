@@ -30,7 +30,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     //  new save function saves composite slides; 
     //  On the sync of those slides w/ the server, 
     //  then save this slideGroup.
-    //  WARNING - The format of this override breaks the ability to pass variables to save
+    //  WARNING - This implementation breaks the ability to pass variables to save for a Guide.
     //  i.e., save is expected to be called without any arguments for Guides
     this.saveGuide = this.save;
     
@@ -39,7 +39,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
         this.updateSelfAndSave();
       }
       else {
-        this.saveSlides();
+        this.saveSlidesThenGuide();
       }
     };
     
@@ -146,6 +146,10 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.setUnsavedChanges();
   },
 
+  debouncedGuideSave: _.debounce(function() {
+    this.updateSelfAndSave()
+  }, 2000),
+
   defaults: function() { 
     return this.defaultsFor('guide');
   },
@@ -183,9 +187,13 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   
   // Should not have to call directly; 
   // called when overridden save function is called.
-  saveSlides: function (argument) {
+  saveSlidesThenGuide: _.debounce(function (argument) {
+    var self = this;
+    this.slides.each(function(slide) {
+      slide.once('sync', self.debouncedGuideSave)
+    })
     this.slides.invoke('save');
-  },
+  }, 5000),
 
   updatePageURL: function () {
     var mc = this.metacontent();
