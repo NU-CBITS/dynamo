@@ -121,7 +121,6 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   // _launchButton: "<button id='guide_launcher' class='btn btn-info'>Launch Guides</button>",
 
   initialize: function() {
-    var self = this;
     _.extend(this, Backbone.Events);
 
     this.cid = _.uniqueId('c');
@@ -137,8 +136,8 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
     });
 
     this.guideSelect.on("element:chosen", function() {
-      self.setAsCurrentGuide(self.guideSelect.chosen_element);
-    });
+      this.setAsCurrentGuide(this.guideSelect.chosen_element);
+    }, this);
 
     if (this.options.$launchButtonContainer) {
       this.asModal = true;
@@ -150,9 +149,12 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
           class: "btn btn-info", 
           style: (this.options.launchButtonStyle || "") 
         }));
+
+      var self = this;
       this.$launchButtonContainer.find('button#guide_launcher').click(function() { 
         self.openInModal();
       });
+
       this.$guideContainer = $("<div id='guide_player_container-"+this.cid+"'></div>");
       $('body').append(this.$guideContainer);
       this.$guideContainer.dialog({
@@ -181,15 +183,14 @@ GuidePlayerView = Dynamo.GuidePlayerView = Dynamo.ChooseOneXelementFromCollectio
   },    
 
   displayGuideIndex: function() {
-    var self = this;
-    this.$el.html(self.guideSelect.render().$el);
-    self.guideSelect.render();
+    this.$el.html(this.guideSelect.render().$el);
+    this.guideSelect.render();
     // Set height so the buttons stay in the same place! #Matches guide 'show' view
     if (!this.asModal) {
       this.$el.find('.guide-view').css('height', (window.innerHeight * .25 + 53) ) //53 is height of footer      
     };
     
-    self.guideSelect.delegateEvents()
+    this.guideSelect.delegateEvents()
     // remove comments etcs
   },
 
@@ -368,28 +369,26 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
-    this.model.on('change', this.render);
-    this.model.on('change:slides', this.renderSlides);
-    this.model.on('sync', this.completeRender); //  completeRender = inherited method
+    this.model.on('change', this.render, this);
+    this.model.on('change:slides', this.renderSlides,this);
+    this.model.on('sync', this.completeRender, this); //  completeRender = inherited method
     this.initializeAsSaveable(this.model);
-
-    var self = this;
 
     //update view w/ most recent save-status information
     this.model.on('sync', function(model, response, options) {
       console.log("GUIDE SAVED:", model, response, options);
-      self.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
-      // self.model.clearUnsavedChanges;
-    })
+      this.$el.find("div#last-save").text( "Last Saved at: "+(new Date().toLocaleTimeString()) );
+    }, this)
 
     this.model.on('error', function(model, xhr, options) {
       console.warn("FAILED_GUIDE_SAVE:", model, xhr, options);
-      self.$el.find("div#last-save").html(
+      this.$el.find("div#last-save").html(
         "<p style='color:red;'>Last Save FAILED at: "+(new Date().toLocaleTimeString())+"</p>"+
         "<p> You may want to try again or check the log.</p>" 
       );
-    });
-    this.model.on('save_status_change', this.renderSaveStatus);
+    }, this);
+    
+    this.model.on('save_status_change', this.renderSaveStatus, this);
 
     this._GPOnLoadFnIsDefined = false;
     this._additionalRender = false;
@@ -467,9 +466,9 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   onGuidedPageLoad: function() {
     var self = this;
 
-    if (!self._GPOnLoadFnIsDefined) {
+    if (!this._GPOnLoadFnIsDefined) {
       
-      $(self.options.iframe_selector).load(function() {
+      $(this.options.iframe_selector).load(function() {
 
         console.log("IFRAME LOADED", this.contentWindow.Backbone);
 
@@ -521,7 +520,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
             // }
 
             return 0;
-          });// sort
+          }); // sort
 
           // This line is necessary for when: 
           // someone creates a new guide, and they start creating slides before they specify a 
@@ -530,15 +529,15 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
           // get the selectors of the elements selectable in the edit-slide dialog.
           self.renderSlides();
 
+          console.log("Usable Elements in Guided Page", self.usableElements);
+          $("#iframe-container").show();
+          self.trigger("guided_page:loaded");
+
+          self = null; //Prevent a mem leak?
+
         }); // BB load complete
 
-        console.log("Usable Elements in Guided Page", self.usableElements);
-        $("#iframe-container").show();
-        self.trigger("guided_page:loaded");
-
-
       }); //load
-
 
     }; // if
     this._GPOnLoadFnIsDefined = true;
@@ -551,7 +550,6 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   saveGuide: function() {
-    var self = this;
     this.model.save();
   },
 
@@ -567,16 +565,14 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   updateTitle: function(clickEvent) {
-    var self = this;
     var val = $(clickEvent.currentTarget).val();
-    self.model.set({ 'title' : val });
-    self.model.set_field_value('title', val );
+    this.model.set({ 'title' : val });
+    this.model.set_field_value('title', val );
   },
 
   updateDescription: function(clickEvent) {
-    var self = this;
     var val = $(clickEvent.currentTarget).val();
-    self.model.set_field_value('content_description', val );
+    this.model.set_field_value('content_description', val );
   },  
 
   initialRender: function (argument) {
@@ -602,11 +598,10 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   },
 
   renderSlides: function() {
-    var self = this,
-        $slides_container = this.$el.find('div#slides');
+    var $slides_container = this.$el.find('div#slides');
     
     this.slidesView = new Dynamo.ChooseOneXelementFromCollectionView({
-      collection: self.model.slides,
+      collection: this.model.slides,
       canCreateNew: true,
       xelement_type: 'static_html',
       checkedInputs: $slides_container.find('input:checked').data('cid')
@@ -618,23 +613,23 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.slidesView.on("element:chosen", function() {
       
       //Update Current Slide
-      self.current_slide = null;
-      self.current_slide = self.slidesView.chosen_element;
+      this.current_slide = null;
+      this.current_slide = this.slidesView.chosen_element;
 
       //Add to collection once saved;
-      if (  self.current_slide.isNew() && 
-            !_.contains(self.model.slides, self.current_slide) ) {
+      if (  this.current_slide.isNew() && 
+            !_.contains(this.model.slides, this.current_slide) ) {
         
-        self.model.slides.add(self.current_slide);
-        self.slidesView.render();
+        this.model.slides.add(this.current_slide);
+        this.slidesView.render();
         
       };
 
-      self.current_slide.on('change:title', self.slidesView.render);
+      this.current_slide.on('change:title', this.slidesView.render, this);
       // Trigger Current Slide Change
-      self.trigger("slide:chosen");
+      this.trigger("slide:chosen");
 
-    });
+    }, this);
 
     $slides_container.empty();
     $slides_container.html(this.slidesView.render().$el);
@@ -657,15 +652,13 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     };
 
     if (!this.guidedPageSM.is('blank') && this.slideEditing.is("allowed")) {
-      var self = this;
-
       //refresh direct attributes (i.e., non-slides) with model values:
     _.each({ 
         title: 'input#guide_title',
         guided_page_url: "input#guided_page_url"
       }, function(value, key) {
-        self.$el.children('div#guide_attributes').find(value).val( self.model.get_field_value(key) );  
-      });
+        this.$el.children('div#guide_attributes').find(value).val( this.model.get_field_value(key) );  
+      }, this);
 
     };
 
@@ -796,33 +789,32 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   initialRender: function (argument) {
     var atts,
-        actionsView,
-        self = this;
+        actionsView;
 
     atts = {
-      slide: self.model.get_fields_as_object()
+      slide: this.model.get_fields_as_object()
     };
-    self.$el.html( self._template( atts ) );
+    this.$el.html( this._template( atts ) );
 
-    self.editor = self.instantiateEditorFn(self.instantiateEditorOptions, self);
+    this.editor = this.instantiateEditorFn(this.instantiateEditorOptions, this);
 
-    self.actionsView = new Dynamo.ManageCollectionView({
-      collection: self.model.actions,
+    this.actionsView = new Dynamo.ManageCollectionView({
+      collection: this.model.actions,
       display: { create: false, edit: true, show: false },
-      guidedPageSelector: self.options.guidedPageSelector,
+      guidedPageSelector: this.options.guidedPageSelector,
       enableAddExisting: false,
       editViewOpts: { 
-        template: self.options.actionTemplate, 
-        actionTargets: self.options.actionTargets,
-        guidedPageSelector: self.options.guidedPageSelector,        
+        template: this.options.actionTemplate, 
+        actionTargets: this.options.actionTargets,
+        guidedPageSelector: this.options.guidedPageSelector,        
       },
       editViewClass: editActionView
     });
     
-    self.$el.find('.slide-actions:first').html(self.actionsView.render().$el);
+    this.$el.find('.slide-actions:first').html(this.actionsView.render().$el);
 
     //Set focus to title @ end of input
-    var $title = self.$el.find('input.title:first');
+    var $title = this.$el.find('input.title:first');
     $title.one("focus", function() {
       this.selectionStart = this.selectionEnd = this.value.length;
     });
