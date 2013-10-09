@@ -1,5 +1,5 @@
-<div class="widget-content">
-   <form class="form-horizontal form-condensed">
+<form class="form-horizontal form-condensed" style="margin-bottom:0px;">
+   <div class="panel-body">
       <div class="row-fluid">
          <div class="control-group">
             <label class="control-label">Situation</label> 
@@ -7,7 +7,7 @@
                <textarea 
                   id="situation-field" 
                   class="span12"
-                  type="text" rows="4"  
+                  type="text" rows="2"  
                   placeholder="Describe what happened" 
                   data-bind="value: situation"
                   title="Writing Situations"
@@ -126,7 +126,7 @@
                   <textarea 
                      id="thought-field"
                      class="span12"  
-                     rows="3"
+                     rows="2"
                      placeholder="What did you first think in this situation?" 
                      data-bind="value: thought"
                      title="Writing Your Thoughts"
@@ -218,7 +218,7 @@
                <textarea 
                   id="alt-thought-field" 
                   class="span12"
-                  rows="3" 
+                  rows="2" 
                   placeholder="What is a different, more helpful thought?"
                data-bind="value: alternative_thought" 
                title="Discovering Alternative Thoughts"
@@ -250,47 +250,29 @@
             <div class="control-group">
                <label class="control-label">Sharing</label> 
                <div class="controls">
-                  <div class="well well-small">
-                     <div class="control-group">
-                        <div>
-                           <label class="checkbox">
-                              <input type="checkbox" data-bind="checked: shared" />
-                              Share this
-                           </label>
-                        </div>
-                     </div>
-                     <div class="control-group">
-                        <div class="controls">
-                           <label class="checkbox">
-                              <input type="checkbox" data-bind="checked: share_empathy" />
-                              Anybody else feel this way?
-                           </label>
-                        </div>
-                     </div>
-                     <div class="control-group">
-                        <div class="controls">
-                           <label class="checkbox">
-                              <input type="checkbox" data-bind="checked: share_suggestions" />
-                              Any suggestions?
-                           </label>
-                        </div>
-                     </div>
-                     <div class="control-group">
-                        <div class="controls">
-                           <label class="checkbox">
-                              <input type="checkbox" data-bind="checked: share_pride" />
-                              I feel proud!
-                           </label>
-                        </div>
-                     </div>
-                  </div>
+                  <label class="checkbox">
+                     <input type="checkbox" data-bind="checked: shared" />
+                     Share this
+                  </label>
+                  <label class="checkbox">
+                     <input type="checkbox" data-bind="checked: share_empathy" />
+                     Anybody else feel this way?
+                  </label>
+                  <label class="checkbox">
+                     <input type="checkbox" data-bind="checked: share_suggestions" />
+                     Any suggestions?
+                  </label>
+                  <label class="checkbox">
+                     <input type="checkbox" data-bind="checked: share_pride" />
+                     I feel proud!
+                  </label>
                </div>
             </div>
          </div>
-      </div>      
-      <div> 
-         <button class="del btn btn-danger" data-bind="click: destroy">Delete</button>
-         <button class="btn btn-primary save" data-bind="click: save">Save Thought Record</button>
       </div>
-   </form>
-</div>
+   </div>    
+   <div class="panel-footer"> 
+      <button class="del btn btn-danger" data-bind="click: destroy">Delete</button>
+      <button class="btn btn-primary save" data-bind="click: save">Save Thought Record</button>
+   </div>
+</form>

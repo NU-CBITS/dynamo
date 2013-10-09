@@ -9,7 +9,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   // Functions:
   initialize: function () {
     _.bindAll(this);
-    var self = this;
 
     this.initAsXelement();
     this.set_field_value('xelement_type', 'guide');
@@ -20,8 +19,8 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.buildSlides(); //instantiates dependent slide xelements
     //rebuild slides if something changes "required_xelement_ids"
     this.on("change:xel_data_values:required_xelement_ids", function() {
-      self.buildSlides();
-    });
+      this.buildSlides();
+    }, this);
 
     //  Saving a slide group should save both the Guide and 
     //  All member slides; 
@@ -30,7 +29,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     //  new save function saves composite slides; 
     //  On the sync of those slides w/ the server, 
     //  then save this slideGroup.
-    //  WARNING - The format of this override breaks the ability to pass variables to save
+    //  WARNING - This implementation breaks the ability to pass variables to save for a Guide.
     //  i.e., save is expected to be called without any arguments for Guides
     this.saveGuide = this.save;
     
@@ -39,7 +38,7 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
         this.updateSelfAndSave();
       }
       else {
-        this.saveSlides();
+        this.saveSlidesThenGuide();
       }
     };
     
@@ -114,10 +113,9 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     // assuming superiority of content from slides that are part of this guide (must be more recently edited by the user).
 
     if (this.slides) {
-      var self = this;
       _.each(fromCollectionSlideModels, function(fromCollectionSlide, arrayIndex) {
-        if (self.slides.get(fromCollectionSlide.id)) { fromCollectionSlideModels[arrayIndex] = self.slides.get(fromCollectionSlide.id); }
-      });      
+        if (this.slides.get(fromCollectionSlide.id)) { fromCollectionSlideModels[arrayIndex] = this.slides.get(fromCollectionSlide.id); }
+      }, this);      
     }
 
     // Update slide collection & sort.
@@ -133,7 +131,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   },
 
   initSlideObserver: function() {
-    var self = this;
     this.slideObserver = null;
     this.slideObserver = _.extend({}, Backbone.Events);
     this.slideObserver.stopListening();
@@ -141,10 +138,14 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.slideObserver.listenTo(this.slides, "remove", this.initSlideObserver);
     this.slideObserver.listenTo(this.slides, "sync",   this.initSlideObserver);    
     this.slides.each(function(slide) {
-      self.slideObserver.listenTo(slide, "change", self.setUnsavedChanges)
-    });
+      this.slideObserver.listenTo(slide, "change", this.setUnsavedChanges)
+    }, this);
     this.setUnsavedChanges();
   },
+
+  debouncedGuideSave: _.debounce(function() {
+    this.updateSelfAndSave()
+  }, 2000),
 
   defaults: function() { 
     return this.defaultsFor('guide');
@@ -183,9 +184,12 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   
   // Should not have to call directly; 
   // called when overridden save function is called.
-  saveSlides: function (argument) {
+  saveSlidesThenGuide: _.debounce(function (argument) {
+    this.slides.each(function(slide) {
+      slide.once('sync', this.debouncedGuideSave)
+    }, this)
     this.slides.invoke('save');
-  },
+  }, 5000),
 
   updatePageURL: function () {
     var mc = this.metacontent();
@@ -264,13 +268,12 @@ SlideModel = Dynamo.SlideModel = Dynamo.XelementClass.extend({
   },
 
   initActionObserver: function() {
-    var self = this;
     this.actionObserver.stopListening();
     this.actionObserver.listenTo(this.actions, "add", this.initActionObserver);
     this.actionObserver.listenTo(this.actions, "remove", this.initActionObserver);
     this.actions.each(function(action) {
-      self.actionObserver.listenTo(action, "change", self.updateActions)
-    });
+      this.actionObserver.listenTo(action, "change", this.updateActions)
+    }, this);
     this.updateActions();
   },
 
@@ -376,8 +379,7 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
   },
 
   execute: function(iframeSelector) {
-    var self = this, 
-        duration;
+    var duration;
 
     var $targets = this.get("target");
     if ($targets == "") {
@@ -394,7 +396,9 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
       duration = 400;
     }
 
+    var self = this;
     if (iframeSelector) {
+      
       $(iframeSelector).contents().find($targets).each(function() {
         // if target is not currently viewable, show it.
         if ( $(this).is(":hidden") )  {
@@ -406,6 +410,7 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
         $(this).effect(self.get("effect"), self.effectOptions(), duration);
 
       });
+
     } else {
     
       $targets.each(function() {
@@ -418,6 +423,8 @@ SlideActionModel = Dynamo.SlideActionModel = Backbone.Model.extend({
       });
 
     }
+
+    self = null; //prevent a mem leak?
     
   }
 

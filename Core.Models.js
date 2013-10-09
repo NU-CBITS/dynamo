@@ -62,7 +62,7 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
       console.log("debouncedSave: Model", this, "did not have any unsaved changes");
     }
   },
-  3000),
+  6000),
 
   hasUnsavedChanges: function() {
     return !!this._unsavedChanges;
@@ -139,10 +139,8 @@ Group = Dynamo.Group = Dynamo.Model.extend({
   idAttribute: "guid",
 
   initialize: function() {
-    _.bindAll(this);
-    var self = this;
 
-    var user_ids = self.get_field_value('users');
+    var user_ids = this.get_field_value('users');
 
     this.users = new Dynamo.UserCollection( USERS.filter(function(user) {
       return (_.indexOf(user_ids, user.id) != -1)
@@ -151,10 +149,11 @@ Group = Dynamo.Group = Dynamo.Model.extend({
     this.actualSave = this.save;
     this.save = function(key, value, options) {
       //add before-save callbacks
-      self.updateUsers();
-      self.actualSave(key, value, options);
+      this.updateUsers();
+      this.actualSave(key, value, options);
     };
 
+    _.bindAll(this);
   },
 
   defaults: {
@@ -269,7 +268,6 @@ XelementRoot = Dynamo.XelementRoot = {
 
   //function which returns the required_xelement_ids field as a backbone collection of Xelement objects
   required_xelements: function() {
-    var self = this;
 
     if (typeof(this._required_xelements) !== "undefined") {
       return this._required_xelements
@@ -284,9 +282,9 @@ XelementRoot = Dynamo.XelementRoot = {
       required_xelement_ids = this.get_field_value("required_xelement_ids") || [];
     };
     raw_json_models = _.chain(required_xelement_ids)
-                      .map(function(id) { return (self._CompleteXelementsCollection()).get(id) })
-                      .compact()
-                      .value();
+                      .map(function(id) { 
+                        return (this._CompleteXelementsCollection()).get(id) 
+                      }, this).compact().value();
     this._required_xelements = new XelementCollection(raw_json_models);
 
     return this._required_xelements;
@@ -347,10 +345,9 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   },
 
   set_field_values: function(set_obj, options) {
-    var self = this;
     _.each(set_obj, function(val, key) {
-      self.set_field_value(key, val, options);
-    });
+      this.set_field_value(key, val, options);
+    }, this);
   },
 
   set_field_value: function(attribute, new_value, options) {
@@ -381,10 +378,9 @@ UnitaryXelement = Dynamo.UnitaryXelement = Dynamo.SaveableModel.extend( _.extend
   },
 
   stringifyAllValues: function() {
-    var self = this;
     _.each(this.get('xel_data_values'), function(value, key) {
-      self.set_field_value(key, value);
-    });
+      this.set_field_value(key, value);
+    }, this);
   }
 
 }));
@@ -514,7 +510,6 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
   },
 
   parse: function(resp) {
-    var self = this;
     if ( !_.isObject(resp) ) {
       throw new Error("ValuesOnlyXelement.parse: Unexpected response from server.");
     };
@@ -524,16 +519,16 @@ ValuesOnlyXelement = Dynamo.ValuesOnlyXelement = Dynamo.ReadOnlyModel.extend( _.
       atts.guid = resp.guid;
 
       _.each(resp.xel_data_values,  function(value, key) { //each function
-        if ( _.indexOf(self.removed_atts, key) === -1 ) {
+        if ( _.indexOf(this.removed_atts, key) === -1 ) {
 
-          if ( _.indexOf(self.converted_atts, key) !== -1 ) {
+          if ( _.indexOf(this.converted_atts, key) !== -1 ) {
             atts[key] = convertFalses( JSONparseNested( value ) );
           } else {
             atts[key] = value;
           };
 
         };
-      });
+      }, this);
 
       return atts;
     }
@@ -593,11 +588,9 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
       else {
         defaultAttsObject = this.defaultDataAtts;
       };
-
-      var self = this;
       _.each(defaultAttsObject, function(valArray, key) {
-        self.set_field(key, valArray[0], valArray[1], { silent:true });
-      });
+        this.set_field(key, valArray[0], valArray[1], { silent:true });
+      }, this);
 
     };
 
@@ -623,16 +616,21 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
   },
 
   get_fields_as_object: function() {
-    var self = this;
+
     var fields = {
-      id: self.id,
-      cid: self.cid,
-      user_id: self.get("user_id"),
-      xelement_id: self.get("xelement_id"),
-      group_id: self.get("group_id"),
-      created_at: ( new Date( self.get("created_at") ) )
+      id: this.id,
+      cid: this.cid,
+      user_id: this.get("user_id"),
+      xelement_id: this.get("xelement_id"),
+      group_id: this.get("group_id"),
+      created_at: ( new Date( this.get("created_at") ) )
     };
-    return _.extend(fields, _.object(self.get('names'), _.map(self.get('names'), function(n) { return self.get_field_value(n) }) ) )
+    var currentFields = _.object(
+                                this.get('names'), 
+                                _.map(this.get('names'), function(n) { 
+                                  return this.get_field_value(n) }, this) 
+                        );
+    return _.extend(fields, currentFields)
   },
 
   // get_field
@@ -703,11 +701,11 @@ Data = Dynamo.Data = Dynamo.SaveableModel.extend({
   },
 
   set_field_values: function(set_obj, options) {
-    var field_type, self = this;
+    var field_type;
     _.each(set_obj, function(val, key) {
-      field_type = self.get_field_type(key) || "string";
-      self.set_field(key, field_type, val, options);
-    });
+      field_type = this.get_field_type(key) || "string";
+      this.set_field(key, field_type, val, options);
+    }, this);
   },
 
   // set_field
@@ -787,8 +785,7 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
   initialize: function(attributes, options) {
     _.bindAll(this);
-    var self = this,
-        options = options || {};
+    var options = options || {};
 
     this.groupsCln = options.groups || USER_GROUPS;
 
@@ -807,23 +804,22 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   },
 
   attributeNames: function() {
-    var self = this;
 
-    if (self._attributeNames !== void 0) {
-      return self._attributeNames;
+    if (this._attributeNames !== void 0) {
+      return this._attributeNames;
     };
 
-    self._attributeNames = null;
+    this._attributeNames = null;
 
-    _.each(self.collections, function(c) {
-      if (!self._attributeNames) {
+    _.each(this.collections, function(c) {
+      if (!this._attributeNames) {
         if (c.length > 0) {
-          self._attributeNames = c.last().get("names");
+          this._attributeNames = c.last().get("names");
         }
       }
-    });
+    }, this);
 
-    return self._attributeNames
+    return this._attributeNames
   },
 
   all: function() {
@@ -863,62 +859,34 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
   }, 500),
 
   buildUserCollections: function() {
-    var self = this;
     this.collections = [];
 
     this.group.users.each(function(user) {
 
       var classProps = _.extend({
-          xelement_id: self.get('xelement_id'),
+          xelement_id: this.get('xelement_id'),
           user_id: user.id,
-          group_id: self.get('group_id')
-        }, (self.get("collectionProperties") || {}) );
+          group_id: this.get('group_id')
+        }, (this.get("collectionProperties") || {}) );
 
       var UserData = new Dynamo.DataCollection([], classProps);
       UserData.on('add', this.debouncedChange);
       UserData.on('remove', this.debounceChange);
       UserData.on('reset', this.debounceChange);
       UserData.on('sync', this.debounceChange);
-      self.collections.push(UserData);
+      this.collections.push(UserData);
 
-    });
+    }, this);
 
   },
 
-  // successiveCollectionBuild: function(nthUser) {
-
-  //   var self = this;
-  //   var user = this.group.users.at(nthUser);
-  //   var nextUser = nthUser+1;
-
-  //   var classProps = _.extend({
-  //       xelement_id: self.get('xelement_id'),
-  //       user_id: user.id,
-  //       group_id: self.get('group_id')
-  //     }, (self.get("collectionProperties") || {}) );
-
-  //   var UserData = new Dynamo.DataCollection([], classProps);
-  //   UserData.once('sync', function(syncedCollection) {
-  //     console.log("UserData === syncedCollection", (UserData === syncedCollection));
-  //     syncedCollection.on('all', self.debouncedChange );
-  //     self.collections.push(syncedCollection);
-  //     self.debouncedChange();
-  //     if (nextUser < self.group.users.length) {
-  //       self.successiveCollectionBuild(nextUser);
-  //     }
-  //   });
-  //   UserData.fetch({ async: true});
-
-  // },
-
   successiveFetch: function(nthCollection, fetch_options) {
-    var self = this,
-        nextCollection = nthCollection+1,
+    var nextCollection = nthCollection+1,
         currentClxn;
     
     fetch_options = fetch_options || {};
 
-    if (nthCollection < self.group.users.length) { 
+    if (nthCollection < this.group.users.length) { 
       currentClxn = this.collections[nthCollection];
     }
     else {
@@ -929,13 +897,13 @@ GroupWideData = Dynamo.GroupWideData = Backbone.Model.extend({
 
     if (fetch_options.async === false) {
       currentClxn.fetch(fetch_options);
-      return self.successiveFetch(nextCollection, fetch_options);
+      return this.successiveFetch(nextCollection, fetch_options);
     }
     else {
       currentClxn.once("sync", function() {
-        self.successiveFetch(nextCollection, fetch_options);
-        self.debouncedChange();
-      });
+        this.successiveFetch(nextCollection, fetch_options);
+        this.debouncedChange();
+      }, this);
       currentClxn.fetch(fetch_options);
     }
   
