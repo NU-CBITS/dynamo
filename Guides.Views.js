@@ -369,9 +369,12 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
+
     this.model.on('change', this.render, this);
-    this.model.on('change:slides', this.renderSlides,this);
+    this.model.slides.on('add',     this.renderSlides,this);
+    this.model.slides.on('remove',  this.renderSlides,this);
     this.model.on('sync', this.completeRender, this); //  completeRender = inherited method
+
     this.initializeAsSaveable(this.model);
 
     //update view w/ most recent save-status information
@@ -584,7 +587,7 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
         this.model.guided_page_url === ""       || 
         this.model.guided_page_url === " ") {
       this.guidedPageSM.skip();
-      this.renderSlides();
+      // this.renderSlides();
     };
 
     atts = { 
@@ -600,6 +603,10 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
   renderSlides: function() {
     var $slides_container = this.$el.find('div#slides');
     
+    if (this.slidesView) {
+      this.slidesView.remove();
+    }
+
     this.slidesView = new Dynamo.ChooseOneXelementFromCollectionView({
       collection: this.model.slides,
       canCreateNew: true,
@@ -666,6 +673,13 @@ EditGuideView = Dynamo.EditGuideView = Dynamo.BaseUnitaryXelementView.extend({
     this.renderSaveStatus();
 
     return this;
+  },
+
+  remove: function() {
+    this.slidesView.remove();
+    delete(this.slidesView);
+    this.stopListening();
+    this.$el.remove();
   }
 
 });
@@ -676,8 +690,15 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
     _.bindAll(this);
     this.initializeAsUnitaryXelement();
-    this.model.on('change', this.render);
-    this.model.on('sync', this.completeRender);
+    
+    this.currentTitle   = this.model.get_field_value("title");
+    this.currentContent = this.model.get_field_value("content");
+
+    this.model.on('change', this.render, this);
+    // this.model.on('sync', this.completeRender, this);
+
+    this.model.saveOnChange();
+
     this.initializeAsSaveable(this.model);
     this.instantiateEditorFn = this.options.instantiateEditorFn || function(options, thisView) {
       console.error("no instantiateEditorFn!")
@@ -703,21 +724,16 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     this.model.destroy({async: false});
     this.$el.remove();
 
-    // // Once ckeditor is fixed:
-    // this.actionsView.remove();
-    // this.actionsView = null;
-    // this.model.destroy();
-    // this.$el.remove();   
-    // this.clearInitialRender();
   },
 
   events: function() {
     var e = {};
-    change_title_key = "keyup input#"+this.model.cid+"-slide-title";
-    change_content_key = "keyup textarea#"+this.model.cid+"-slide-content";
-    e[change_title_key] = "updateTitle";
-    e[change_content_key] = "updateContent";
-    e["click button.delete-slide"] = "destroySlide";
+    change_title_key                = "keyup input#"+this.model.cid+"-slide-title";
+    change_content_key              = "keyup textarea#"+this.model.cid+"-slide-content";
+    e[change_title_key]             = "updateTitle";
+    e[change_content_key]           = "updateContent";
+    e['click button.save']          = "saveSlide",
+    e["click button.delete-slide"]  = "destroySlide";
     return e;
   },
 
@@ -730,12 +746,6 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     };
 
     return this.compiled_template(data, settings);
-  },
-
-  updateTitle: function(clickEvent) {
-    this.model.set_field_value('title', $(clickEvent.currentTarget).val() )
-    this.model.trigger('change');
-    this.model.trigger('change:title');
   },
 
   consolidateActions: function(model, slideContent) {
@@ -778,14 +788,30 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
   },
 
-  updateContent: function(newContent) {
+  saveSlide: function() {
+    this.model.save();
+  },  
 
-    this.model.set_field_value('content', newContent );
-    this.consolidateActions(this.model, newContent);
-    this.model.trigger('change');
-    this.model.trigger('change:content');
+  updateTitle: _.debounce(function(clickEvent) {
+    var newTitle = $(clickEvent.currentTarget).val();
+    if (this.currentTitle != newTitle) { 
+      this.model.set_field_value('title',  newTitle)
+      this.currentTitle = newTitle;
+      this.model.trigger('change');
+      this.model.trigger('change:title');
+    }
+  }, 1000),
 
-  },
+  updateContent: _.throttle(function(newContent) {
+    if (this.currentContent != newContent) {
+      this.currentContent = newContent;
+      this.model.set_field_value('content', newContent );
+      this.consolidateActions(this.model, newContent);
+      
+      this.model.trigger('change');
+      this.model.trigger('change:content');          
+    }
+  }, 500),
 
   initialRender: function (argument) {
     var atts,
@@ -796,6 +822,9 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
     };
     this.$el.html( this._template( atts ) );
 
+    if (this.editor) {
+      delete(this.editor);
+    }
     this.editor = this.instantiateEditorFn(this.instantiateEditorOptions, this);
 
     this.actionsView = new Dynamo.ManageCollectionView({
@@ -815,7 +844,7 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
 
     //Set focus to title @ end of input
     var $title = this.$el.find('input.title:first');
-    $title.one("focus", function() {
+    $title.on("focus", function() {
       this.selectionStart = this.selectionEnd = this.value.length;
     });
     $title[0].focus();
@@ -825,6 +854,8 @@ EditSlideView = Dynamo.EditSlideView = Dynamo.BaseUnitaryXelementView.extend({
   remove: function() {
 
     this.$el.remove();
+    this.stopListening();
+    delete(this.editor);
 
   },
 

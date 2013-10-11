@@ -66,7 +66,6 @@ renderInDialog = function(view, dialog_opts) {
 
 // Select the appropriate view class for a for a particular type of form input
 viewClassForInputType = function (input_type) {
-  var self = this
   switch( input_type ) {
     case "text": case "textarea":
       return Dynamo.TextInputView;
@@ -145,17 +144,17 @@ ShowArrayView = Dynamo.ShowArrayView = (function() {
   }
 
   showArrayView.prototype.render = function() {
-    var self = this, fields;
+    var fields;
     this.$el.empty();
 
     var elements = _.result(this, "getArrayFn");
 
     if (elements.length > 0) {
       _.each(elements, function(element) {
-        self.$el.append( self._elementTemplate({item: element}) );
-      });
+        this.$el.append( this._elementTemplate({item: element}) );
+      }, this);
     } else {
-      self.$el.html((self.contentWhenEmpty || "<div>None</div>"));
+      this.$el.html((this.contentWhenEmpty || "<div>None</div>"));
     }
 
 
@@ -294,8 +293,7 @@ Dynamo.TextInputView = Backbone.View.extend(
           $input.attr('size', _.min([255, ($input.val().length+2)]));
     },
     render: function () {
-      var self = this,
-          html,
+      var html,
           tagAtts = {
             value:  this.getValue()
           };
@@ -304,7 +302,7 @@ Dynamo.TextInputView = Backbone.View.extend(
           };
       if (this.options.borderless) { tagAtts['style'] = 'border:0;'; };
 
-      html = t.formInput(this.formType(), self.options.label, tagAtts);
+      html = t.formInput(this.formType(), this.options.label, tagAtts);
       this.$el.html( html );
       return this;
     }
@@ -374,14 +372,13 @@ Dynamo.InputGroupView = Backbone.View.extend(
       return this.compiled_template(data, settings);
     },
     render: function () {
-      var self = this;
-      self.$el.html( self._template({
-        id: self.cid,
-        name: (self.options.name || (self.groupType+'-group_'+self.cid)),
-        label: (self.options.label || ''),
-        selected_value: (self.getValue() || ''),
-        type: self.groupType,
-        options: self.groupOptions
+      this.$el.html( this._template({
+        id: this.cid,
+        name: (this.options.name || (this.groupType+'-group_'+this.cid)),
+        label: (this.options.label || ''),
+        selected_value: (this.getValue() || ''),
+        type: this.groupType,
+        options: this.groupOptions
       }) );
       return this;
     }
@@ -433,27 +430,28 @@ Dynamo.InputRangeView = Backbone.View.extend(
 
     setAttribute: function (ui_value) {
       console.log('in Dynamo.InputSliderView-setAttribute cid:'+this.cid);
-      this.setValue(ui_value);
-      this.$el.find('div.current_value:first').html( ui_value );
+      context.setValue(ui_value);
+      context.$el.find('div.current_value:first').html( ui_value );
     },
 
     render: function () {
-      var self = this, html;
+      var html;
 
       //build html
-      html =  self.showValueHTML(self.initial_value) +
-              self.endpointsHTML(self.options.low_end_text, self.options.high_end_text) +
-              self.displayTypeHTML(self.format, {
-                  min_value: self.min_value,
-                  max_value: self.max_value,
-                  step: self.step
+      html =  this.showValueHTML(this.initial_value) +
+              this.endpointsHTML(this.options.low_end_text, this.options.high_end_text) +
+              this.displayTypeHTML(this.format, {
+                  min_value: this.min_value,
+                  max_value: this.max_value,
+                  step: this.step
               });
 
       //insert html
       this.$el.html(html);
 
       //post-process html
-      switch(self.format) {
+      var self = this;
+      switch(this.format) {
         case "buttons":
           $("span.range_buttons button", self.$el).click(function(e) {
             self.setAttribute( $(e.currentTarget).val() );
@@ -495,18 +493,17 @@ Dynamo.InputRangeView = Backbone.View.extend(
     },
 
     instantiateSlider: function(selector) {
-      var self = this;
       selector.slider({
-        value: self.initial_value,
-        min: self.min_value,
-        max: self.max_value,
-        step: self.step,
+        value: this.initial_value,
+        min: this.min_value,
+        max: this.max_value,
+        step: this.step,
         slide: function( event, ui ) {
-          self.setAttribute(ui.value)
+          this.setAttribute(ui.value)
         }
       });
-      $(self.el).find('.ui-slider-handle').height(70);
-      $(self.el).find('h2').css('font-size', "1.8em");
+      $(this.el).find('.ui-slider-handle').height(70);
+      $(this.el).find('h2').css('font-size', "1.8em");
       if ( _.isFunction( selector.addTouch ) ) { selector.addTouch() }; //Touchable on pads/phones.
     },
 
@@ -622,28 +619,42 @@ Dynamo.InputSliderView = Backbone.View.extend(
       this.setValue(ui_value);
       this.$el.find('div.current_value:first').html( ui_value );
     },
+    setAttributeFromJQueryUICb: function(event, ui) {
+      this.setAttribute(ui.value)
+    },
+    _template: _.template( "" +
+      "<div class='current_value' "+
+            "style='width:30%; height:34px; min-height:34px; margin:0 auto; text-align:center; "+
+            "font-size:1.5em; color:black;'>"+
+          "(%= initial_value %)"+
+      "</div>" +
+      "<div id='endpoints' "+
+            "style='width:80%;margin-left:10%;margin-right:10%;font-size:0.9em;"+
+                  "font-weight:bold;overflow:auto;'>" +
+        "<div class='end_right' style='float:left;'>(%= low_end_text %)</div>" +
+        "<div class='end_left' style='float:right;'>(%= high_end_text %)</div>" +
+      "</div>" +
+      "<div class='slider' "+
+            "style='width:80%;margin-left:10%;margin-right:10%; margin-top:2em; height:60px;'>"+
+      "</div>" +
+      "<div style='height:10px;'></div>"
+    ),
     render: function () {
-      var self = this, $slider;
-      this.$el.html(
-        "<div class='current_value' style='width:30%; height:34px; min-height:34px; margin:0 auto; text-align:center; font-size:1.5em; color:black;'>"+
-          self.initial_value +
-        "</div>" +
-          "<div id='endpoints' style='width:80%;margin-left:10%;margin-right:10%;font-size:0.9em; font-weight:bold;overflow:auto;'>" +
-            "<div class='end_right' style='float:left;'>"+ this.options.low_end_text +"</div>" +
-            "<div class='end_left' style='float:right;'>"+ this.options.high_end_text +"</div>" +
-          "</div>" +
-        "<div class='slider' style='width:80%;margin-left:10%;margin-right:10%; margin-top:2em; height:60px;'></div>" +
-        "<div style='height:10px;'></div>");
+
+      var $slider;
+      this.$el.html( this._template({
+        initial_value: this.initial_value,
+        low_end_text: this.options.low_end_text,
+        high_end_text: this.options.high_end_text
+      }));
       //make the slider;
       $slider = this.$el.find("div.slider:first");
       $slider.slider({
-        value: self.initial_value,
-        min: self.min_value,
-        max: self.max_value,
-        step: self.step,
-        slide: function( event, ui ) {
-          self.setAttribute(ui.value)
-        }
+        value: this.initial_value,
+        min: this.min_value,
+        max: this.max_value,
+        step: this.step,
+        slide: this.setAttributeFromJQueryUICb
       });
       $(this.el).find('.ui-slider-handle').height(70);
       $(this.el).find('h2').css('font-size', "1.8em");
@@ -752,34 +763,33 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
     return this.compiled_template(data, settings);
   },
   render: function() {
-    var self = this;
     var elements;
-    if (self.options.groupBy) {
-      elements = self.collection.chain().map(function(m) {
+    if (this.options.groupBy) {
+      elements = this.collection.chain().map(function(m) {
         var el = {
           id: m.id,
           cid: m.cid,
-          html: self.modelHTML(m),
-          checkedInput: self.checkedInput(m)
+          html: this.modelHTML(m),
+          checkedInput: this.checkedInput(m)
         };
-        if (_.isString(self.options.groupBy) ) {
-          el.groupBy = m[self.options.groupBy]
+        if (_.isString(this.options.groupBy) ) {
+          el.groupBy = m[this.options.groupBy]
         } else {
-          el.groupBy = self.options.groupBy(m);
+          el.groupBy = this.options.groupBy(m);
         };
         return el;
-      }).groupBy("groupBy").value();
+      }, this).groupBy("groupBy").value();
     }
     else {
-      elements = self.collection.map(function(m) {
+      elements = this.collection.map(function(m) {
         var el = {
           id: m.id,
           cid: m.cid,
-          html: self.modelHTML(m),
-          checkedInput: self.checkedInput(m)
+          html: this.modelHTML(m),
+          checkedInput: this.checkedInput(m)
         };
         return el;
-      });
+      }, this);
     }
     this.$el.html(
       this._template({
@@ -793,6 +803,15 @@ Dynamo.ChooseOneXelementFromCollectionView = Backbone.View.extend({
       })
     );
     return this;
+  },
+  remove: function() {
+    //attempt to make sure everything is deleted.
+    this.$el.remove();
+    this.stopListening();
+    // delete(this.checkedInputsCIDsArray);
+    // delete(this.chooseOn);
+    // delete(this.options);
+
   }
 })
 
@@ -1021,10 +1040,10 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   },
 
   events: function() {
-    var self = this, e ={};
-    e[("click button.add-new-"+self.collection.codeModelName())] = "addNew";
-    e[("click button.add-existing-"+self.collection.codeModelName())] = "addExisting";
-    e[("click button.delete."+self.collection.codeModelName())] = "removeElement";
+    var e ={};
+    e[("click button.add-new-"+this.collection.codeModelName())] = "addNew";
+    e[("click button.add-existing-"+this.collection.codeModelName())] = "addExisting";
+    e[("click button.delete."+this.collection.codeModelName())] = "removeElement";
     return e;
   },
 
@@ -1096,9 +1115,8 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       return this.options.chooseExistingToAddAtIndex(element_index, this);
     }
 
-    var self = this,
-        $popup,
-        existingAddables = self.getExistingAddablesCollection();
+    var $popup,
+        existingAddables = this.getExistingAddablesCollection();
 
     var chooseExistingViewOptions = {
         canCreateNew: false,
@@ -1113,13 +1131,13 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
     }
 
     // Allow the user to choose a Question Group view
-    self.chooseExistingModelView = new Dynamo.ChooseOneXelementFromCollectionView(chooseExistingViewOptions);
-    self.chooseExistingModelView.on('element:chosen', function() {
-      self.onChoosingModelToAdd(self.chooseExistingModelView.chosen_element, element_index);
-    });
+    this.chooseExistingModelView = new Dynamo.ChooseOneXelementFromCollectionView(chooseExistingViewOptions);
+    this.chooseExistingModelView.on('element:chosen', function() {
+      this.onChoosingModelToAdd(this.chooseExistingModelView.chosen_element, element_index);
+    }, this);
 
-    self.$popup = renderInDialog(self.chooseExistingModelView, {
-      title: "Add a "+self.collection.prettyModelName()+" (in position "+(element_index+1)+")"
+    this.$popup = renderInDialog(this.chooseExistingModelView, {
+      title: "Add a "+this.collection.prettyModelName()+" (in position "+(element_index+1)+")"
     });
 
   },
@@ -1130,7 +1148,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       return this.options.onChoosingModelToAdd(chosen_element, element_index, this)
     };
 
-    if (self.$popup) { $popup.dialog("close"); }
+    if (this.$popup) { $popup.dialog("close"); }
     return this.addExistingAtIndex(chosen_element, element_index);
 
   },
@@ -1176,8 +1194,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
   },
 
   render: function() {
-    var self = this,
-        $elements,
+    var $elements,
         root_element,
         view_class,
         view_options,
@@ -1189,29 +1206,29 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
       element_pretty_name: this.collection.prettyModelName(),
       display: this.display,
       canAddExisting: this.canAddExisting,
-      num_elements: self.collection.length,
+      num_elements: this.collection.length,
       end_content: this.end_content
     }));
 
-    $elements = self.$el.find('div.collection_widget:first > div.elements:first');
+    $elements = this.$el.find('div.collection_widget:first > div.elements:first');
 
-    self.collection.each(function(model, index) {
+    this.collection.each(function(model, index) {
 
       $elements.append(
-        self._elementTemplate({
+        this._elementTemplate({
           index: index,
-          display: self.display,
-          canAddExisting: self.canAddExisting,
-          element_code_name: self.collection.codeModelName(),
-          element_pretty_name: self.collection.prettyModelName()
+          display: this.display,
+          canAddExisting: this.canAddExisting,
+          element_code_name: this.collection.codeModelName(),
+          element_pretty_name: this.collection.prettyModelName()
         })
       );
 
       root_element = $elements.children('div.element').last();
 
-      if (self.display.show) {
-        view_class = self.viewClassOr(model);
-        view_options = self.options.viewOpts || {};
+      if (this.display.show) {
+        view_class = this.viewClassOr(model);
+        view_options = this.options.viewOpts || {};
         view_options = _.extend(view_options, {
           model: model,
           position: (index+1),
@@ -1223,9 +1240,9 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
         view.render();
       };
 
-      if (self.display.edit) {
-        view_class = self.editViewClassOr(model);
-        view_options = self.options.editViewOpts || {};
+      if (this.display.edit) {
+        view_class = this.editViewClassOr(model);
+        view_options = this.options.editViewOpts || {};
         view_options = _.extend(view_options, {
           model: model,
           position: (index+1)
@@ -1235,7 +1252,7 @@ Dynamo.ManageCollectionView = Backbone.View.extend({
         view.render();
       };
 
-    });
+    }, this);
 
     return this;
   }
@@ -1293,28 +1310,27 @@ Dynamo.ShowGroupView = Dynamo.BaseUnitaryXelementView.extend({
   render: function() {
 
     //render template
-    var self, view_class, view;
+    var view_class, view;
 
     console.log('-> ShowGroupView render');
 
-    self = this;
-    self.$el.html( self._template({
+    this.$el.html( this._template({
         position: this.position,
         group: this.model.toJSON()
       })
     );
 
-    if (!self.usersView) {
+    if (!this.usersView) {
       var $groups = this.$el.find('div.groups:first');
-      self.usersView = new Dynamo.ManageCollectionView({
+      this.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
         enableAddExisting: true,
         getExistingAddablesCollection: this.options.existingUsers
       });
-      $groups.append(self.usersView.$el)
+      $groups.append(this.usersView.$el)
     };
 
-    self.usersView.render();
+    this.usersView.render();
 
     return this;
   }
@@ -1389,11 +1405,9 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
   render: function() {
 
     //render template
-    var self, view_class, view;
+    var view_class, view;
 
-    self = this;
-
-    self.$el.html( self._template({
+    this.$el.html( this._template({
         group: this.model.toFormValues(),
         position: this.position
       })
@@ -1401,13 +1415,13 @@ Dynamo.EditGroupView = Dynamo.BaseUnitaryXelementView.extend({
 
     var $users = this.$el.find('div.users:first');
     if ( $users.length !== 0 ) {
-      self.usersView = new Dynamo.ManageCollectionView({
+      this.usersView = new Dynamo.ManageCollectionView({
         collection: this.model.users,
       });
 
-      $users.append(self.usersView.$el)
+      $users.append(this.usersView.$el)
 
-      self.usersView.render();
+      this.usersView.render();
     };
 
     return this;
@@ -1449,16 +1463,16 @@ Dynamo.ShowXelementSimpleView =  Dynamo.BaseUnitaryXelementView.extend({
   render: function() {
     console.log('-> ShowXelementSimpleView#render');
 
-    var self, view_class, view;
-    self = this;
+    var view_class, view;
+   
 
-    var atts_values = { title: self.model.get_field_value("title") };
+    var atts_values = { title: this.model.get_field_value("title") };
 
     _.each(this.atts_to_display, function(att) {
-      atts_values[att] = self.model.get_field_value(att);
-    });
+      atts_values[att] = this.model.get_field_value(att);
+    }, this);
 
-    self.$el.html( self._template({data: atts_values}) );
+    this.$el.html( this._template({data: atts_values}) );
 
     return this;
   }
@@ -1498,11 +1512,9 @@ Dynamo.ShowUserView = Dynamo.BaseUnitaryXelementView.extend({
     console.log('in ShowUserView render');
 
     //render template
-    var self, view_class, view;
+    var view_class, view;
 
-    self = this;
-
-    self.$el.html( self._template({
+    this.$el.html( this._template({
         position: this.position,
         user: this.model.toJSON()
       })
@@ -1559,52 +1571,44 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   },
 
   createKnockoutModel: function() {
-    var self = this, modelAtts;
+    var modelAtts;
     //wipe away any previous model:
-    self.knockoutModel = null;
-    delete self.knockoutModel;
+    this.knockoutModel = null;
+    delete this.knockoutModel;
 
-    self.knockoutModel = {};
-    self.knockoutModel.view = self;
+    this.knockoutModel = {};
+    this.knockoutModel.view = self;
     //in case you ever want/need to force a re-computation of a computed,
     //you can place a call to the value of this dummyObservable in the computed,
     //and then call self.knockoutModel.dummyObservable.notifySubscribers();
     //when you want to trigger a recomputation:
-    self.knockoutModel.dummyObservable = ko.observable(null);
+    this.knockoutModel.dummyObservable = ko.observable(null);
 
     _.each(this.modelAtts(), function(value, attr_name) {
 
       // Ignore attributes which come from computedAtts,
       // as those will be handled separately.
-      if ( !self.options.computedAtts || !self.options.computedAtts[attr_name]) {
-        self.createKnockoutModelAttribute(attr_name, value)
-        self.setBackboneAndKnockoutBindings(attr_name);
+      if ( !this.options.computedAtts || !this.options.computedAtts[attr_name]) {
+        this.createKnockoutModelAttribute(attr_name, value)
+        this.setBackboneAndKnockoutBindings(attr_name);
       };
 
-    });
+    }, this);
 
-    if (self.options.computedAtts) {
-      _.each(self.options.computedAtts, function(computeObj, attr_name) {
+    if (this.options.computedAtts) {
+      _.each(this.options.computedAtts, function(computeObj, attr_name) {
 
-        if (!computeObj.owner) { computeObj.owner = self.knockoutModel };
-        self.knockoutModel[attr_name] = ko.computed(computeObj);
+        if (!computeObj.owner) { computeObj.owner = this.knockoutModel };
+        this.knockoutModel[attr_name] = ko.computed(computeObj);
         if (computeObj.write) {
-          self.setBackboneAndKnockoutBindings(attr_name);
+          this.setBackboneAndKnockoutBindings(attr_name);
         };
 
-      });
+      }, this);
     };
 
-    self.knockoutModel.save = function() {
-      self.triggerSave();
-      return false;
-    };
-
-    self.knockoutModel.destroy = function() {
-      self.triggerDelete();
-      return false;
-    };
-
+    this.knockoutModel.save = this.triggerSave 
+    this.knockoutModel.destroy = this.triggerDelete
   },
 
   createKnockoutModelAttribute: function(attr, value) {
@@ -1619,12 +1623,12 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     // console.log("Attr, Value:", attr, value);
 
     if ( _.isDate(value) ) {
-      self.knockoutModel[attr+"_year"] = ko.observable(value.getFullYear());
-      self.knockoutModel[attr+"_month"] = ko.observable(value.getMonth());
-      self.knockoutModel[attr+"_date"] = ko.observable(value.getDate());
-      self.knockoutModel[attr+"_hour"] = ko.observable(value.getHours());
-      self.knockoutModel[attr+"_minute"] = ko.observable(value.getMinutes());
-      self.knockoutModel[attr] = ko.computed({
+      this.knockoutModel[attr+"_year"] = ko.observable(value.getFullYear());
+      this.knockoutModel[attr+"_month"] = ko.observable(value.getMonth());
+      this.knockoutModel[attr+"_date"] = ko.observable(value.getDate());
+      this.knockoutModel[attr+"_hour"] = ko.observable(value.getHours());
+      this.knockoutModel[attr+"_minute"] = ko.observable(value.getMinutes());
+      this.knockoutModel[attr] = ko.computed({
         read: function() {
           var s = this;
           return ( new Date(s[attr+"_year"](),
@@ -1635,15 +1639,16 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
                   );
         },
         write: function(new_time) {
+          // Can the reference to self here be removed??
           self.knockoutModel[attr+"_year"](new_time.getFullYear());
           self.knockoutModel[attr+"_month"](new_time.getMonth());
           self.knockoutModel[attr+"_date"](new_time.getDate());
           self.knockoutModel[attr+"_hour"](new_time.getHours());
           self.knockoutModel[attr+"_minute"](new_time.getMinutes());
         },
-        owner: self.knockoutModel
+        owner: this.knockoutModel
       });
-      return self.knockoutModel[attr];
+      return this.knockoutModel[attr];
     };
 
     // An array will benefit from having available add and remove functions.
@@ -1651,7 +1656,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
       // The default value of an element of the array can be
       // (and probably should) be passed in as an option.
-      var defaultElValue = self.options.arrayDefaults[attr],
+      var defaultElValue = this.options.arrayDefaults[attr],
 
           //each element in the knockout array will be more
           //than just a singular value, in order to allow removal
@@ -1666,12 +1671,12 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
       // Define each element in the array to be composed of
       // an instance of the above constructor
-      self.knockoutModel[attr] = ko.observableArray(
+      this.knockoutModel[attr] = ko.observableArray(
         _.map(value, function(el) { return new elConstructor(el) })
       );
 
       // Define an add element function for this attribute;
-      self.knockoutModel[attr+"_addElement"] = function() {
+      this.knockoutModel[attr+"_addElement"] = function() {
         var newEl = new elConstructor(defaultElValue)
         self.knockoutModel[attr].push( newEl );
 
@@ -1684,13 +1689,15 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
         //when any existing element changes value,
         //notify subscribers of the array that the value of the array has changed.
-      _.each(self.knockoutModel[attr], function(el) {
+      _.each(this.knockoutModel[attr], function(el) {
+        var s = this;
+        //Mem leak?
         el.value.subscribe(function(newElementValue) {
-          self.knockoutModel[attr].notifySubscribers(self.knockoutModel[attr]());
+          s.knockoutModel[attr].notifySubscribers(s.knockoutModel[attr]());
         });
-      });
+      }, this);
 
-      return self.knockoutModel[attr];
+      return this.knockoutModel[attr];
     };
 
     if (  _.isString(value) ||
@@ -1699,24 +1706,22 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
        ) {
       console.log("setting "+attr+" to "+value);
       this.knockoutModel[attr] = ko.observable(value);
-      return self.knockoutModel[attr];
+      return this.knockoutModel[attr];
     };
 
     if ( _.isNull(value) ||
          _.isUndefined(value)
        ) {
       this.knockoutModel[attr] = ko.observable(false);
-      return self.knockoutModel[attr];
+      return this.knockoutModel[attr];
     };
 
-  },
+  }, // end createKnockoutModelAttribute
 
   setBackboneAndKnockoutBindings: function(attr_name) {
-    var self = this;
-
     //If any change is made to a model attribute (in backbone),
     //the knockout model needs to be updated accordingly.
-    this.model.on('change:'+attr_name, function() { self.updateKnockoutModelAttribute(attr_name) } )
+    this.model.on('change:'+attr_name, function() { this.updateKnockoutModelAttribute(attr_name) }, this )
 
     //Any changes that knockout will make to the view,
     //We want to make to our backbone model.
@@ -1725,6 +1730,7 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
     //code above.
     //So, instead, we call set with {silent:true} and
     //trigger a different event on the backbone model - 'change:fromKnockout';
+    var self = this;
     this.knockoutModel[attr_name].subscribe(function(newValueFromKnockout) {
       if (typeof(newValueFromKnockout) !== "undefined") {
         var set_obj = {};
@@ -1778,10 +1784,9 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
   //although rare, it is conceivable we may want to update
   //all Knockout Model attributes under certain conditions.
   updateKnockoutModel: function() {
-    var self = this;
     _.each(this.modelAtts(), function(val, attr) {
       self.updateKnockoutModelAttribute(key, val);
-    });
+    }, this);
   },
 
   // Render function is greatly simplified
@@ -1807,10 +1812,12 @@ ModelBackoutView = Dynamo.ModelBackoutView = Backbone.View.extend({
 
   triggerSave: function() {
     this.trigger('model:save');
+    return false
   },
 
   triggerDelete: function() {
     this.trigger('model:delete');
+    return false
   }
 
 });
@@ -1831,8 +1838,6 @@ GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
   },
 
   initialize: function() {
-
-    var self = this;
     this.modelViewClass = this.options.modelViewClass || this.modelViewClass;
     this.renderOrder = this.options.renderOrder || this.renderOrder;
     
@@ -1848,20 +1853,19 @@ GroupWideDataIndexView = Dynamo.GroupWideDataIndexView = Backbone.View.extend({
     this.modelViews = null;
     this.modelViews = [];
 
-    var self = this;
     this.model.all().each(function(someModel) {
-      self.modelViews.push( (new self.modelViewClass({ model: someModel })) );
-    });
+      this.modelViews.push( (new this.modelViewClass({ model: someModel })) );
+    },this );
 
     this.$el.empty();
     _.each(this.modelViews, function(mView) {
-      if (self.renderOrder === 'reverse') {
-        self.$el.prepend(mView.render().$el);
+      if (this.renderOrder === 'reverse') {
+        this.$el.prepend(mView.render().$el);
       }
       else {
-        self.$el.append(mView.render().$el);  
+        this.$el.append(mView.render().$el);  
       };
-    });
+    }, this);
     this.initiallyRendered = true;
 
   },
@@ -1889,15 +1893,15 @@ Dynamo.GroupWideDataByUserCollectionView = Backbone.View.extend({
 
   initialize: function() {
 
-    var self = this;
     this.collectionViewClass = this.options.collectionViewClass || this.collectionViewClass;
     this.renderOrder = this.options.renderOrder || this.renderOrder;
     
-    this.model.on("add", this.initialRender, this);
+    this.model.on("add",    this.initialRender, this);
     this.model.on("remove", this.initialRender, this);
-    _.result(this, "afterInitialize");
-    _.result(this.options, "afterInitialize");
+    _.result(this,          "afterInitialize");
+    _.result(this.options,  "afterInitialize");
 
+    return this;
   },
 
   initialRender: function() {
@@ -1905,20 +1909,19 @@ Dynamo.GroupWideDataByUserCollectionView = Backbone.View.extend({
     this.collectionViews = null;
     this.collectionViews = [];
 
-    var self = this;
     _.each(this.model.collections, function(userCollection) {
-      self.collectionViews.push( 
-        (new self.collectionViewClass({ 
+      this.collectionViews.push( 
+        (new this.collectionViewClass({ 
           collection: userCollection, 
-          renderOrder: self.renderOrder 
+          renderOrder: this.renderOrder 
         })) 
       );
-    });
+    }, this);
 
     this.$el.empty();
     _.each(this.collectionViews, function(cView) {
-      self.$el.append(cView.render().$el);  
-    });
+      this.$el.append(cView.render().$el);  
+    }, this);
     this.initiallyRendered = true;
 
   }, 
@@ -2025,32 +2028,35 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   },
 
   appendGoalData: function() {
-    var self = this
-    var data_to_display = []
-    var ul = self.$el.find('ul#goals')
+    var ul = this.$el.find('ul#goals')
     ActivityCalGoals.each(function(goal_xel) {
       var relevantData = ActivityCalGoalData.find(function(ud) {
         return (ud.get("xelement_id") == goal_xel.id)
       });
-      switch (self.currentStatusToDisplay) {
+      switch (this.currentStatusToDisplay) {
         case "unanswered":
-          self.displayUnansweredGoals(relevantData, ul, self, goal_xel);
+          this.displayUnansweredGoals(relevantData, ul, this, goal_xel);
         break;
         case "completed":
-          self.displayCompletedGoals(relevantData, ul, self, goal_xel);
+          this.displayCompletedGoals(relevantData, ul, this, goal_xel);
         break;
         case "ignored":
-          self.displayIgnoredGoals(relevantData, ul, self, goal_xel);
+          this.displayIgnoredGoals(relevantData, ul, this, goal_xel);
         break;
         case "display-all":
-          self.displayUnansweredGoals(relevantData, ul, self, goal_xel);
-          self.displayCompletedGoals(relevantData, ul, self, goal_xel);
-          self.displayIgnoredGoals(relevantData, ul, self, goal_xel);
+          this.displayUnansweredGoals(relevantData, ul, this, goal_xel);
+          this.displayCompletedGoals(relevantData, ul, this, goal_xel);
+          this.displayIgnoredGoals(relevantData, ul, this, goal_xel);
         break;
       };
-    });
+    }, this);
     if (ul.find('li').length === 0) {
-      ul.html("<div class='span12' style='text-align:center;padding-top: 5px;'><strong>No Goals Exist</strong></div><div class='clearfix'></div>");
+      ul.html(""+
+        "<div class='span12' style='text-align:center;padding-top: 5px;'>"+
+          "<strong>No Goals Exist</strong>"+
+        "</div>"+
+        "<div class='clearfix'></div>"
+      );
     };
   },
 
@@ -2092,30 +2098,29 @@ GoalsView = Dynamo.GoalsView = Backbone.View.extend({
   },
 
   setButtonStatus: function(){
-    var self = this;
-    self.displayAllBtnClass = "";
-    self.unansweredBtnClass = "";
-    self.completedBtnClass = "";
-    self.ignoredBtnClass = "";
+    this.displayAllBtnClass = "";
+    this.unansweredBtnClass = "";
+    this.completedBtnClass = "";
+    this.ignoredBtnClass = "";
 
     switch (this.currentStatusToDisplay) {
       case "display-all":
-        self.displayAllBtnClass = "active";
+        this.displayAllBtnClass = "active";
       break;
       case "unanswered":
-        self.unansweredBtnClass = "active";
+        this.unansweredBtnClass = "active";
       break;
       case "completed":
-        self.completedBtnClass = "active";
+        this.completedBtnClass = "active";
       break;
       case "ignored":
-        self.ignoredBtnClass = "active";
+        this.ignoredBtnClass = "active";
       break;
     }
   },
 
   setActivityGoalHandlers: function() {
-    self = this;
+    var self = this;
     this.$el.find('.set-activity-goal').click(function(event) {
 
       var target = $(event.currentTarget);

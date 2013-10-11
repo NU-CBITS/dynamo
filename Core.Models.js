@@ -36,8 +36,8 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
 
   currentSaveState: function() {
     if (this.isNew()) { return 'new' };
-    // if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
-    if (this.hasUnsavedChanges()) {return 'saving-changes' };
+    if (this._currentlySaving) { return 'saving-changes' }
+    if (this.hasUnsavedChanges()) {return 'unsaved_changes' };
     return 'current';
   },
 
@@ -54,22 +54,31 @@ SaveableModel = Dynamo.SaveableModel = Dynamo.Model.extend({
     };
   },
 
-  debouncedSave: _.debounce(function() {
+  debouncedSave: _.throttle(function() {
     if ( this.hasUnsavedChanges() ) {
-      console.log("debouncedSave: Model ", this, " had unsaved changes");
-      this.save({silent:true})
+      console.log("debouncedSave: Model '", this, "' has unsaved changes");
+      this.once('sync', function() {
+        this._currentlySaving = false;
+        this.trigger('save_status_change');
+      }, this);
+      this._currentlySaving = true;
+      this.trigger('save_status_change');      
+      this.save();
     } else {
-      console.log("debouncedSave: Model", this, "did not have any unsaved changes");
+      console.log("debouncedSave: No Action - no unsaved changes for Model ", this);
     }
-  },
-  6000),
+  }, 1000),
 
   hasUnsavedChanges: function() {
     return !!this._unsavedChanges;
   },
 
   saveOnChange: function() {
-    this.on('save:suggested', this.debouncedSave);
+    this.on('save:suggested', this.debouncedSave, this);
+  },
+
+  stopSavingOnChange: function() {
+    this.off('save:suggested');
   },
 
   setUnsavedChanges: function() {

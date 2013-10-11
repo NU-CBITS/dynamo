@@ -22,27 +22,34 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
       this.buildSlides();
     }, this);
 
-    //  Saving a slide group should save both the Guide and 
-    //  All member slides; 
-    //  Achieve this by...
-    //  Storing original save function, then defining a new one.
-    //  new save function saves composite slides; 
-    //  On the sync of those slides w/ the server, 
-    //  then save this slideGroup.
-    //  WARNING - This implementation breaks the ability to pass variables to save for a Guide.
-    //  i.e., save is expected to be called without any arguments for Guides
-    this.saveGuide = this.save;
-    
-    this.save = function() {
-      if (this.slides.length == 0) {
-        this.updateSelfAndSave();
-      }
-      else {
-        this.saveSlidesThenGuide();
-      }
-    };
+    this._originalSave = this.save;
+    this.save = this._updateAndSave;
+
+    // NO LONGER SAVING SLIDES WHEN THE GUIDE IS SAVED...
     
   },
+
+  // _updateAndSave
+  // updates the Guides own attributes before issuing 
+  // an original save call back to the server.
+  // Called internally by 'save' or by '_delayedSave' as appopriate
+  _updateAndSave: function() {
+    console.log("IN _updateAndSave");
+    this.updatePageURL();
+    this.updateSlides();
+    this.once('sync', function() { 
+      console.log("IN _updateAndSave SYNC CALLBACK");
+      this._currentlySaving = false;
+      this._currentlySavingGuide = false;
+      this.trigger('save_status_change');
+    }, this);
+    this._originalSave();
+  },
+
+  _delayedSave: _.debounce(function() { 
+    console.log("IN _delayedSave");
+    this._updateAndSave() 
+  }, 2000),
 
   _CompleteSlidesCollection: function() {
     return Dynamo.ALL_SLIDES || SLIDES
@@ -136,16 +143,8 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
     this.slideObserver.stopListening();
     this.slideObserver.listenTo(this.slides, "add",    this.initSlideObserver);
     this.slideObserver.listenTo(this.slides, "remove", this.initSlideObserver);
-    this.slideObserver.listenTo(this.slides, "sync",   this.initSlideObserver);    
-    this.slides.each(function(slide) {
-      this.slideObserver.listenTo(slide, "change", this.setUnsavedChanges)
-    }, this);
     this.setUnsavedChanges();
   },
-
-  debouncedGuideSave: _.debounce(function() {
-    this.updateSelfAndSave()
-  }, 2000),
 
   defaults: function() { 
     return this.defaultsFor('guide');
@@ -181,15 +180,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   getPageURL: function () {
     return this.metacontent().guided_page_url;
   },
-  
-  // Should not have to call directly; 
-  // called when overridden save function is called.
-  saveSlidesThenGuide: _.debounce(function (argument) {
-    this.slides.each(function(slide) {
-      slide.once('sync', this.debouncedGuideSave)
-    }, this)
-    this.slides.invoke('save');
-  }, 5000),
 
   updatePageURL: function () {
     var mc = this.metacontent();
@@ -200,14 +190,6 @@ GuideModel = Dynamo.GuideModel = Dynamo.XelementClass.extend({
   updateSlides: function() {
     this.set_field_value('required_xelement_ids', (_.compact(this.slides.pluck("guid"))) );
   },
-
-  // Shouldn't have to call this method directly, 
-  // Instead, called when the slides collection syncs.
-  updateSelfAndSave: _.debounce(function() {
-    this.updatePageURL();
-    this.updateSlides();
-    this.saveGuide();
-  }, 1000),
 
   urlRoot: function() { return Dynamo.TriremeURL+'/xelements' },
 
@@ -263,9 +245,9 @@ SlideModel = Dynamo.SlideModel = Dynamo.XelementClass.extend({
     this.trigger('change:actions');
   },
 
-  updateContent: function(new_content) {
+  updateContent: _.throttle(function(new_content) {
     return this.set_field_value('content', this.contentModel.get('content') );
-  },
+  }, 500),
 
   initActionObserver: function() {
     this.actionObserver.stopListening();
